@@ -224,6 +224,30 @@ test('toString memoizes different notations separately', (t) => {
 	t.not(mixed1, bracket1); // Different values
 });
 
+// Length Property
+test('length property returns correct number of segments', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.length, 3);
+});
+
+test('empty path has length 0', (t) => {
+	const p = new Pathist([]);
+	t.is(p.length, 0);
+});
+
+test('single segment has length 1', (t) => {
+	const p1 = new Pathist(['foo']);
+	const p2 = new Pathist([0]);
+	t.is(p1.length, 1);
+	t.is(p2.length, 1);
+});
+
+test('length is consistent with toArray().length', (t) => {
+	const p = new Pathist([0, 'children', 2, 'some', 'path']);
+	t.is(p.length, p.toArray().length);
+	t.is(p.length, 5);
+});
+
 // Getter Aliases
 test('string getter returns same as toString()', (t) => {
 	const p = new Pathist([0, 'foo', 1]);
