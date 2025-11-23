@@ -15,13 +15,17 @@ export class Pathist {
 	}
 
 	static set defaultNotation(notation: Notation) {
+		Pathist.#validateNotation(notation);
+		Pathist.#defaultNotation = notation;
+	}
+
+	static #validateNotation(notation: Notation): void {
 		const validNotations = Object.values(Pathist.Notation);
 		if (!validNotations.includes(notation)) {
 			throw new TypeError(
 				`Invalid notation: "${notation}". Must be one of: ${validNotations.join(', ')}`,
 			);
 		}
-		Pathist.#defaultNotation = notation;
 	}
 
 	private readonly segments: ReadonlyArray<PathSegment>;
@@ -47,6 +51,8 @@ export class Pathist {
 	}
 
 	toString(notation: Notation = Pathist.defaultNotation): string {
+		Pathist.#validateNotation(notation);
+
 		// Check cache first
 		const cached = this.stringCache.get(notation);
 		if (cached !== undefined) {
