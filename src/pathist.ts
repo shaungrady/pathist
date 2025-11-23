@@ -1,20 +1,21 @@
-export const Notation = {
-	Mixed: 'mixed',
-	Dot: 'dot',
-	Bracket: 'bracket',
-} as const;
-
-export type NotationType = (typeof Notation)[keyof typeof Notation];
-
 type PathSegment = string | number;
 type PathInput = string | PathSegment[];
 
 export class Pathist {
-	static Notation = Notation;
-	private static defaultNotation: NotationType = Notation.Mixed;
+	static readonly Notation = {
+		Mixed: 'mixed',
+		Dot: 'dot',
+		Bracket: 'bracket',
+	} as const;
+
+	private static defaultNotation: (typeof Pathist.Notation)[keyof typeof Pathist.Notation] =
+		Pathist.Notation.Mixed;
 
 	private readonly segments: ReadonlyArray<PathSegment>;
-	private readonly stringCache: Map<NotationType, string> = new Map();
+	private readonly stringCache: Map<
+		(typeof Pathist.Notation)[keyof typeof Pathist.Notation],
+		string
+	> = new Map();
 
 	constructor(input: PathInput) {
 		if (typeof input === 'string') {
@@ -26,7 +27,9 @@ export class Pathist {
 		}
 	}
 
-	static setDefaultNotation(notation: NotationType): void {
+	static setDefaultNotation(
+		notation: (typeof Pathist.Notation)[keyof typeof Pathist.Notation],
+	): void {
 		Pathist.defaultNotation = notation;
 	}
 
@@ -35,7 +38,9 @@ export class Pathist {
 		return [...this.segments];
 	}
 
-	toString(notation: NotationType = Pathist.defaultNotation): string {
+	toString(
+		notation: (typeof Pathist.Notation)[keyof typeof Pathist.Notation] = Pathist.defaultNotation,
+	): string {
 		// Check cache first
 		const cached = this.stringCache.get(notation);
 		if (cached !== undefined) {
@@ -48,13 +53,13 @@ export class Pathist {
 			result = '';
 		} else {
 			switch (notation) {
-				case Notation.Bracket:
+				case Pathist.Notation.Bracket:
 					result = this.toBracketNotation();
 					break;
-				case Notation.Dot:
+				case Pathist.Notation.Dot:
 					result = this.toDotNotation();
 					break;
-				case Notation.Mixed:
+				case Pathist.Notation.Mixed:
 				default:
 					result = this.toMixedNotation();
 			}
