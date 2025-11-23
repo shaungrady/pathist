@@ -151,34 +151,34 @@ test('toString with dot notation - empty path', (t) => {
 	t.is(p.toString(Pathist.Notation.Dot), '');
 });
 
-// setDefaultNotation() Class Method
+// defaultNotation Getter/Setter
 test('default notation is Mixed', (t) => {
 	const p = new Pathist([0, 'foo', 1]);
 	t.is(p.toString(), '[0].foo[1]');
 });
 
-test('setDefaultNotation changes default to Bracket', (t) => {
-	Pathist.setDefaultNotation(Pathist.Notation.Bracket);
+test('defaultNotation setter changes default to Bracket', (t) => {
+	Pathist.defaultNotation = Pathist.Notation.Bracket;
 	const p = new Pathist([0, 'foo', 1]);
 	t.is(p.toString(), '[0]["foo"][1]');
 	// Reset to Mixed for other tests
-	Pathist.setDefaultNotation(Pathist.Notation.Mixed);
+	Pathist.defaultNotation = Pathist.Notation.Mixed;
 });
 
-test('setDefaultNotation changes default to Dot', (t) => {
-	Pathist.setDefaultNotation(Pathist.Notation.Dot);
+test('defaultNotation setter changes default to Dot', (t) => {
+	Pathist.defaultNotation = Pathist.Notation.Dot;
 	const p = new Pathist([0, 'foo', 1]);
 	t.is(p.toString(), '0.foo.1');
 	// Reset to Mixed for other tests
-	Pathist.setDefaultNotation(Pathist.Notation.Mixed);
+	Pathist.defaultNotation = Pathist.Notation.Mixed;
 });
 
 test('per-call override works regardless of default', (t) => {
-	Pathist.setDefaultNotation(Pathist.Notation.Bracket);
+	Pathist.defaultNotation = Pathist.Notation.Bracket;
 	const p = new Pathist([0, 'foo', 1]);
 	t.is(p.toString(Pathist.Notation.Mixed), '[0].foo[1]');
 	// Reset to Mixed for other tests
-	Pathist.setDefaultNotation(Pathist.Notation.Mixed);
+	Pathist.defaultNotation = Pathist.Notation.Mixed;
 });
 
 // Immutability

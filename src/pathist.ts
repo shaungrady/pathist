@@ -8,7 +8,15 @@ export class Pathist {
 		Bracket: 'bracket',
 	} as const;
 
-	private static defaultNotation: Notation = Pathist.Notation.Mixed;
+	static #defaultNotation: Notation = Pathist.Notation.Mixed;
+
+	static get defaultNotation(): Notation {
+		return Pathist.#defaultNotation;
+	}
+
+	static set defaultNotation(notation: Notation) {
+		Pathist.#defaultNotation = notation;
+	}
 
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
@@ -21,10 +29,6 @@ export class Pathist {
 			// Create a copy to ensure immutability
 			this.segments = [...input];
 		}
-	}
-
-	static setDefaultNotation(notation: Notation): void {
-		Pathist.defaultNotation = notation;
 	}
 
 	toArray(): PathSegment[] {
