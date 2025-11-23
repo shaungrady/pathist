@@ -28,6 +28,32 @@ export class Pathist {
 		}
 	}
 
+	static #toSegments(input: Pathist | PathInput): ReadonlyArray<PathSegment> | null {
+		// Handle null/undefined
+		if (input == null) {
+			return null;
+		}
+
+		// If it's already a Pathist instance, return its segments
+		if (input instanceof Pathist) {
+			return input.segments;
+		}
+
+		// If it's a string or array, parse it
+		if (typeof input === 'string' || Array.isArray(input)) {
+			try {
+				const temp = new Pathist(input);
+				return temp.segments;
+			} catch {
+				// If construction fails (invalid input), return null
+				return null;
+			}
+		}
+
+		// Invalid type
+		return null;
+	}
+
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
 
@@ -94,27 +120,8 @@ export class Pathist {
 	}
 
 	equals(other: Pathist | PathInput): boolean {
-		// Handle null/undefined
-		if (other == null) {
-			return false;
-		}
-
-		// Get the segments to compare
-		let otherSegments: ReadonlyArray<PathSegment>;
-
-		if (other instanceof Pathist) {
-			otherSegments = other.segments;
-		} else if (typeof other === 'string' || Array.isArray(other)) {
-			// Create a temporary Pathist to get parsed segments
-			try {
-				const temp = new Pathist(other);
-				otherSegments = temp.segments;
-			} catch {
-				// If construction fails (invalid input), not equal
-				return false;
-			}
-		} else {
-			// Invalid type
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
 			return false;
 		}
 
