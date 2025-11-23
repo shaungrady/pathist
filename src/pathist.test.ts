@@ -316,3 +316,70 @@ test('iterator returns correct values in order', (t) => {
 	t.deepEqual(iterator.next(), { value: 2, done: false });
 	t.deepEqual(iterator.next(), { value: undefined, done: true });
 });
+
+// Equals Method
+test('equals returns true for same Pathist instance', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.true(p.equals(p));
+});
+
+test('equals returns true for Pathist with same segments', (t) => {
+	const p1 = new Pathist([0, 'foo', 1]);
+	const p2 = new Pathist([0, 'foo', 1]);
+	t.true(p1.equals(p2));
+	t.true(p2.equals(p1));
+});
+
+test('equals returns true for Pathist constructed from different inputs', (t) => {
+	const p1 = new Pathist([0, 'foo', 1]);
+	const p2 = new Pathist('[0].foo[1]');
+	t.true(p1.equals(p2));
+	t.true(p2.equals(p1));
+});
+
+test('equals returns false for Pathist with different segments', (t) => {
+	const p1 = new Pathist([0, 'foo', 1]);
+	const p2 = new Pathist([0, 'bar', 1]);
+	t.false(p1.equals(p2));
+});
+
+test('equals returns false for Pathist with different length', (t) => {
+	const p1 = new Pathist([0, 'foo']);
+	const p2 = new Pathist([0, 'foo', 1]);
+	t.false(p1.equals(p2));
+});
+
+test('equals accepts string and compares correctly', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.true(p.equals('[0].foo[1]'));
+	t.false(p.equals('0.foo.1')); // Dot notation gives strings, not numbers
+	t.false(p.equals('[0].bar[1]'));
+
+	// Dot notation path
+	const p2 = new Pathist('0.foo.1');
+	t.true(p2.equals('0.foo.1'));
+	t.true(p2.equals(['0', 'foo', '1'])); // All strings
+});
+
+test('equals accepts array and compares correctly', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.true(p.equals([0, 'foo', 1]));
+	t.false(p.equals([0, 'bar', 1]));
+	t.false(p.equals([0, 'foo']));
+});
+
+test('equals returns true for empty paths', (t) => {
+	const p1 = new Pathist([]);
+	const p2 = new Pathist('');
+	t.true(p1.equals(p2));
+	t.true(p1.equals([]));
+	t.true(p1.equals(''));
+});
+
+test('equals returns false for invalid inputs', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.false(p.equals(null as any));
+	t.false(p.equals(undefined as any));
+	t.false(p.equals(123 as any));
+	t.false(p.equals({} as any));
+});

@@ -93,6 +93,46 @@ export class Pathist {
 		yield* this.segments;
 	}
 
+	equals(other: Pathist | PathInput): boolean {
+		// Handle null/undefined
+		if (other == null) {
+			return false;
+		}
+
+		// Get the segments to compare
+		let otherSegments: ReadonlyArray<PathSegment>;
+
+		if (other instanceof Pathist) {
+			otherSegments = other.segments;
+		} else if (typeof other === 'string' || Array.isArray(other)) {
+			// Create a temporary Pathist to get parsed segments
+			try {
+				const temp = new Pathist(other);
+				otherSegments = temp.segments;
+			} catch {
+				// If construction fails (invalid input), not equal
+				return false;
+			}
+		} else {
+			// Invalid type
+			return false;
+		}
+
+		// Compare lengths first
+		if (this.segments.length !== otherSegments.length) {
+			return false;
+		}
+
+		// Compare each segment
+		for (let i = 0; i < this.segments.length; i++) {
+			if (this.segments[i] !== otherSegments[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	private parseString(input: string): PathSegment[] {
 		if (input === '') {
 			return [];
