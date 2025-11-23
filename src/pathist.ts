@@ -74,6 +74,10 @@ export class Pathist {
 		return this.toString();
 	}
 
+	*[Symbol.iterator](): Iterator<PathSegment> {
+		yield* this.segments;
+	}
+
 	private parseString(input: string): PathSegment[] {
 		if (input === '') {
 			return [];
