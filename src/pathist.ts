@@ -14,6 +14,7 @@ export class Pathist {
 	private static defaultNotation: NotationType = Notation.Mixed;
 
 	private readonly segments: ReadonlyArray<PathSegment>;
+	private readonly stringCache: Map<NotationType, string> = new Map();
 
 	constructor(input: PathInput) {
 		if (typeof input === 'string') {
@@ -35,19 +36,33 @@ export class Pathist {
 	}
 
 	toString(notation: NotationType = Pathist.defaultNotation): string {
-		if (this.segments.length === 0) {
-			return '';
+		// Check cache first
+		const cached = this.stringCache.get(notation);
+		if (cached !== undefined) {
+			return cached;
 		}
 
-		switch (notation) {
-			case Notation.Bracket:
-				return this.toBracketNotation();
-			case Notation.Dot:
-				return this.toDotNotation();
-			case Notation.Mixed:
-			default:
-				return this.toMixedNotation();
+		// Compute the string representation
+		let result: string;
+		if (this.segments.length === 0) {
+			result = '';
+		} else {
+			switch (notation) {
+				case Notation.Bracket:
+					result = this.toBracketNotation();
+					break;
+				case Notation.Dot:
+					result = this.toDotNotation();
+					break;
+				case Notation.Mixed:
+				default:
+					result = this.toMixedNotation();
+			}
 		}
+
+		// Cache and return
+		this.stringCache.set(notation, result);
+		return result;
 	}
 
 	private parseString(input: string): PathSegment[] {

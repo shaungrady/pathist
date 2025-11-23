@@ -188,3 +188,23 @@ test('modifying input array after construction does not affect instance', (t) =>
 	input.push('bar');
 	t.deepEqual(p.toArray(), [0, 'foo', 1]);
 });
+
+// Memoization
+test('toString returns same string reference when called multiple times with same notation', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	const str1 = p.toString();
+	const str2 = p.toString();
+	t.is(str1, str2); // Same reference
+});
+
+test('toString memoizes different notations separately', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	const mixed1 = p.toString(Pathist.Notation.Mixed);
+	const bracket1 = p.toString(Pathist.Notation.Bracket);
+	const mixed2 = p.toString(Pathist.Notation.Mixed);
+	const bracket2 = p.toString(Pathist.Notation.Bracket);
+
+	t.is(mixed1, mixed2); // Same reference
+	t.is(bracket1, bracket2); // Same reference
+	t.not(mixed1, bracket1); // Different values
+});
