@@ -173,6 +173,13 @@ test('defaultNotation setter changes default to Dot', (t) => {
 	Pathist.defaultNotation = Pathist.Notation.Mixed;
 });
 
+test('defaultNotation setter validates notation value', (t) => {
+	const error = t.throws(() => {
+		Pathist.defaultNotation = 'invalid' as any;
+	}, { instanceOf: TypeError });
+	t.regex(error.message, /invalid notation/i);
+});
+
 test('per-call override works regardless of default', (t) => {
 	Pathist.defaultNotation = Pathist.Notation.Bracket;
 	const p = new Pathist([0, 'foo', 1]);
