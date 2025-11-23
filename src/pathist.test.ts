@@ -151,6 +151,14 @@ test('toString with dot notation - empty path', (t) => {
 	t.is(p.toString(Pathist.Notation.Dot), '');
 });
 
+test('toString validates notation parameter', (t) => {
+	const p = new Pathist(['foo', 'bar']);
+	const error = t.throws(() => {
+		p.toString('invalid' as any);
+	}, { instanceOf: TypeError });
+	t.regex(error.message, /invalid notation/i);
+});
+
 // defaultNotation Getter/Setter
 test('default notation is Mixed', (t) => {
 	const p = new Pathist([0, 'foo', 1]);
