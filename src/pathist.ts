@@ -15,6 +15,12 @@ export class Pathist {
 	}
 
 	static set defaultNotation(notation: Notation) {
+		const validNotations = Object.values(Pathist.Notation);
+		if (!validNotations.includes(notation)) {
+			throw new TypeError(
+				`Invalid notation: "${notation}". Must be one of: ${validNotations.join(', ')}`,
+			);
+		}
 		Pathist.#defaultNotation = notation;
 	}
 
