@@ -208,3 +208,32 @@ test('toString memoizes different notations separately', (t) => {
 	t.is(bracket1, bracket2); // Same reference
 	t.not(mixed1, bracket1); // Different values
 });
+
+// Getter Aliases
+test('string getter returns same as toString()', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.string, p.toString());
+	t.is(p.string, '[0].foo[1]');
+});
+
+test('array getter returns same as toArray()', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.deepEqual(p.array, p.toArray());
+	t.deepEqual(p.array, [0, 'foo', 1]);
+});
+
+test('string getter uses default notation', (t) => {
+	Pathist.defaultNotation = Pathist.Notation.Bracket;
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.string, '[0]["foo"][1]');
+	// Reset to Mixed for other tests
+	Pathist.defaultNotation = Pathist.Notation.Mixed;
+});
+
+test('array getter returns a new array each time', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	const arr1 = p.array;
+	const arr2 = p.array;
+	t.not(arr1, arr2);
+	t.deepEqual(arr1, arr2);
+});

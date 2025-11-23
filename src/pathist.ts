@@ -36,6 +36,10 @@ export class Pathist {
 		return [...this.segments];
 	}
 
+	get array(): PathSegment[] {
+		return this.toArray();
+	}
+
 	toString(notation: Notation = Pathist.defaultNotation): string {
 		// Check cache first
 		const cached = this.stringCache.get(notation);
@@ -64,6 +68,10 @@ export class Pathist {
 		// Cache and return
 		this.stringCache.set(notation, result);
 		return result;
+	}
+
+	get string(): string {
+		return this.toString();
 	}
 
 	private parseString(input: string): PathSegment[] {
