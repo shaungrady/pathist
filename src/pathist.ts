@@ -31,6 +31,8 @@ export class Pathist {
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
 
+	readonly length: number;
+
 	constructor(input: PathInput) {
 		if (typeof input === 'string') {
 			this.segments = this.parseString(input);
@@ -39,6 +41,7 @@ export class Pathist {
 			// Create a copy to ensure immutability
 			this.segments = [...input];
 		}
+		this.length = this.segments.length;
 	}
 
 	toArray(): PathSegment[] {
