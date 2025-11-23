@@ -1,0 +1,39 @@
+{
+	"name": "pathist",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsc",
+		"test": "ava",
+		"test:watch": "ava --watch",
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"check": "biome check --write .",
+		"ci": "biome ci . && tsc --noEmit && ava"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.23.0",
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.7",
+		"@types/node": "^24.10.1",
+		"ava": "^6.4.1",
+		"tsx": "^4.20.6",
+		"typescript": "^5.9.3"
+	},
+	"ava": {
+		"files": [
+			"src/**/*.test.ts"
+		],
+		"extensions": {
+			"ts": "module"
+		},
+		"nodeArguments": [
+			"--import=tsx"
+		]
+	}
+}
