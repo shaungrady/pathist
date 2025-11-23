@@ -140,6 +140,93 @@ export class Pathist {
 		return true;
 	}
 
+	startsWith(other: Pathist | PathInput): boolean {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			return false;
+		}
+
+		// Empty path starts with empty path
+		if (otherSegments.length === 0) {
+			return true;
+		}
+
+		// Can't start with a longer path
+		if (otherSegments.length > this.segments.length) {
+			return false;
+		}
+
+		// Compare each segment from the start
+		for (let i = 0; i < otherSegments.length; i++) {
+			if (this.segments[i] !== otherSegments[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	endsWith(other: Pathist | PathInput): boolean {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			return false;
+		}
+
+		// Empty path ends with empty path
+		if (otherSegments.length === 0) {
+			return true;
+		}
+
+		// Can't end with a longer path
+		if (otherSegments.length > this.segments.length) {
+			return false;
+		}
+
+		// Compare each segment from the end
+		const offset = this.segments.length - otherSegments.length;
+		for (let i = 0; i < otherSegments.length; i++) {
+			if (this.segments[offset + i] !== otherSegments[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	includes(other: Pathist | PathInput): boolean {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			return false;
+		}
+
+		// Empty path is included in any path
+		if (otherSegments.length === 0) {
+			return true;
+		}
+
+		// Can't include a longer path
+		if (otherSegments.length > this.segments.length) {
+			return false;
+		}
+
+		// Try to find the sequence starting at each position
+		const maxStartIndex = this.segments.length - otherSegments.length;
+		for (let start = 0; start <= maxStartIndex; start++) {
+			let found = true;
+			for (let i = 0; i < otherSegments.length; i++) {
+				if (this.segments[start + i] !== otherSegments[i]) {
+					found = false;
+					break;
+				}
+			}
+			if (found) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private parseString(input: string): PathSegment[] {
 		if (input === '') {
 			return [];
