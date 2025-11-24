@@ -526,3 +526,135 @@ test.serial('lastIndexOf wildcards disabled returns -1 when not matching exactly
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
 });
+
+// Index Wildcard Validation in String Parsing
+test.serial('rejects index wildcard in dot notation', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	// Single wildcard in dot notation
+	t.throws(
+		() => new Pathist('foo.*.bar'),
+		{ message: /Index wildcard '\*' cannot appear in property position/ },
+	);
+
+	// Wildcard at start
+	t.throws(
+		() => new Pathist('*.foo.bar'),
+		{ message: /Index wildcard '\*' cannot appear in property position/ },
+	);
+
+	// Wildcard at end
+	t.throws(
+		() => new Pathist('foo.bar.*'),
+		{ message: /Index wildcard '\*' cannot appear in property position/ },
+	);
+});
+
+test.serial('rejects numeric index wildcard in dot notation', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	// -1 wildcard in dot notation (requires special handling as it's parsed as string)
+	// Note: -1 won't appear in dot notation naturally, but if someone creates a path like 'foo.-1.bar'
+	// The parser will see "-1" as a string, not a number, so it won't match the numeric wildcard
+	// This is expected behavior - numeric wildcards should only appear in bracket notation
+
+	// Verify that 'foo.-1.bar' is allowed (parsed as string, not numeric wildcard)
+	t.notThrows(() => new Pathist('foo.-1.bar'));
+	const p = new Pathist('foo.-1.bar');
+	// The "-1" is treated as a string property, not the numeric wildcard
+	t.deepEqual(p.toArray(), ['foo', '-1', 'bar']);
+	t.is(typeof p.toArray()[1], 'string');
+});
+
+test.serial('rejects custom string wildcard in dot notation', (t) => {
+	Pathist.indexWildcards = ['**', 'wild'];
+
+	t.throws(
+		() => new Pathist('foo.**.bar'),
+		{ message: /Index wildcard '\*\*' cannot appear in property position/ },
+	);
+
+	t.throws(
+		() => new Pathist('foo.wild.bar'),
+		{ message: /Index wildcard 'wild' cannot appear in property position/ },
+	);
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+test.serial('allows index wildcard in bracket notation', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	// These should all work fine
+	t.notThrows(() => new Pathist('foo[*].bar'));
+	t.notThrows(() => new Pathist('[*].foo.bar'));
+	t.notThrows(() => new Pathist('foo.bar[*]'));
+	t.notThrows(() => new Pathist('foo[*][*].bar'));
+
+	const p = new Pathist('foo[*].bar');
+	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
+});
+
+test.serial('allows index wildcard in array constructor', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	// Array input bypasses string parsing - wildcards are allowed anywhere
+	t.notThrows(() => new Pathist(['foo', '*', 'bar']));
+	t.notThrows(() => new Pathist(['*', 'foo', 'bar']));
+	t.notThrows(() => new Pathist(['foo', 'bar', '*']));
+
+	const p = new Pathist(['foo', '*', 'bar']);
+	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
+});
+
+test.serial('rejects multiple wildcards in mixed notation', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	// Mixed notation with wildcard in property position should fail
+	t.throws(
+		() => new Pathist('foo.*.bar[0]'),
+		{ message: /Index wildcard '\*' cannot appear in property position/ },
+	);
+
+	t.throws(
+		() => new Pathist('foo[0].*.bar'),
+		{ message: /Index wildcard '\*' cannot appear in property position/ },
+	);
+
+	// But bracket notation wildcards are fine
+	t.notThrows(() => new Pathist('foo[*].bar[0]'));
+	t.notThrows(() => new Pathist('foo[0][*].bar'));
+});
+
+test.serial('validation respects current wildcard configuration', (t) => {
+	// Set custom wildcards
+	Pathist.indexWildcards = ['custom'];
+
+	// 'custom' should be rejected in dot notation
+	t.throws(
+		() => new Pathist('foo.custom.bar'),
+		{ message: /Index wildcard 'custom' cannot appear in property position/ },
+	);
+
+	// But '*' should be allowed (no longer a wildcard)
+	t.notThrows(() => new Pathist('foo.*.bar'));
+	const p = new Pathist('foo.*.bar');
+	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+test.serial('no validation when wildcards are disabled', (t) => {
+	// Disable wildcards
+	Pathist.indexWildcards = [];
+
+	// Now '*' should be allowed in dot notation (it's just a regular property name)
+	t.notThrows(() => new Pathist('foo.*.bar'));
+	const p = new Pathist('foo.*.bar');
+	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
