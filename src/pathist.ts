@@ -1,6 +1,11 @@
 type PathSegment = string | number;
 type PathInput = string | PathSegment[];
 
+export interface PathistConfig {
+	notation?: Notation;
+	indices?: Indices;
+}
+
 export class Pathist {
 	static readonly Notation = {
 		Mixed: 'mixed',
@@ -174,12 +179,35 @@ export class Pathist {
 		return segL === segR;
 	}
 
+	// Instance-level config
+	#notation?: Notation;
+	#indices?: Indices;
+
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
 
 	readonly length: number;
 
-	constructor(input: PathInput) {
+	// Instance getters that resolve: instance → static default
+	get notation(): Notation {
+		return this.#notation ?? Pathist.defaultNotation;
+	}
+
+	get indices(): Indices {
+		return this.#indices ?? Pathist.defaultIndices;
+	}
+
+	// Helper to propagate config when creating new instances
+	private cloneConfig(): PathistConfig {
+		return {
+			notation: this.#notation,
+			indices: this.#indices,
+		};
+	}
+
+	constructor(input: PathInput, config?: PathistConfig) {
+		this.#notation = config?.notation;
+		this.#indices = config?.indices;
 		if (typeof input === 'string') {
 			this.segments = this.parseString(input);
 		} else {
@@ -199,11 +227,12 @@ export class Pathist {
 		return this.toArray();
 	}
 
-	toString(notation: Notation = Pathist.defaultNotation): string {
-		Pathist.#validateNotation(notation);
+	toString(notation?: Notation): string {
+		const resolved = notation ?? this.notation;
+		Pathist.#validateNotation(resolved);
 
 		// Check cache first
-		const cached = this.stringCache.get(notation);
+		const cached = this.stringCache.get(resolved);
 		if (cached !== undefined) {
 			return cached;
 		}
@@ -213,7 +242,7 @@ export class Pathist {
 		if (this.segments.length === 0) {
 			result = '';
 		} else {
-			switch (notation) {
+			switch (resolved) {
 				case Pathist.Notation.Bracket:
 					result = this.toBracketNotation();
 					break;
@@ -227,7 +256,7 @@ export class Pathist {
 		}
 
 		// Cache and return
-		this.stringCache.set(notation, result);
+		this.stringCache.set(resolved, result);
 		return result;
 	}
 
@@ -251,7 +280,7 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indices = options?.indices ?? Pathist.defaultIndices;
+		const indices = options?.indices ?? this.indices;
 
 		// Compare each segment
 		for (let i = 0; i < this.segments.length; i++) {
@@ -280,7 +309,7 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indices = options?.indices ?? Pathist.defaultIndices;
+		const indices = options?.indices ?? this.indices;
 
 		// Compare each segment from the start
 		for (let i = 0; i < otherSegments.length; i++) {
@@ -309,7 +338,7 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indices = options?.indices ?? Pathist.defaultIndices;
+		const indices = options?.indices ?? this.indices;
 
 		// Compare each segment from the end
 		const offset = this.segments.length - otherSegments.length;
@@ -339,7 +368,7 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indices = options?.indices ?? Pathist.defaultIndices;
+		const indices = options?.indices ?? this.indices;
 
 		// Try to find the sequence starting at each position
 		const maxStartIndex = this.segments.length - otherSegments.length;
@@ -376,7 +405,7 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indices = options?.indices ?? Pathist.defaultIndices;
+		const indices = options?.indices ?? this.indices;
 
 		// Try to find the sequence starting at each position
 		const maxStartIndex = this.segments.length - otherSegments.length;
@@ -413,7 +442,7 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indices = options?.indices ?? Pathist.defaultIndices;
+		const indices = options?.indices ?? this.indices;
 
 		// Try to find the sequence starting from the end
 		const maxStartIndex = this.segments.length - otherSegments.length;
