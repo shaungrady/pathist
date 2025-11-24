@@ -193,8 +193,30 @@ export class Pathist {
 		if (!Number.isNaN(num) && content === num.toString()) {
 			return num;
 		}
+
 		// It's a string (possibly with quotes)
-		return content.replace(/^["']|["']$/g, '');
+		// Validate quote matching
+		const startsWithQuote = content[0] === '"' || content[0] === "'";
+		const endsWithQuote = content[content.length - 1] === '"' || content[content.length - 1] === "'";
+
+		if (startsWithQuote && endsWithQuote) {
+			// Both quoted - check if they match
+			if (content[0] !== content[content.length - 1]) {
+				throw new Error(
+					`Mismatched quotes in bracket notation: [${content}]`,
+				);
+			}
+			// Remove matching quotes
+			return content.slice(1, -1);
+		} else if (startsWithQuote || endsWithQuote) {
+			// Only one side quoted - error
+			throw new Error(
+				`Mismatched quotes in bracket notation: [${content}]`,
+			);
+		}
+
+		// No quotes - return as-is
+		return content;
 	}
 
 	// Instance-level config
