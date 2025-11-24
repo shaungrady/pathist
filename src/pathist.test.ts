@@ -611,6 +611,268 @@ test('includes handles single segment paths correctly', (t) => {
 	t.false(p.includes(['bar']));
 });
 
+// IndexOf Method
+test('indexOf returns correct position for same Pathist instance', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.indexOf(p), 0);
+});
+
+test('indexOf returns 0 when subsequence is at the beginning', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.indexOf(new Pathist([0, 'foo'])), 0);
+	t.is(p.indexOf(new Pathist([0])), 0);
+});
+
+test('indexOf returns correct index when subsequence is in the middle', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.indexOf(new Pathist(['foo', 1])), 1);
+	t.is(p.indexOf(new Pathist(['foo', 1, 'bar'])), 1);
+	t.is(p.indexOf(new Pathist([1])), 2);
+});
+
+test('indexOf returns correct index when subsequence is at the end', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.indexOf(new Pathist(['bar', 2])), 3);
+	t.is(p.indexOf(new Pathist([2])), 4);
+});
+
+test('indexOf returns 0 for full match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.indexOf(new Pathist([0, 'foo', 1, 'bar'])), 0);
+});
+
+test('indexOf returns -1 when subsequence does not exist', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.indexOf(new Pathist([0, 'bar'])), -1);
+	t.is(p.indexOf(new Pathist(['foo', 'bar'])), -1);
+	t.is(p.indexOf(new Pathist([2])), -1);
+	t.is(p.indexOf(new Pathist(['baz'])), -1);
+});
+
+test('indexOf returns 0 for empty path', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.indexOf(new Pathist([])), 0);
+	t.is(p.indexOf(''), 0);
+	t.is(p.indexOf([]), 0);
+});
+
+test('indexOf returns -1 when subsequence is longer', (t) => {
+	const p = new Pathist([0, 'foo']);
+	t.is(p.indexOf(new Pathist([0, 'foo', 1])), -1);
+});
+
+test('indexOf accepts string and compares correctly', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.indexOf('foo'), 1);
+	t.is(p.indexOf('[1].bar'), 2);
+	t.is(p.indexOf('[0].foo'), 0);
+	t.is(p.indexOf('[0].bar'), -1);
+	t.is(p.indexOf('foo.bar'), -1);
+});
+
+test('indexOf accepts array and compares correctly', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.indexOf(['foo']), 1);
+	t.is(p.indexOf([1, 'bar']), 2);
+	t.is(p.indexOf([0, 'foo']), 0);
+	t.is(p.indexOf([0, 'bar']), -1);
+	t.is(p.indexOf(['foo', 'bar']), -1);
+});
+
+test('indexOf returns -1 for invalid inputs', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.indexOf(null as any), -1);
+	t.is(p.indexOf(undefined as any), -1);
+	t.is(p.indexOf(123 as any), -1);
+	t.is(p.indexOf({} as any), -1);
+});
+
+test('empty path indexOf empty path returns 0', (t) => {
+	const p = new Pathist([]);
+	t.is(p.indexOf([]), 0);
+	t.is(p.indexOf(''), 0);
+});
+
+test('empty path indexOf non-empty path returns -1', (t) => {
+	const p = new Pathist([]);
+	t.is(p.indexOf([0]), -1);
+	t.is(p.indexOf('foo'), -1);
+});
+
+test('indexOf handles single segment paths correctly', (t) => {
+	const p = new Pathist(['foo']);
+	t.is(p.indexOf(['foo']), 0);
+	t.is(p.indexOf(['bar']), -1);
+});
+
+test('indexOf returns first occurrence when multiple matches exist', (t) => {
+	const p = new Pathist(['foo', 'bar', 'foo', 'baz', 'foo']);
+	t.is(p.indexOf(['foo']), 0);
+	t.is(p.indexOf(new Pathist(['foo'])), 0);
+});
+
+test('indexOf with indices: Preserve - different indices do not match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.indexOf([9, 'bar']), -1);
+	t.is(p.indexOf([9, 'bar'], { indices: Pathist.Indices.Preserve }), -1);
+});
+
+test('indexOf with indices: Ignore - different indices match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.indexOf([9, 'bar'], { indices: Pathist.Indices.Ignore }), 2);
+	t.is(p.indexOf([999], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.indexOf([7, 'foo', 8], { indices: Pathist.Indices.Ignore }), 0);
+});
+
+test('indexOf with indices: Ignore - string segments must match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.indexOf([9, 'baz'], { indices: Pathist.Indices.Ignore }), -1);
+});
+
+test('indexOf with indices: Ignore - finds subsequence at correct position', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2, 'baz']);
+	// Middle subsequence
+	t.is(p.indexOf([999, 'bar', 888], { indices: Pathist.Indices.Ignore }), 2);
+	// Start subsequence
+	t.is(p.indexOf([777, 'foo'], { indices: Pathist.Indices.Ignore }), 0);
+	// End subsequence
+	t.is(p.indexOf([666, 'baz'], { indices: Pathist.Indices.Ignore }), 4);
+});
+
+// LastIndexOf Method
+test('lastIndexOf returns correct position for same Pathist instance', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.lastIndexOf(p), 0);
+});
+
+test('lastIndexOf returns 0 when subsequence is at the beginning and only occurs once', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.lastIndexOf(new Pathist([0, 'foo'])), 0);
+	t.is(p.lastIndexOf(new Pathist([0])), 0);
+});
+
+test('lastIndexOf returns correct index when subsequence is in the middle', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.lastIndexOf(new Pathist(['foo', 1])), 1);
+	t.is(p.lastIndexOf(new Pathist(['foo', 1, 'bar'])), 1);
+	t.is(p.lastIndexOf(new Pathist([1])), 2);
+});
+
+test('lastIndexOf returns correct index when subsequence is at the end', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.lastIndexOf(new Pathist(['bar', 2])), 3);
+	t.is(p.lastIndexOf(new Pathist([2])), 4);
+});
+
+test('lastIndexOf returns 0 for full match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.lastIndexOf(new Pathist([0, 'foo', 1, 'bar'])), 0);
+});
+
+test('lastIndexOf returns -1 when subsequence does not exist', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.lastIndexOf(new Pathist([0, 'bar'])), -1);
+	t.is(p.lastIndexOf(new Pathist(['foo', 'bar'])), -1);
+	t.is(p.lastIndexOf(new Pathist([2])), -1);
+	t.is(p.lastIndexOf(new Pathist(['baz'])), -1);
+});
+
+test('lastIndexOf returns length for empty path', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.lastIndexOf(new Pathist([])), 3);
+	t.is(p.lastIndexOf(''), 3);
+	t.is(p.lastIndexOf([]), 3);
+});
+
+test('lastIndexOf returns -1 when subsequence is longer', (t) => {
+	const p = new Pathist([0, 'foo']);
+	t.is(p.lastIndexOf(new Pathist([0, 'foo', 1])), -1);
+});
+
+test('lastIndexOf accepts string and compares correctly', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.lastIndexOf('foo'), 1);
+	t.is(p.lastIndexOf('[1].bar'), 2);
+	t.is(p.lastIndexOf('[0].foo'), 0);
+	t.is(p.lastIndexOf('[0].bar'), -1);
+	t.is(p.lastIndexOf('foo.bar'), -1);
+});
+
+test('lastIndexOf accepts array and compares correctly', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.lastIndexOf(['foo']), 1);
+	t.is(p.lastIndexOf([1, 'bar']), 2);
+	t.is(p.lastIndexOf([0, 'foo']), 0);
+	t.is(p.lastIndexOf([0, 'bar']), -1);
+	t.is(p.lastIndexOf(['foo', 'bar']), -1);
+});
+
+test('lastIndexOf returns -1 for invalid inputs', (t) => {
+	const p = new Pathist([0, 'foo', 1]);
+	t.is(p.lastIndexOf(null as any), -1);
+	t.is(p.lastIndexOf(undefined as any), -1);
+	t.is(p.lastIndexOf(123 as any), -1);
+	t.is(p.lastIndexOf({} as any), -1);
+});
+
+test('empty path lastIndexOf empty path returns 0', (t) => {
+	const p = new Pathist([]);
+	t.is(p.lastIndexOf([]), 0);
+	t.is(p.lastIndexOf(''), 0);
+});
+
+test('empty path lastIndexOf non-empty path returns -1', (t) => {
+	const p = new Pathist([]);
+	t.is(p.lastIndexOf([0]), -1);
+	t.is(p.lastIndexOf('foo'), -1);
+});
+
+test('lastIndexOf handles single segment paths correctly', (t) => {
+	const p = new Pathist(['foo']);
+	t.is(p.lastIndexOf(['foo']), 0);
+	t.is(p.lastIndexOf(['bar']), -1);
+});
+
+test('lastIndexOf returns last occurrence when multiple matches exist', (t) => {
+	const p = new Pathist(['foo', 'bar', 'foo', 'baz', 'foo']);
+	t.is(p.lastIndexOf(['foo']), 4);
+	t.is(p.lastIndexOf(new Pathist(['foo'])), 4);
+});
+
+test('lastIndexOf with multiple matches returns last position', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'foo', 2, 'foo', 3]);
+	t.is(p.lastIndexOf(['foo']), 5);
+	t.is(p.indexOf(['foo']), 1); // Verify indexOf returns first
+});
+
+test('lastIndexOf with indices: Preserve - different indices do not match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.lastIndexOf([9, 'bar']), -1);
+	t.is(p.lastIndexOf([9, 'bar'], { indices: Pathist.Indices.Preserve }), -1);
+});
+
+test('lastIndexOf with indices: Ignore - different indices match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
+	t.is(p.lastIndexOf([9, 'bar'], { indices: Pathist.Indices.Ignore }), 2);
+	t.is(p.lastIndexOf([999], { indices: Pathist.Indices.Ignore }), 4);
+	t.is(p.lastIndexOf([7, 'foo', 8], { indices: Pathist.Indices.Ignore }), 0);
+});
+
+test('lastIndexOf with indices: Ignore - string segments must match', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar']);
+	t.is(p.lastIndexOf([9, 'baz'], { indices: Pathist.Indices.Ignore }), -1);
+});
+
+test('lastIndexOf with indices: Ignore - finds last subsequence at correct position', (t) => {
+	const p = new Pathist([0, 'foo', 1, 'bar', 2, 'baz', 3, 'bar', 4]);
+	// Multiple 'bar' segments - should find last one (at index 6: segment 3 and 'bar')
+	t.is(p.lastIndexOf([999, 'bar'], { indices: Pathist.Indices.Ignore }), 6);
+	// Start subsequence
+	t.is(p.lastIndexOf([777, 'foo'], { indices: Pathist.Indices.Ignore }), 0);
+	// Find last occurrence of 'baz' followed by any number
+	t.is(p.lastIndexOf(['baz', 888], { indices: Pathist.Indices.Ignore }), 5);
+});
+
 // Indices Default and Configuration
 test('default indices mode is Preserve', (t) => {
 	t.is(Pathist.defaultIndices, Pathist.Indices.Preserve);
