@@ -359,6 +359,80 @@ export class Pathist {
 		return false;
 	}
 
+	indexOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			return -1;
+		}
+
+		// Empty path is at index 0
+		if (otherSegments.length === 0) {
+			return 0;
+		}
+
+		// Can't find a longer path
+		if (otherSegments.length > this.segments.length) {
+			return -1;
+		}
+
+		// Determine indices mode
+		const indices = options?.indices ?? Pathist.defaultIndices;
+
+		// Try to find the sequence starting at each position
+		const maxStartIndex = this.segments.length - otherSegments.length;
+		for (let start = 0; start <= maxStartIndex; start++) {
+			let found = true;
+			for (let i = 0; i < otherSegments.length; i++) {
+				if (!Pathist.#segmentsMatch(this.segments[start + i], otherSegments[i], indices)) {
+					found = false;
+					break;
+				}
+			}
+			if (found) {
+				return start;
+			}
+		}
+
+		return -1;
+	}
+
+	lastIndexOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			return -1;
+		}
+
+		// Empty path is at the end
+		if (otherSegments.length === 0) {
+			return this.segments.length;
+		}
+
+		// Can't find a longer path
+		if (otherSegments.length > this.segments.length) {
+			return -1;
+		}
+
+		// Determine indices mode
+		const indices = options?.indices ?? Pathist.defaultIndices;
+
+		// Try to find the sequence starting from the end
+		const maxStartIndex = this.segments.length - otherSegments.length;
+		for (let start = maxStartIndex; start >= 0; start--) {
+			let found = true;
+			for (let i = 0; i < otherSegments.length; i++) {
+				if (!Pathist.#segmentsMatch(this.segments[start + i], otherSegments[i], indices)) {
+					found = false;
+					break;
+				}
+			}
+			if (found) {
+				return start;
+			}
+		}
+
+		return -1;
+	}
+
 	private parseString(input: string): PathSegment[] {
 		if (input === '') {
 			return [];

@@ -376,3 +376,176 @@ test.serial('wildcards disabled when set is empty', (t) => {
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
 });
+
+// IndexOf with Wildcards
+test.serial('indexOf matches wildcard with numbers', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+
+	// Wildcard matches numbers
+	t.is(p.indexOf(['foo', -1]), 0);
+	t.is(p.indexOf(['foo', '*']), 0);
+	t.is(p.indexOf([0, 'bar']), 1);
+	t.is(p.indexOf([-1, 'bar']), 1);
+	t.is(p.indexOf(['*', 'bar']), 1);
+
+	// Wildcard does NOT match strings
+	t.is(p.indexOf([-1, 'foo']), -1);
+	t.is(p.indexOf(['*', 'foo']), -1);
+});
+
+test.serial('indexOf matches string wildcard with numbers and wildcards', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+
+	// String wildcard matches numbers
+	t.is(p.indexOf(['*', 'bar']), 1);
+	t.is(p.indexOf(['foo', '*', 'bar']), 0);
+
+	// String wildcard matches other wildcards
+	t.is(p.indexOf(['foo', -1, 'bar']), 0);
+
+	// String wildcard does NOT match regular strings
+	t.is(p.indexOf(['*', 'nonexistent']), -1);
+});
+
+test.serial('indexOf with wildcards checks non-wildcard segments', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+
+	// Correct non-wildcard segments
+	t.is(p.indexOf(['foo', -1, 'bar']), 0);
+
+	// Wrong non-wildcard segments
+	t.is(p.indexOf(['foo', -1, 'wrong']), -1);
+	t.is(p.indexOf(['wrong', -1, 'bar']), -1);
+});
+
+test.serial('indexOf with wildcards on both sides matches', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', -1, 'bar', '*', 'baz']);
+	t.is(p.indexOf(['foo', -1]), 0);
+	t.is(p.indexOf(['foo', '*']), 0);
+	t.is(p.indexOf([0, 'bar']), 1);
+	t.is(p.indexOf([99, 'bar']), 1);
+});
+
+test.serial('indexOf finds first match with wildcards', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'bar', 2, 'bar']);
+
+	// First occurrence of wildcard + 'bar'
+	t.is(p.indexOf([-1, 'bar']), 1);
+	t.is(p.indexOf(['*', 'bar']), 1);
+});
+
+test.serial('indexOf with wildcards works with indices: Ignore option', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 5, 'bar', 10, 'baz']);
+
+	// With wildcards AND indices ignore, should match
+	t.is(p.indexOf([-1, 'bar'], { indices: Pathist.Indices.Ignore }), 1);
+	t.is(p.indexOf(['*', 'bar'], { indices: Pathist.Indices.Ignore }), 1);
+
+	// Wildcards match numbers
+	t.is(p.indexOf(['foo', '*'], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.indexOf(['foo', -1], { indices: Pathist.Indices.Ignore }), 0);
+});
+
+test.serial('indexOf wildcards disabled returns -1 when not matching exactly', (t) => {
+	Pathist.indexWildcards = [];
+	const p = new Pathist(['foo', -1, 'bar']);
+
+	// -1 should not be wildcard anymore
+	t.is(p.indexOf(['foo', 0, 'bar']), -1);
+	t.is(p.indexOf(['foo', -1, 'bar']), 0);
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+// LastIndexOf with Wildcards
+test.serial('lastIndexOf matches wildcard with numbers', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'baz', 2, 'bar']);
+
+	// Wildcard matches numbers - should find last occurrence
+	t.is(p.lastIndexOf(['*', 'bar']), 5);
+	t.is(p.lastIndexOf([-1, 'bar']), 5);
+	t.is(p.lastIndexOf(['foo', -1]), 0);
+
+	// Wildcard does NOT match strings
+	t.is(p.lastIndexOf([-1, 'foo']), -1);
+	t.is(p.lastIndexOf(['*', 'foo']), -1);
+});
+
+test.serial('lastIndexOf matches string wildcard with numbers and wildcards', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'baz', 2, 'bar']);
+
+	// String wildcard matches numbers
+	t.is(p.lastIndexOf(['*', 'bar']), 5);
+	t.is(p.lastIndexOf([1, 'baz']), 3);
+	t.is(p.lastIndexOf(['*', 'baz']), 3);
+
+	// String wildcard matches other wildcards
+	t.is(p.lastIndexOf([-1, 'bar']), 5);
+});
+
+test.serial('lastIndexOf with wildcards checks non-wildcard segments', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+
+	// Correct non-wildcard segments
+	t.is(p.lastIndexOf(['foo', -1, 'bar']), 0);
+
+	// Wrong non-wildcard segments
+	t.is(p.lastIndexOf(['foo', -1, 'wrong']), -1);
+	t.is(p.lastIndexOf(['wrong', -1, 'bar']), -1);
+});
+
+test.serial('lastIndexOf with wildcards on both sides matches', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', -1, 'bar', '*', 'baz']);
+	t.is(p.lastIndexOf(['foo', -1]), 0);
+	t.is(p.lastIndexOf(['foo', '*']), 0);
+	t.is(p.lastIndexOf([0, 'bar']), 1);
+	t.is(p.lastIndexOf([99, 'bar']), 1);
+});
+
+test.serial('lastIndexOf finds last match with wildcards', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 0, 'bar', 1, 'bar', 2, 'bar']);
+
+	// Last occurrence of wildcard + 'bar'
+	t.is(p.lastIndexOf([-1, 'bar']), 5);
+	t.is(p.lastIndexOf(['*', 'bar']), 5);
+
+	// Compare with indexOf which finds first
+	t.is(p.indexOf([-1, 'bar']), 1);
+});
+
+test.serial('lastIndexOf with wildcards works with indices: Ignore option', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+	const p = new Pathist(['foo', 5, 'bar', 10, 'baz', 15, 'bar']);
+
+	// With wildcards AND indices ignore, should match
+	t.is(p.lastIndexOf([-1, 'bar'], { indices: Pathist.Indices.Ignore }), 5);
+	t.is(p.lastIndexOf(['*', 'bar'], { indices: Pathist.Indices.Ignore }), 5);
+
+	// Wildcards match numbers
+	t.is(p.lastIndexOf(['foo', '*'], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.lastIndexOf(['foo', -1], { indices: Pathist.Indices.Ignore }), 0);
+});
+
+test.serial('lastIndexOf wildcards disabled returns -1 when not matching exactly', (t) => {
+	Pathist.indexWildcards = [];
+	const p = new Pathist(['foo', -1, 'bar']);
+
+	// -1 should not be wildcard anymore
+	t.is(p.lastIndexOf(['foo', 0, 'bar']), -1);
+	t.is(p.lastIndexOf(['foo', -1, 'bar']), 0);
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
