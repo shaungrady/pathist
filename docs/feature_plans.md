@@ -173,6 +173,11 @@ new Pathist('items[0].items[1]').merge('items[1].name');  // → items[0].items[
 
 // No overlap if segments don't match
 new Pathist('a.b.c').merge('b.d.e');  // → a.b.c.b.d.e (b doesn't match b.c)
+
+// Wildcard handling: concrete value wins
+new Pathist('items[-1].name').merge('items[5].name.value');  // → items[5].name.value
+new Pathist('items[5].name').merge('items[-1].name.value');  // → items[5].name.value
+new Pathist('items[-1].name').merge('items[-1].name.value'); // → items[-1].name.value (both wildcards)
 ```
 
 ### Use Cases
@@ -209,3 +214,7 @@ const detail = base.concat('profile.settings');  // api.users[0].profile.setting
 - `concat()` throws TypeError for invalid inputs (null, undefined, etc.)
 - `merge()` finds the longest common overlap by checking if the suffix of the first path matches the prefix of the second path
 - `merge()` uses segment-by-segment comparison (respects the current comparison logic)
+- `merge()` wildcard handling: When overlapping segments contain wildcards, concrete values take precedence
+  - Both wildcards → preserve wildcard
+  - One wildcard, one concrete → use concrete value (concrete is more specific)
+  - Both concrete and equal → use the concrete value
