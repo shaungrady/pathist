@@ -154,6 +154,27 @@ p.concat('b', ['c'], new Pathist('d'));  // → a.b.c.d
 nodePath.concat('baz.qux');  // → children[2].children[3].baz.qux
 ```
 
+#### `merge(path: Pathist | PathInput): Pathist`
+
+Intelligently combine paths by detecting overlaps at the suffix/prefix boundary. If the end of the first path overlaps with the beginning of the second path, the overlap is deduplicated. If no overlap exists, behaves like `concat()`. Config is propagated to the new instance.
+
+**Examples:**
+
+```typescript
+// With overlap - finds longest common suffix/prefix
+new Pathist('a.b.c').merge('b.c.d');  // → a.b.c.d (overlap: b.c)
+new Pathist('a.b.c').merge('c.d.e');  // → a.b.c.d.e (overlap: c)
+
+// Without overlap - acts like concat
+new Pathist('a.b.c').merge('d.e.f');  // → a.b.c.d.e.f
+
+// Works with indices
+new Pathist('items[0].items[1]').merge('items[1].name');  // → items[0].items[1].name
+
+// No overlap if segments don't match
+new Pathist('a.b.c').merge('b.d.e');  // → a.b.c.b.d.e (b doesn't match b.c)
+```
+
 ### Use Cases
 
 **Error Path Transformation:**
@@ -182,7 +203,9 @@ const detail = base.concat('profile.settings');  // api.users[0].profile.setting
 
 ### Implementation Notes
 
-- Both methods use `cloneConfig()` to propagate instance config
+- All methods use `cloneConfig()` to propagate instance config
 - `slice()` delegates to `Array.prototype.slice` on segments
 - `concat()` uses `#toSegments()` helper to accept multiple input types
 - `concat()` throws TypeError for invalid inputs (null, undefined, etc.)
+- `merge()` finds the longest common overlap by checking if the suffix of the first path matches the prefix of the second path
+- `merge()` uses segment-by-segment comparison (respects the current comparison logic)
