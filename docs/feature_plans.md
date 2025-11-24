@@ -100,3 +100,89 @@ new Pathist('items[5].items[3].items[1]', config)
 - Config propagates through `cloneConfig()` to derived instances (e.g., `slice()`, `concat()`)
 - Returns segment indices (0-based position in segments array), not the index values themselves
 - Developer context: Users know whether they're working with a collection root vs. nested tree, so no special `-1` return value needed for "root" cases
+
+---
+
+## Path Manipulation Methods
+
+### Overview
+
+Methods for extracting sub-paths and combining paths, enabling workflows like extracting node-relative paths from absolute error paths.
+
+### Methods
+
+#### `slice(start?: number, end?: number): Pathist`
+
+Extract a sub-path using Array.prototype.slice semantics. Config is propagated to the new instance.
+
+**Examples:**
+
+```typescript
+const path = new Pathist('children[2].children[3].foo.bar');
+
+// Extract node path
+path.slice(0, 4);  // → new Pathist('children[2].children[3]')
+
+// Extract node-relative path
+path.slice(4);     // → new Pathist('foo.bar')
+
+// Negative indices
+path.slice(-2);    // → new Pathist('foo.bar')
+
+// Copy entire path
+path.slice();      // → new Pathist('children[2].children[3].foo.bar')
+```
+
+#### `concat(...paths: Array<Pathist | PathInput>): Pathist`
+
+Combine multiple paths into one. Accepts Pathist instances, strings, or arrays. Config is propagated to the new instance.
+
+**Examples:**
+
+```typescript
+const nodePath = new Pathist('children[2].children[3]');
+const relativePath = new Pathist('foo.bar');
+
+// Reconstruct absolute path
+nodePath.concat(relativePath);  // → children[2].children[3].foo.bar
+
+// Multiple arguments
+const p = new Pathist('a');
+p.concat('b', ['c'], new Pathist('d'));  // → a.b.c.d
+
+// String notation
+nodePath.concat('baz.qux');  // → children[2].children[3].baz.qux
+```
+
+### Use Cases
+
+**Error Path Transformation:**
+```typescript
+// ArkType error path: children[2].children[3].foo.bar[0].baz
+const errorPath = new Pathist(arkError.path, {
+  nodeChildrenProperties: ['children']
+});
+
+// Find node boundary
+const nodeIdx = errorPath.lastNodeIndex();  // → 3
+
+// Extract paths
+const nodePath = errorPath.slice(0, nodeIdx + 1);      // children[2].children[3]
+const relativePath = errorPath.slice(nodeIdx + 1);     // foo.bar[0].baz
+
+// Later: reconstruct if needed
+const reconstructed = nodePath.concat(relativePath);
+```
+
+**Path Building:**
+```typescript
+const base = new Pathist('api.users[0]');
+const detail = base.concat('profile.settings');  // api.users[0].profile.settings
+```
+
+### Implementation Notes
+
+- Both methods use `cloneConfig()` to propagate instance config
+- `slice()` delegates to `Array.prototype.slice` on segments
+- `concat()` uses `#toSegments()` helper to accept multiple input types
+- `concat()` throws TypeError for invalid inputs (null, undefined, etc.)
