@@ -218,3 +218,148 @@ const detail = base.concat('profile.settings');  // api.users[0].profile.setting
   - Both wildcards → preserve wildcard
   - One wildcard, one concrete → use concrete value (concrete is more specific)
   - Both concrete and equal → use the concrete value
+
+---
+
+## JSONPath Conversion (RFC 9535)
+
+### Overview
+
+Convert Pathist paths to JSONPath format (RFC 9535), enabling integration with JSONPath libraries for sophisticated object navigation including wildcard support.
+
+### Philosophy
+
+Pathist's core competency is **path manipulation**. Rather than implementing object navigation ourselves (competing with battle-tested libraries), we provide format conversion to enable composition with existing JSONPath ecosystems. This keeps Pathist focused while unlocking powerful querying capabilities.
+
+### Method
+
+#### `toJSONPath(): string`
+
+Convert the path to RFC 9535 JSONPath format.
+
+**Returns:**
+- A valid JSONPath string starting with `$`
+
+**Examples:**
+
+```typescript
+// Basic conversion
+new Pathist('users[0].name').toJSONPath();
+// → '$.users[0].name'
+
+// Wildcards are normalized to *
+new Pathist('items[-1].value').toJSONPath();
+// → '$.items[*].value'
+
+new Pathist('items[*].name').toJSONPath();
+// → '$.items[*].name'
+
+// Multiple wildcards
+new Pathist('data[*].items[*]').toJSONPath();
+// → '$.data[*].items[*]'
+
+// Nested arrays
+new Pathist('data.results[5].items[2]').toJSONPath();
+// → '$.data.results[5].items[2]'
+
+// Empty path returns root
+new Pathist('').toJSONPath();
+// → '$'
+
+// Properties requiring bracket notation
+new Pathist(['foo-bar', 'baz.qux']).toJSONPath();
+// → "$['foo-bar']['baz.qux']"
+```
+
+### Use Cases
+
+**Object Navigation with Wildcards:**
+```typescript
+import { JSONPath } from 'jsonpath-plus';
+
+const path = new Pathist('users[*].settings.theme');
+const themes = JSONPath({ path: path.toJSONPath(), json: data });
+// Returns all user theme values
+```
+
+**Simple Navigation (Lodash/etc):**
+```typescript
+import get from 'lodash/get';
+
+const path = new Pathist('api.endpoints.users[0]');
+// Lodash accepts arrays directly
+const value = get(obj, path.array);
+
+// Or use JSONPath format with libraries that expect strings
+const value2 = someLib.get(obj, path.toJSONPath());
+```
+
+**Combining Path Manipulation + Navigation:**
+```typescript
+import { JSONPath } from 'jsonpath-plus';
+
+// Build dynamic query
+const basePath = new Pathist('store.books');
+const query = basePath.concat('*', 'author').toJSONPath();
+// → '$.store.books[*].author'
+
+const authors = JSONPath({ path: query, json: data });
+```
+
+**Error Path Transformation:**
+```typescript
+// ArkType error paths → JSONPath query
+const errorPath = new Pathist(arkError.path);
+const nodeIdx = errorPath.lastNodeIndex();
+const relativePath = errorPath.slice(nodeIdx + 1);
+
+// Navigate using JSONPath
+const jsonPath = relativePath.toJSONPath();
+const value = JSONPath({ path: jsonPath, json: currentNode });
+```
+
+### JSONPath Libraries
+
+Pathist generates RFC 9535 compliant paths compatible with:
+- **jsonpath-plus**: Full RFC 9535 support, filtering, custom functions
+- **jsonpath**: Lightweight JSONPath implementation
+- **@astronautlabs/jsonpath**: TypeScript-first implementation
+
+For simple cases without wildcards, use Lodash/Ramda with `path.array`:
+```typescript
+import get from 'lodash/get';
+const value = get(obj, path.array); // More performant for basic access
+```
+
+### Implementation Notes
+
+- Prefix with `$` (JSONPath root)
+- Numeric segments → `[n]` notation
+- Wildcard segments (per `indexWildcards` config) → normalize to `[*]` (RFC 9535 wildcard selector)
+  - Pathist `[-1]`, `[*]`, or any custom wildcard → JSONPath `[*]`
+  - Only applies to wildcards in bracket notation (index position)
+- String segments with special chars → bracket notation: `['foo-bar']`
+- Simple string segments → dot notation: `.propertyName`
+- Empty path → `$`
+- Quote string values in brackets using single quotes: `['key']`
+- Escape single quotes in bracket notation: `['it\'s']`
+- Determine if string needs bracket notation by checking for chars like `-`, `.`, spaces, etc.
+
+### Prerequisite: Index Wildcard Validation
+
+**Current issue**: The parser doesn't enforce that index wildcards only appear in bracket notation. This allows ambiguous paths like `'foo.*.bar'` where `*` is configured as an index wildcard but appears in a property position.
+
+**Required fix**: Add validation during parsing to reject string segments that match `indexWildcards`. Index wildcards must only appear in bracket notation:
+
+```typescript
+// Valid - wildcard in index position
+new Pathist('foo[*].bar')  // ✅ Parsed from bracket notation
+
+// Invalid - index wildcard in property position
+new Pathist('foo.*.bar')   // ❌ Should throw: "Index wildcard '*' cannot appear in property position. Use bracket notation: foo[*].bar"
+
+// Valid - wildcard explicitly in array constructor
+new Pathist(['foo', '*', 'bar'])  // ✅ Array input bypasses string parsing
+```
+
+This validation ensures semantic clarity: index wildcards are only valid where indices would appear (in brackets), not where property names appear (in dot notation).
