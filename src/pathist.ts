@@ -578,6 +578,7 @@ export class Pathist {
 
 		const segments: PathSegment[] = [];
 		let current = '';
+		let segmentStart = 0;
 		let i = 0;
 
 		while (i < input.length) {
@@ -589,7 +590,7 @@ export class Pathist {
 					// Validate that this property segment is not an index wildcard
 					if (Pathist.#indexWildcards.has(current)) {
 						throw new Error(
-							`Index wildcard '${current}' cannot appear in property position. Use bracket notation: ${this.buildSuggestedPath(input, segments, current)}`,
+							`Index wildcard '${current}' cannot appear in property position (at index ${segmentStart})`,
 						);
 					}
 					segments.push(current);
@@ -620,18 +621,20 @@ export class Pathist {
 				if (input[i] === '.') {
 					i++;
 				}
+				segmentStart = i;
 			} else if (char === '.') {
 				if (current) {
 					// Validate that this property segment is not an index wildcard
 					if (Pathist.#indexWildcards.has(current)) {
 						throw new Error(
-							`Index wildcard '${current}' cannot appear in property position. Use bracket notation: ${this.buildSuggestedPath(input, segments, current)}`,
+							`Index wildcard '${current}' cannot appear in property position (at index ${segmentStart})`,
 						);
 					}
 					segments.push(current);
 					current = '';
 				}
 				i++;
+				segmentStart = i;
 			} else {
 				current += char;
 				i++;
@@ -643,30 +646,13 @@ export class Pathist {
 			// Validate that this property segment is not an index wildcard
 			if (Pathist.#indexWildcards.has(current)) {
 				throw new Error(
-					`Index wildcard '${current}' cannot appear in property position. Use bracket notation: ${this.buildSuggestedPath(input, segments, current)}`,
+					`Index wildcard '${current}' cannot appear in property position (at index ${segmentStart})`,
 				);
 			}
 			segments.push(current);
 		}
 
 		return segments;
-	}
-
-	private buildSuggestedPath(
-		originalInput: string,
-		parsedSegments: PathSegment[],
-		wildcardSegment: string,
-	): string {
-		// Build a suggested path by reconstructing with brackets for the wildcard
-		// This is a simple heuristic - just replace dot-notation wildcards with bracket notation
-		const parts = originalInput.split('.');
-		const fixedParts = parts.map((part) => {
-			if (Pathist.#indexWildcards.has(part)) {
-				return `[${part}]`;
-			}
-			return part;
-		});
-		return fixedParts.join('.');
 	}
 
 	private validateArray(input: PathSegment[]): void {
