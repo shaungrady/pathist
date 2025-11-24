@@ -462,6 +462,115 @@ export class Pathist {
 		return -1;
 	}
 
+	slice(start?: number, end?: number): Pathist {
+		const slicedSegments = this.segments.slice(start, end);
+		return new Pathist(slicedSegments, this.cloneConfig());
+	}
+
+	concat(...paths: Array<Pathist | PathInput>): Pathist {
+		const allSegments: PathSegment[] = [...this.segments];
+
+		for (const path of paths) {
+			const segments = Pathist.#toSegments(path);
+			if (segments === null) {
+				throw new TypeError(
+					'Invalid path input: paths must be string, array, or Pathist instance',
+				);
+			}
+			allSegments.push(...segments);
+		}
+
+		return new Pathist(allSegments, this.cloneConfig());
+	}
+
+	merge(path: Pathist | PathInput): Pathist {
+		const otherSegments = Pathist.#toSegments(path);
+		if (otherSegments === null) {
+			throw new TypeError(
+				'Invalid path input: path must be string, array, or Pathist instance',
+			);
+		}
+
+		// If either path is empty, just concatenate
+		if (this.segments.length === 0) {
+			return new Pathist(otherSegments, this.cloneConfig());
+		}
+		if (otherSegments.length === 0) {
+			return new Pathist(this.segments, this.cloneConfig());
+		}
+
+		// Find the longest overlap: suffix of this path matches prefix of other path
+		let overlapLength = 0;
+		const maxOverlap = Math.min(this.segments.length, otherSegments.length);
+
+		for (let len = maxOverlap; len > 0; len--) {
+			// Check if the last `len` segments of this path match the first `len` segments of other path
+			let match = true;
+			for (let i = 0; i < len; i++) {
+				const thisSegment = this.segments[this.segments.length - len + i];
+				const otherSegment = otherSegments[i];
+
+				// Check if segments match using wildcard-aware logic
+				const thisIsWildcard = Pathist.#isWildcard(thisSegment);
+				const otherIsWildcard = Pathist.#isWildcard(otherSegment);
+
+				if (thisIsWildcard && otherIsWildcard) {
+					// Both wildcards - match
+					continue;
+				}
+				if (thisIsWildcard || otherIsWildcard) {
+					// One wildcard, one concrete - check if concrete is a number
+					const concrete = thisIsWildcard ? otherSegment : thisSegment;
+					if (typeof concrete !== 'number') {
+						match = false;
+						break;
+					}
+					// Match, but we'll use the concrete value in the result
+					continue;
+				}
+				// Both concrete - must be equal
+				if (thisSegment !== otherSegment) {
+					match = false;
+					break;
+				}
+			}
+
+			if (match) {
+				overlapLength = len;
+				break;
+			}
+		}
+
+		// Build the merged segments
+		const mergedSegments: PathSegment[] = [...this.segments];
+
+		if (overlapLength > 0) {
+			// Replace overlapping wildcards with concrete values
+			for (let i = 0; i < overlapLength; i++) {
+				const thisSegment = this.segments[this.segments.length - overlapLength + i];
+				const otherSegment = otherSegments[i];
+
+				const thisIsWildcard = Pathist.#isWildcard(thisSegment);
+				const otherIsWildcard = Pathist.#isWildcard(otherSegment);
+
+				// If other has a concrete value and this has wildcard, use concrete
+				if (thisIsWildcard && !otherIsWildcard) {
+					mergedSegments[this.segments.length - overlapLength + i] = otherSegment;
+				}
+			}
+
+			// Add non-overlapping segments from other path
+			for (let i = overlapLength; i < otherSegments.length; i++) {
+				mergedSegments.push(otherSegments[i]);
+			}
+		} else {
+			// No overlap - just concatenate
+			mergedSegments.push(...otherSegments);
+		}
+
+		return new Pathist(mergedSegments, this.cloneConfig());
+	}
+
 	private parseString(input: string): PathSegment[] {
 		if (input === '') {
 			return [];
