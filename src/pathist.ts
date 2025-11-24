@@ -219,6 +219,58 @@ export class Pathist {
 		return content;
 	}
 
+	static #requiresBracketNotation(segment: string): boolean {
+		// Empty strings need bracket notation
+		if (segment.length === 0) {
+			return true;
+		}
+
+		// Check for characters that would break dot notation parsing
+		// - dots would be parsed as segment separators
+		// - brackets would be parsed as bracket notation
+		// - spaces for clarity (though technically parseable)
+		return segment.includes('.') || segment.includes('[') || segment.includes(']') || segment.includes(' ');
+	}
+
+	static #findClosingBracket(input: string, startIndex: number): number {
+		// Find the closing bracket, accounting for properly quoted strings
+		// startIndex should point to the '[' character
+		let i = startIndex + 1;
+
+		// Check if content starts with a quote
+		if (i < input.length && (input[i] === '"' || input[i] === "'")) {
+			const quote = input[i];
+			i++; // Skip opening quote
+
+			// Find matching closing quote (ignore any ] inside quotes)
+			while (i < input.length && input[i] !== quote) {
+				i++;
+			}
+
+			if (i < input.length && input[i] === quote) {
+				i++; // Skip closing quote
+				// Now look for ]
+				if (i < input.length && input[i] === ']') {
+					return i;
+				}
+			}
+			// No closing quote found - reset to after '[' and find first ]
+			// Let parseBracketContent handle quote validation
+			i = startIndex + 1;
+		}
+
+		// No quote or after quote - find first ]
+		while (i < input.length && input[i] !== ']') {
+			i++;
+		}
+
+		if (i < input.length && input[i] === ']') {
+			return i;
+		}
+
+		return -1;
+	}
+
 	// Instance-level config
 	#notation?: Notation;
 	#indices?: Indices;
@@ -632,8 +684,8 @@ export class Pathist {
 					current = '';
 				}
 
-				// Find closing bracket
-				const closeIndex = input.indexOf(']', i);
+				// Find closing bracket (accounting for quoted strings)
+				const closeIndex = Pathist.#findClosingBracket(input, i);
 				if (closeIndex === -1) {
 					throw new Error('Unclosed bracket in path');
 				}
@@ -693,7 +745,11 @@ export class Pathist {
 				if (Pathist.#isWildcard(segment)) {
 					return `[${segment}]`;
 				}
-				// Regular string segment
+				// Check if string requires bracket notation (dots, brackets, spaces, etc.)
+				if (Pathist.#requiresBracketNotation(segment)) {
+					return `["${segment}"]`;
+				}
+				// Regular string segment - use dot notation
 				if (index === 0) {
 					return segment;
 				}
