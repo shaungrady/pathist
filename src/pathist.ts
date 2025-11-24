@@ -179,6 +179,24 @@ export class Pathist {
 		return segL === segR;
 	}
 
+	static #validatePropertySegment(segment: string, index: number): void {
+		if (Pathist.#indexWildcards.has(segment)) {
+			throw new Error(
+				`Index wildcard '${segment}' cannot appear in property position (at index ${index})`,
+			);
+		}
+	}
+
+	static #parseBracketContent(content: string): PathSegment {
+		// Check if it's a number
+		const num = Number(content);
+		if (!Number.isNaN(num) && content === num.toString()) {
+			return num;
+		}
+		// It's a string (possibly with quotes)
+		return content.replace(/^["']|["']$/g, '');
+	}
+
 	// Instance-level config
 	#notation?: Notation;
 	#indices?: Indices;
@@ -587,12 +605,7 @@ export class Pathist {
 			if (char === '[') {
 				// Save any accumulated dot-notation segment
 				if (current) {
-					// Validate that this property segment is not an index wildcard
-					if (Pathist.#indexWildcards.has(current)) {
-						throw new Error(
-							`Index wildcard '${current}' cannot appear in property position (at index ${segmentStart})`,
-						);
-					}
+					Pathist.#validatePropertySegment(current, segmentStart);
 					segments.push(current);
 					current = '';
 				}
@@ -604,16 +617,7 @@ export class Pathist {
 				}
 
 				const bracketContent = input.slice(i + 1, closeIndex);
-
-				// Check if it's a number
-				const num = Number(bracketContent);
-				if (!Number.isNaN(num) && bracketContent === num.toString()) {
-					segments.push(num);
-				} else {
-					// It's a string (possibly with quotes)
-					const unquoted = bracketContent.replace(/^["']|["']$/g, '');
-					segments.push(unquoted);
-				}
+				segments.push(Pathist.#parseBracketContent(bracketContent));
 
 				i = closeIndex + 1;
 
@@ -624,12 +628,7 @@ export class Pathist {
 				segmentStart = i;
 			} else if (char === '.') {
 				if (current) {
-					// Validate that this property segment is not an index wildcard
-					if (Pathist.#indexWildcards.has(current)) {
-						throw new Error(
-							`Index wildcard '${current}' cannot appear in property position (at index ${segmentStart})`,
-						);
-					}
+					Pathist.#validatePropertySegment(current, segmentStart);
 					segments.push(current);
 					current = '';
 				}
@@ -643,12 +642,7 @@ export class Pathist {
 
 		// Add any remaining segment
 		if (current) {
-			// Validate that this property segment is not an index wildcard
-			if (Pathist.#indexWildcards.has(current)) {
-				throw new Error(
-					`Index wildcard '${current}' cannot appear in property position (at index ${segmentStart})`,
-				);
-			}
+			Pathist.#validatePropertySegment(current, segmentStart);
 			segments.push(current);
 		}
 
