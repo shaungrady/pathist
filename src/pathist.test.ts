@@ -611,22 +611,22 @@ test('includes handles single segment paths correctly', (t) => {
 	t.false(p.includes(['bar']));
 });
 
-// IndicesMode Default and Configuration
+// Indices Default and Configuration
 test('default indices mode is Preserve', (t) => {
-	t.is(Pathist.defaultIndicesMode, Pathist.IndicesMode.Preserve);
+	t.is(Pathist.defaultIndices, Pathist.Indices.Preserve);
 });
 
-test('defaultIndicesMode setter changes default to Ignore', (t) => {
-	const originalMode = Pathist.defaultIndicesMode;
-	Pathist.defaultIndicesMode = Pathist.IndicesMode.Ignore;
-	t.is(Pathist.defaultIndicesMode, Pathist.IndicesMode.Ignore);
+test('defaultIndices setter changes default to Ignore', (t) => {
+	const originalMode = Pathist.defaultIndices;
+	Pathist.defaultIndices = Pathist.Indices.Ignore;
+	t.is(Pathist.defaultIndices, Pathist.Indices.Ignore);
 	// Reset for other tests
-	Pathist.defaultIndicesMode = originalMode;
+	Pathist.defaultIndices = originalMode;
 });
 
-test('defaultIndicesMode setter validates mode value', (t) => {
+test('defaultIndices setter validates mode value', (t) => {
 	const error = t.throws(() => {
-		Pathist.defaultIndicesMode = 'invalid' as any;
+		Pathist.defaultIndices = 'invalid' as any;
 	}, { instanceOf: TypeError });
 	t.regex(error.message, /invalid indices mode/i);
 });
@@ -636,109 +636,109 @@ test('equals with indices: Preserve (default) - different indices do not match',
 	const p1 = new Pathist([0, 'foo', 1]);
 	const p2 = new Pathist([0, 'foo', 2]);
 	t.false(p1.equals(p2));
-	t.false(p1.equals(p2, { indices: Pathist.IndicesMode.Preserve }));
+	t.false(p1.equals(p2, { indices: Pathist.Indices.Preserve }));
 });
 
 test('equals with indices: Ignore - different indices match', (t) => {
 	const p1 = new Pathist([0, 'foo', 1]);
 	const p2 = new Pathist([0, 'foo', 2]);
 	const p3 = new Pathist([9, 'foo', 999]);
-	t.true(p1.equals(p2, { indices: Pathist.IndicesMode.Ignore }));
-	t.true(p1.equals(p3, { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p1.equals(p2, { indices: Pathist.Indices.Ignore }));
+	t.true(p1.equals(p3, { indices: Pathist.Indices.Ignore }));
 });
 
 test('equals with indices: Ignore - string segments must still match exactly', (t) => {
 	const p1 = new Pathist([0, 'foo', 1]);
 	const p2 = new Pathist([0, 'bar', 2]);
-	t.false(p1.equals(p2, { indices: Pathist.IndicesMode.Ignore }));
+	t.false(p1.equals(p2, { indices: Pathist.Indices.Ignore }));
 });
 
 test('equals with indices: Ignore - mixed number and string segments', (t) => {
 	const p1 = new Pathist([0, 'foo', 1, 'bar', 2]);
 	const p2 = new Pathist([5, 'foo', 7, 'bar', 9]);
 	const p3 = new Pathist([5, 'foo', 7, 'baz', 9]);
-	t.true(p1.equals(p2, { indices: Pathist.IndicesMode.Ignore }));
-	t.false(p1.equals(p3, { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p1.equals(p2, { indices: Pathist.Indices.Ignore }));
+	t.false(p1.equals(p3, { indices: Pathist.Indices.Ignore }));
 });
 
-test('equals respects defaultIndicesMode', (t) => {
-	const originalMode = Pathist.defaultIndicesMode;
+test('equals respects defaultIndices', (t) => {
+	const originalMode = Pathist.defaultIndices;
 	const p1 = new Pathist([0, 'foo', 1]);
 	const p2 = new Pathist([0, 'foo', 2]);
 
-	Pathist.defaultIndicesMode = Pathist.IndicesMode.Ignore;
+	Pathist.defaultIndices = Pathist.Indices.Ignore;
 	t.true(p1.equals(p2)); // Should match with Ignore mode
 
-	Pathist.defaultIndicesMode = Pathist.IndicesMode.Preserve;
+	Pathist.defaultIndices = Pathist.Indices.Preserve;
 	t.false(p1.equals(p2)); // Should not match with Preserve mode
 
 	// Reset
-	Pathist.defaultIndicesMode = originalMode;
+	Pathist.defaultIndices = originalMode;
 });
 
 // StartsWith with Indices Options
 test('startsWith with indices: Preserve - different indices do not match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
 	t.false(p.startsWith([9, 'foo']));
-	t.false(p.startsWith([9, 'foo'], { indices: Pathist.IndicesMode.Preserve }));
+	t.false(p.startsWith([9, 'foo'], { indices: Pathist.Indices.Preserve }));
 });
 
 test('startsWith with indices: Ignore - different indices match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
-	t.true(p.startsWith([9, 'foo'], { indices: Pathist.IndicesMode.Ignore }));
-	t.true(p.startsWith([999], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p.startsWith([9, 'foo'], { indices: Pathist.Indices.Ignore }));
+	t.true(p.startsWith([999], { indices: Pathist.Indices.Ignore }));
 });
 
 test('startsWith with indices: Ignore - string segments must match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
-	t.false(p.startsWith([9, 'baz'], { indices: Pathist.IndicesMode.Ignore }));
+	t.false(p.startsWith([9, 'baz'], { indices: Pathist.Indices.Ignore }));
 });
 
 // EndsWith with Indices Options
 test('endsWith with indices: Preserve - different indices do not match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
 	t.false(p.endsWith([9, 'bar']));
-	t.false(p.endsWith([9, 'bar'], { indices: Pathist.IndicesMode.Preserve }));
+	t.false(p.endsWith([9, 'bar'], { indices: Pathist.Indices.Preserve }));
 });
 
 test('endsWith with indices: Ignore - different indices match', (t) => {
 	const p1 = new Pathist([0, 'foo', 1, 'bar']);
-	t.true(p1.endsWith([9, 'bar'], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p1.endsWith([9, 'bar'], { indices: Pathist.Indices.Ignore }));
 
 	const p2 = new Pathist([0, 'foo', 1]);
-	t.true(p2.endsWith([999], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p2.endsWith([999], { indices: Pathist.Indices.Ignore }));
 });
 
 test('endsWith with indices: Ignore - string segments must match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
-	t.false(p.endsWith([9, 'baz'], { indices: Pathist.IndicesMode.Ignore }));
+	t.false(p.endsWith([9, 'baz'], { indices: Pathist.Indices.Ignore }));
 });
 
 // Includes with Indices Options
 test('includes with indices: Preserve - different indices do not match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
 	t.false(p.includes([9, 'bar']));
-	t.false(p.includes([9, 'bar'], { indices: Pathist.IndicesMode.Preserve }));
+	t.false(p.includes([9, 'bar'], { indices: Pathist.Indices.Preserve }));
 });
 
 test('includes with indices: Ignore - different indices match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
-	t.true(p.includes([9, 'bar'], { indices: Pathist.IndicesMode.Ignore }));
-	t.true(p.includes([999], { indices: Pathist.IndicesMode.Ignore }));
-	t.true(p.includes([7, 'foo', 8], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p.includes([9, 'bar'], { indices: Pathist.Indices.Ignore }));
+	t.true(p.includes([999], { indices: Pathist.Indices.Ignore }));
+	t.true(p.includes([7, 'foo', 8], { indices: Pathist.Indices.Ignore }));
 });
 
 test('includes with indices: Ignore - string segments must match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
-	t.false(p.includes([9, 'baz'], { indices: Pathist.IndicesMode.Ignore }));
+	t.false(p.includes([9, 'baz'], { indices: Pathist.Indices.Ignore }));
 });
 
 test('includes with indices: Ignore - finds subsequence anywhere', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2, 'baz']);
 	// Middle subsequence
-	t.true(p.includes([999, 'bar', 888], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p.includes([999, 'bar', 888], { indices: Pathist.Indices.Ignore }));
 	// Start subsequence
-	t.true(p.includes([777, 'foo'], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p.includes([777, 'foo'], { indices: Pathist.Indices.Ignore }));
 	// End subsequence
-	t.true(p.includes([666, 'baz'], { indices: Pathist.IndicesMode.Ignore }));
+	t.true(p.includes([666, 'baz'], { indices: Pathist.Indices.Ignore }));
 });
