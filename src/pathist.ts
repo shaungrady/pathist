@@ -15,6 +15,7 @@ export class Pathist {
 
 	static #defaultNotation: Notation = Pathist.Notation.Mixed;
 	static #defaultIndices: Indices = Pathist.Indices.Preserve;
+	static #indexWildcards: ReadonlySet<string | number> = new Set([-1, '*']);
 
 	static get defaultNotation(): Notation {
 		return Pathist.#defaultNotation;
@@ -34,6 +35,45 @@ export class Pathist {
 		Pathist.#defaultIndices = mode;
 	}
 
+	static get indexWildcards(): ReadonlySet<string | number> {
+		return Pathist.#indexWildcards;
+	}
+
+	static set indexWildcards(
+		value: ReadonlySet<string | number> | Array<string | number> | string | number,
+	) {
+		// Handle empty values - unset wildcards
+		if (
+			value === '' ||
+			(Array.isArray(value) && value.length === 0) ||
+			(value instanceof Set && value.size === 0)
+		) {
+			Pathist.#indexWildcards = new Set();
+			return;
+		}
+
+		// Get iterable values
+		let values: Iterable<string | number>;
+		if (value instanceof Set || Array.isArray(value)) {
+			values = value;
+		} else if (typeof value === 'string' || typeof value === 'number') {
+			values = [value];
+		} else {
+			throw new TypeError(
+				'indexWildcards must be a Set, Array, string, or number',
+			);
+		}
+
+		// Validate each value and build new Set
+		const validatedSet = new Set<string | number>();
+		for (const v of values) {
+			Pathist.#validateWildcard(v);
+			validatedSet.add(v);
+		}
+
+		Pathist.#indexWildcards = validatedSet;
+	}
+
 	static #validateNotation(notation: Notation): void {
 		const validNotations = Object.values(Pathist.Notation);
 		if (!validNotations.includes(notation)) {
@@ -48,6 +88,28 @@ export class Pathist {
 		if (!validModes.includes(mode)) {
 			throw new TypeError(
 				`Invalid indices mode: "${mode}". Must be one of: ${validModes.join(', ')}`,
+			);
+		}
+	}
+
+	static #validateWildcard(value: string | number): void {
+		if (typeof value === 'number') {
+			// Must be negative or non-finite
+			if (value >= 0 && Number.isFinite(value)) {
+				throw new TypeError(
+					`Invalid wildcard: ${value}. Numeric wildcards must be negative or non-finite (Infinity, -Infinity, NaN)`,
+				);
+			}
+		} else if (typeof value === 'string') {
+			// Must not be a numeric string (cannot match /^[0-9]+$/)
+			if (/^[0-9]+$/.test(value)) {
+				throw new TypeError(
+					`Invalid wildcard: "${value}". String wildcards cannot be numeric strings matching /^[0-9]+$/`,
+				);
+			}
+		} else {
+			throw new TypeError(
+				`Invalid wildcard type: ${typeof value}. Wildcards must be string or number`,
 			);
 		}
 	}
@@ -78,20 +140,38 @@ export class Pathist {
 		return null;
 	}
 
+	static #isWildcard(segment: PathSegment): boolean {
+		return Pathist.#indexWildcards.has(segment);
+	}
+
 	static #segmentsMatch(
-		seg1: PathSegment,
-		seg2: PathSegment,
+		segL: PathSegment,
+		segR: PathSegment,
 		indices: Indices,
 	): boolean {
+		const isWildcardL = Pathist.#isWildcard(segL);
+		const isWildcardR = Pathist.#isWildcard(segR);
+
+		// If either is a wildcard, it matches numbers or other wildcards
+		if (isWildcardL || isWildcardR) {
+			// Both are wildcards - match
+			if (isWildcardL && isWildcardR) {
+				return true;
+			}
+			// One is wildcard - must match a number or another wildcard
+			const nonWildcard = isWildcardL ? segR : segL;
+			return typeof nonWildcard === 'number';
+		}
+
 		// If indices should be ignored and both segments are numbers, they match
 		if (indices === Pathist.Indices.Ignore) {
-			if (typeof seg1 === 'number' && typeof seg2 === 'number') {
+			if (typeof segL === 'number' && typeof segR === 'number') {
 				return true;
 			}
 		}
 
 		// Otherwise, require exact match
-		return seg1 === seg2;
+		return segL === segR;
 	}
 
 	private readonly segments: ReadonlyArray<PathSegment>;
@@ -360,7 +440,11 @@ export class Pathist {
 				if (typeof segment === 'number') {
 					return `[${segment}]`;
 				}
-				// String segment
+				// String segment - check if wildcard
+				if (Pathist.#isWildcard(segment)) {
+					return `[${segment}]`;
+				}
+				// Regular string segment
 				if (index === 0) {
 					return segment;
 				}
@@ -373,6 +457,10 @@ export class Pathist {
 		return this.segments
 			.map((segment) => {
 				if (typeof segment === 'number') {
+					return `[${segment}]`;
+				}
+				// String segment - check if wildcard (no quotes)
+				if (Pathist.#isWildcard(segment)) {
 					return `[${segment}]`;
 				}
 				return `["${segment}"]`;
