@@ -8,13 +8,13 @@ export class Pathist {
 		Bracket: 'bracket',
 	} as const;
 
-	static readonly IndicesMode = {
+	static readonly Indices = {
 		Preserve: 'preserve',
 		Ignore: 'ignore',
 	} as const;
 
 	static #defaultNotation: Notation = Pathist.Notation.Mixed;
-	static #defaultIndicesMode: IndicesMode = Pathist.IndicesMode.Preserve;
+	static #defaultIndices: Indices = Pathist.Indices.Preserve;
 
 	static get defaultNotation(): Notation {
 		return Pathist.#defaultNotation;
@@ -25,13 +25,13 @@ export class Pathist {
 		Pathist.#defaultNotation = notation;
 	}
 
-	static get defaultIndicesMode(): IndicesMode {
-		return Pathist.#defaultIndicesMode;
+	static get defaultIndices(): Indices {
+		return Pathist.#defaultIndices;
 	}
 
-	static set defaultIndicesMode(mode: IndicesMode) {
-		Pathist.#validateIndicesMode(mode);
-		Pathist.#defaultIndicesMode = mode;
+	static set defaultIndices(mode: Indices) {
+		Pathist.#validateIndices(mode);
+		Pathist.#defaultIndices = mode;
 	}
 
 	static #validateNotation(notation: Notation): void {
@@ -43,8 +43,8 @@ export class Pathist {
 		}
 	}
 
-	static #validateIndicesMode(mode: IndicesMode): void {
-		const validModes = Object.values(Pathist.IndicesMode);
+	static #validateIndices(mode: Indices): void {
+		const validModes = Object.values(Pathist.Indices);
 		if (!validModes.includes(mode)) {
 			throw new TypeError(
 				`Invalid indices mode: "${mode}". Must be one of: ${validModes.join(', ')}`,
@@ -81,10 +81,10 @@ export class Pathist {
 	static #segmentsMatch(
 		seg1: PathSegment,
 		seg2: PathSegment,
-		indicesMode: IndicesMode,
+		indices: Indices,
 	): boolean {
 		// If indices should be ignored and both segments are numbers, they match
-		if (indicesMode === Pathist.IndicesMode.Ignore) {
+		if (indices === Pathist.Indices.Ignore) {
 			if (typeof seg1 === 'number' && typeof seg2 === 'number') {
 				return true;
 			}
@@ -171,11 +171,11 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indicesMode = options?.indices ?? Pathist.defaultIndicesMode;
+		const indices = options?.indices ?? Pathist.defaultIndices;
 
 		// Compare each segment
 		for (let i = 0; i < this.segments.length; i++) {
-			if (!Pathist.#segmentsMatch(this.segments[i], otherSegments[i], indicesMode)) {
+			if (!Pathist.#segmentsMatch(this.segments[i], otherSegments[i], indices)) {
 				return false;
 			}
 		}
@@ -200,11 +200,11 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indicesMode = options?.indices ?? Pathist.defaultIndicesMode;
+		const indices = options?.indices ?? Pathist.defaultIndices;
 
 		// Compare each segment from the start
 		for (let i = 0; i < otherSegments.length; i++) {
-			if (!Pathist.#segmentsMatch(this.segments[i], otherSegments[i], indicesMode)) {
+			if (!Pathist.#segmentsMatch(this.segments[i], otherSegments[i], indices)) {
 				return false;
 			}
 		}
@@ -229,12 +229,12 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indicesMode = options?.indices ?? Pathist.defaultIndicesMode;
+		const indices = options?.indices ?? Pathist.defaultIndices;
 
 		// Compare each segment from the end
 		const offset = this.segments.length - otherSegments.length;
 		for (let i = 0; i < otherSegments.length; i++) {
-			if (!Pathist.#segmentsMatch(this.segments[offset + i], otherSegments[i], indicesMode)) {
+			if (!Pathist.#segmentsMatch(this.segments[offset + i], otherSegments[i], indices)) {
 				return false;
 			}
 		}
@@ -259,14 +259,14 @@ export class Pathist {
 		}
 
 		// Determine indices mode
-		const indicesMode = options?.indices ?? Pathist.defaultIndicesMode;
+		const indices = options?.indices ?? Pathist.defaultIndices;
 
 		// Try to find the sequence starting at each position
 		const maxStartIndex = this.segments.length - otherSegments.length;
 		for (let start = 0; start <= maxStartIndex; start++) {
 			let found = true;
 			for (let i = 0; i < otherSegments.length; i++) {
-				if (!Pathist.#segmentsMatch(this.segments[start + i], otherSegments[i], indicesMode)) {
+				if (!Pathist.#segmentsMatch(this.segments[start + i], otherSegments[i], indices)) {
 					found = false;
 					break;
 				}
@@ -386,8 +386,8 @@ export class Pathist {
 }
 
 export type Notation = (typeof Pathist.Notation)[keyof typeof Pathist.Notation];
-export type IndicesMode = (typeof Pathist.IndicesMode)[keyof typeof Pathist.IndicesMode];
+export type Indices = (typeof Pathist.Indices)[keyof typeof Pathist.Indices];
 
 export interface ComparisonOptions {
-	indices?: IndicesMode;
+	indices?: Indices;
 }
