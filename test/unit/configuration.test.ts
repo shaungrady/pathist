@@ -24,9 +24,12 @@ test('defaultNotation setter changes default to Dot', (t) => {
 });
 
 test('defaultNotation setter validates notation value', (t) => {
-	const error = t.throws(() => {
-		Pathist.defaultNotation = 'invalid' as any;
-	}, { instanceOf: TypeError });
+	const error = t.throws(
+		() => {
+			Pathist.defaultNotation = 'invalid' as any;
+		},
+		{ instanceOf: TypeError }
+	);
 	t.regex(error.message, /invalid notation/i);
 });
 
@@ -52,9 +55,12 @@ test('defaultIndices setter changes default to Ignore', (t) => {
 });
 
 test('defaultIndices setter validates mode value', (t) => {
-	const error = t.throws(() => {
-		Pathist.defaultIndices = 'invalid' as any;
-	}, { instanceOf: TypeError });
+	const error = t.throws(
+		() => {
+			Pathist.defaultIndices = 'invalid' as any;
+		},
+		{ instanceOf: TypeError }
+	);
 	t.regex(error.message, /invalid indices mode/i);
 });
 

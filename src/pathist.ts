@@ -44,9 +44,11 @@ export class Pathist {
 		return Pathist.#indexWildcards;
 	}
 
-	static set indexWildcards(
-		value: ReadonlySet<string | number> | Array<string | number> | string | number,
-	) {
+	static set indexWildcards(value:
+		| ReadonlySet<string | number>
+		| Array<string | number>
+		| string
+		| number,) {
 		// Handle empty values - unset wildcards
 		if (
 			value === '' ||
@@ -64,9 +66,7 @@ export class Pathist {
 		} else if (typeof value === 'string' || typeof value === 'number') {
 			values = [value];
 		} else {
-			throw new TypeError(
-				'indexWildcards must be a Set, Array, string, or number',
-			);
+			throw new TypeError('indexWildcards must be a Set, Array, string, or number');
 		}
 
 		// Validate each value and build new Set
@@ -83,7 +83,7 @@ export class Pathist {
 		const validNotations = Object.values(Pathist.Notation);
 		if (!validNotations.includes(notation)) {
 			throw new TypeError(
-				`Invalid notation: "${notation}". Must be one of: ${validNotations.join(', ')}`,
+				`Invalid notation: "${notation}". Must be one of: ${validNotations.join(', ')}`
 			);
 		}
 	}
@@ -92,7 +92,7 @@ export class Pathist {
 		const validModes = Object.values(Pathist.Indices);
 		if (!validModes.includes(mode)) {
 			throw new TypeError(
-				`Invalid indices mode: "${mode}". Must be one of: ${validModes.join(', ')}`,
+				`Invalid indices mode: "${mode}". Must be one of: ${validModes.join(', ')}`
 			);
 		}
 	}
@@ -102,19 +102,19 @@ export class Pathist {
 			// Must be negative or non-finite
 			if (value >= 0 && Number.isFinite(value)) {
 				throw new TypeError(
-					`Invalid wildcard: ${value}. Numeric wildcards must be negative or non-finite (Infinity, -Infinity, NaN)`,
+					`Invalid wildcard: ${value}. Numeric wildcards must be negative or non-finite (Infinity, -Infinity, NaN)`
 				);
 			}
 		} else if (typeof value === 'string') {
 			// Must not be a numeric string (cannot match /^[0-9]+$/)
 			if (/^[0-9]+$/.test(value)) {
 				throw new TypeError(
-					`Invalid wildcard: "${value}". String wildcards cannot be numeric strings matching /^[0-9]+$/`,
+					`Invalid wildcard: "${value}". String wildcards cannot be numeric strings matching /^[0-9]+$/`
 				);
 			}
 		} else {
 			throw new TypeError(
-				`Invalid wildcard type: ${typeof value}. Wildcards must be string or number`,
+				`Invalid wildcard type: ${typeof value}. Wildcards must be string or number`
 			);
 		}
 	}
@@ -149,11 +149,7 @@ export class Pathist {
 		return Pathist.#indexWildcards.has(segment);
 	}
 
-	static #segmentsMatch(
-		segL: PathSegment,
-		segR: PathSegment,
-		indices: Indices,
-	): boolean {
+	static #segmentsMatch(segL: PathSegment, segR: PathSegment, indices: Indices): boolean {
 		const isWildcardL = Pathist.#isWildcard(segL);
 		const isWildcardR = Pathist.#isWildcard(segR);
 
@@ -182,7 +178,7 @@ export class Pathist {
 	static #validatePropertySegment(segment: string, index: number): void {
 		if (Pathist.#indexWildcards.has(segment)) {
 			throw new Error(
-				`Index wildcard '${segment}' cannot appear in property position (at index ${index})`,
+				`Index wildcard '${segment}' cannot appear in property position (at index ${index})`
 			);
 		}
 	}
@@ -197,22 +193,19 @@ export class Pathist {
 		// It's a string (possibly with quotes)
 		// Validate quote matching
 		const startsWithQuote = content[0] === '"' || content[0] === "'";
-		const endsWithQuote = content[content.length - 1] === '"' || content[content.length - 1] === "'";
+		const endsWithQuote =
+			content[content.length - 1] === '"' || content[content.length - 1] === "'";
 
 		if (startsWithQuote && endsWithQuote) {
 			// Both quoted - check if they match
 			if (content[0] !== content[content.length - 1]) {
-				throw new Error(
-					`Mismatched quotes in bracket notation: [${content}]`,
-				);
+				throw new Error(`Mismatched quotes in bracket notation: [${content}]`);
 			}
 			// Remove matching quotes
 			return content.slice(1, -1);
 		} else if (startsWithQuote || endsWithQuote) {
 			// Only one side quoted - error
-			throw new Error(
-				`Mismatched quotes in bracket notation: [${content}]`,
-			);
+			throw new Error(`Mismatched quotes in bracket notation: [${content}]`);
 		}
 
 		// No quotes - return as-is
@@ -229,7 +222,12 @@ export class Pathist {
 		// - dots would be parsed as segment separators
 		// - brackets would be parsed as bracket notation
 		// - spaces for clarity (though technically parseable)
-		return segment.includes('.') || segment.includes('[') || segment.includes(']') || segment.includes(' ');
+		return (
+			segment.includes('.') ||
+			segment.includes('[') ||
+			segment.includes(']') ||
+			segment.includes(' ')
+		);
 	}
 
 	static #needsJSONPathBracketNotation(segment: string): boolean {
@@ -610,9 +608,7 @@ export class Pathist {
 		for (const path of paths) {
 			const segments = Pathist.#toSegments(path);
 			if (segments === null) {
-				throw new TypeError(
-					'Invalid path input: paths must be string, array, or Pathist instance',
-				);
+				throw new TypeError('Invalid path input: paths must be string, array, or Pathist instance');
 			}
 			allSegments.push(...segments);
 		}
@@ -623,9 +619,7 @@ export class Pathist {
 	merge(path: Pathist | PathInput): Pathist {
 		const otherSegments = Pathist.#toSegments(path);
 		if (otherSegments === null) {
-			throw new TypeError(
-				'Invalid path input: path must be string, array, or Pathist instance',
-			);
+			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
 		}
 
 		// If either path is empty, just concatenate

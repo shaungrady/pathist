@@ -39,10 +39,7 @@ export function resetPathistDefaults(PathistClass: typeof Pathist): void {
 /**
  * Helper to create a test context with isolated configuration
  */
-export function withIsolatedConfig<T>(
-	PathistClass: typeof Pathist,
-	fn: () => T,
-): T {
+export function withIsolatedConfig<T>(PathistClass: typeof Pathist, fn: () => T): T {
 	const originalNotation = PathistClass.defaultNotation;
 	const originalIndices = PathistClass.defaultIndices;
 	const originalWildcards = PathistClass.indexWildcards;
