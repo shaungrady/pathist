@@ -116,9 +116,12 @@ for (const { input, expected, desc } of dotNotationCases) {
 
 test('toString validates notation parameter', (t) => {
 	const p = new Pathist(['foo', 'bar']);
-	const error = t.throws(() => {
-		p.toString('invalid' as any);
-	}, { instanceOf: TypeError });
+	const error = t.throws(
+		() => {
+			p.toString('invalid' as any);
+		},
+		{ instanceOf: TypeError }
+	);
 	t.regex(error.message, /invalid notation/i);
 });
 

@@ -19,7 +19,7 @@ test.serial('indexWildcards can be set with a Set', (t) => {
 	Pathist.indexWildcards = new Set([NaN, 'wild']);
 	t.deepEqual(
 		Array.from(Pathist.indexWildcards).filter((x) => typeof x === 'string'),
-		['wild'],
+		['wild']
 	);
 	// NaN requires special handling
 	t.true(Array.from(Pathist.indexWildcards).some((x) => Number.isNaN(x)));
@@ -53,7 +53,10 @@ test.serial('indexWildcards can be unset with empty values', (t) => {
 
 test.serial('indexWildcards accepts negative numbers', (t) => {
 	Pathist.indexWildcards = [-1, -2, -999];
-	t.deepEqual(Array.from(Pathist.indexWildcards).sort((a, b) => (a as number) - (b as number)), [-999, -2, -1]);
+	t.deepEqual(
+		Array.from(Pathist.indexWildcards).sort((a, b) => (a as number) - (b as number)),
+		[-999, -2, -1]
+	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
 });
@@ -80,13 +83,13 @@ test.serial('indexWildcards rejects non-negative finite numbers', (t) => {
 		() => {
 			Pathist.indexWildcards = [0];
 		},
-		{ message: /negative or non-finite/ },
+		{ message: /negative or non-finite/ }
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = [5];
 		},
-		{ message: /negative or non-finite/ },
+		{ message: /negative or non-finite/ }
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -97,19 +100,19 @@ test.serial('indexWildcards rejects numeric strings', (t) => {
 		() => {
 			Pathist.indexWildcards = ['0'];
 		},
-		{ message: /cannot be numeric strings/ },
+		{ message: /cannot be numeric strings/ }
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = ['123'];
 		},
-		{ message: /cannot be numeric strings/ },
+		{ message: /cannot be numeric strings/ }
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = ['01'];
 		},
-		{ message: /cannot be numeric strings/ },
+		{ message: /cannot be numeric strings/ }
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -127,19 +130,19 @@ test.serial('indexWildcards rejects invalid types', (t) => {
 		() => {
 			Pathist.indexWildcards = null as any;
 		},
-		{ message: /must be a Set, Array, string, or number/ },
+		{ message: /must be a Set, Array, string, or number/ }
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = undefined as any;
 		},
-		{ message: /must be a Set, Array, string, or number/ },
+		{ message: /must be a Set, Array, string, or number/ }
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = {} as any;
 		},
-		{ message: /must be a Set, Array, string, or number/ },
+		{ message: /must be a Set, Array, string, or number/ }
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -151,7 +154,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = [0, '*'];
 		},
-		{ message: /negative or non-finite/ },
+		{ message: /negative or non-finite/ }
 	);
 
 	// Arrays with numeric strings
@@ -159,7 +162,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = [-1, '123'];
 		},
-		{ message: /cannot be numeric strings/ },
+		{ message: /cannot be numeric strings/ }
 	);
 
 	// Sets with non-negative numbers
@@ -167,7 +170,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = new Set([42]);
 		},
-		{ message: /negative or non-finite/ },
+		{ message: /negative or non-finite/ }
 	);
 
 	// Sets with numeric strings
@@ -175,7 +178,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = new Set(['*', '0']);
 		},
-		{ message: /cannot be numeric strings/ },
+		{ message: /cannot be numeric strings/ }
 	);
 
 	// Reset to default
@@ -532,22 +535,19 @@ test.serial('rejects index wildcard in dot notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 
 	// Single wildcard in dot notation
-	t.throws(
-		() => new Pathist('foo.*.bar'),
-		{ message: /Index wildcard '\*' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo.*.bar'), {
+		message: /Index wildcard '\*' cannot appear in property position/,
+	});
 
 	// Wildcard at start
-	t.throws(
-		() => new Pathist('*.foo.bar'),
-		{ message: /Index wildcard '\*' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('*.foo.bar'), {
+		message: /Index wildcard '\*' cannot appear in property position/,
+	});
 
 	// Wildcard at end
-	t.throws(
-		() => new Pathist('foo.bar.*'),
-		{ message: /Index wildcard '\*' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo.bar.*'), {
+		message: /Index wildcard '\*' cannot appear in property position/,
+	});
 });
 
 test.serial('rejects numeric index wildcard in dot notation', (t) => {
@@ -569,15 +569,13 @@ test.serial('rejects numeric index wildcard in dot notation', (t) => {
 test.serial('rejects custom string wildcard in dot notation', (t) => {
 	Pathist.indexWildcards = ['**', 'wild'];
 
-	t.throws(
-		() => new Pathist('foo.**.bar'),
-		{ message: /Index wildcard '\*\*' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo.**.bar'), {
+		message: /Index wildcard '\*\*' cannot appear in property position/,
+	});
 
-	t.throws(
-		() => new Pathist('foo.wild.bar'),
-		{ message: /Index wildcard 'wild' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo.wild.bar'), {
+		message: /Index wildcard 'wild' cannot appear in property position/,
+	});
 
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -612,15 +610,13 @@ test.serial('rejects multiple wildcards in mixed notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 
 	// Mixed notation with wildcard in property position should fail
-	t.throws(
-		() => new Pathist('foo.*.bar[0]'),
-		{ message: /Index wildcard '\*' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo.*.bar[0]'), {
+		message: /Index wildcard '\*' cannot appear in property position/,
+	});
 
-	t.throws(
-		() => new Pathist('foo[0].*.bar'),
-		{ message: /Index wildcard '\*' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo[0].*.bar'), {
+		message: /Index wildcard '\*' cannot appear in property position/,
+	});
 
 	// But bracket notation wildcards are fine
 	t.notThrows(() => new Pathist('foo[*].bar[0]'));
@@ -632,10 +628,9 @@ test.serial('validation respects current wildcard configuration', (t) => {
 	Pathist.indexWildcards = ['custom'];
 
 	// 'custom' should be rejected in dot notation
-	t.throws(
-		() => new Pathist('foo.custom.bar'),
-		{ message: /Index wildcard 'custom' cannot appear in property position/ },
-	);
+	t.throws(() => new Pathist('foo.custom.bar'), {
+		message: /Index wildcard 'custom' cannot appear in property position/,
+	});
 
 	// But '*' should be allowed (no longer a wildcard)
 	t.notThrows(() => new Pathist('foo.*.bar'));

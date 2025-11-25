@@ -18,7 +18,7 @@ test('parses bracket notation with quoted strings', (t) => {
 });
 
 test('parses bracket notation with single-quoted strings', (t) => {
-	const p = new Pathist("[\'foo\'][\'bar\']");
+	const p = new Pathist("['foo']['bar']");
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
@@ -47,20 +47,17 @@ test('round-trip: parse and render string wildcard', (t) => {
 
 // Parameterized Quote Validation Tests
 const mismatchedQuoteCases = [
-	{ input: "foo[\'bar\"]", desc: 'single to double' },
+	{ input: 'foo[\'bar"]', desc: 'single to double' },
 	{ input: 'foo["bar\']', desc: 'double to single' },
 	{ input: 'foo["bar]', desc: 'opening double quote without closing' },
-	{ input: "foo[\'bar]", desc: 'opening single quote without closing' },
+	{ input: "foo['bar]", desc: 'opening single quote without closing' },
 	{ input: 'foo[bar"]', desc: 'closing double quote without opening' },
-	{ input: "foo[bar\']", desc: 'closing single quote without opening' },
+	{ input: "foo[bar']", desc: 'closing single quote without opening' },
 ];
 
 for (const { input, desc } of mismatchedQuoteCases) {
 	test(`rejects mismatched quotes: ${desc}`, (t) => {
-		t.throws(
-			() => new Pathist(input),
-			{ message: /mismatched quotes/i },
-		);
+		t.throws(() => new Pathist(input), { message: /mismatched quotes/i });
 	});
 }
 
@@ -206,10 +203,7 @@ const errorCases = [
 
 for (const { input, error, desc } of errorCases) {
 	test(`throws error: ${desc}`, (t) => {
-		t.throws(
-			() => new Pathist(input),
-			{ message: error },
-		);
+		t.throws(() => new Pathist(input), { message: error });
 	});
 }
 
