@@ -137,7 +137,7 @@ const lastNodePositionCases = [
 	},
 	{
 		input: '[0]',
-		expected: -1,
+		expected: 0,
 		desc: 'single root node',
 	},
 	{
@@ -205,7 +205,7 @@ const nodeIndicesCases = [
 	},
 	{
 		input: '[7]',
-		expected: [],
+		expected: [7],
 		desc: 'single root node',
 	},
 	{

@@ -1175,12 +1175,17 @@ export class Pathist {
 	firstNodePosition(): number {
 		// Find the first numeric index in the path that represents a tree node.
 		// A valid tree node must be either:
-		// 1. Preceded by a children property: childrenProp[index]
-		// 2. Followed by a children property: [index].childrenProp
-		// Without one of these, we can't definitively identify it as a tree node.
+		// 1. At the root (position 0) - assume it's a tree node
+		// 2. Preceded by a children property: childrenProp[index]
+		// 3. Followed by a children property: [index].childrenProp
 
 		for (let i = 0; i < this.segments.length; i++) {
 			if (typeof this.segments[i] === 'number') {
+				// Root-level index - assume it's a tree node
+				if (i === 0) {
+					return i;
+				}
+
 				// Check if preceded by a children property
 				if (i > 0) {
 					const prevSegment = this.segments[i - 1];
