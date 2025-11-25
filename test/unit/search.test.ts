@@ -322,3 +322,247 @@ test('lastPositionOf with multiple matches returns last position', (t) => {
 	t.is(p.lastPositionOf(['foo']), 5);
 	t.is(p.positionOf(['foo']), 1); // Verify positionOf returns first
 });
+
+// pathTo Method
+test('pathTo returns path including first match', (t) => {
+	const p = new Pathist('foo.bar.baz.bar.qux');
+	const result = p.pathTo('bar');
+	t.deepEqual(result.toArray(), ['foo', 'bar']);
+});
+
+// Parameterized pathTo tests
+const pathToCases = [
+	{
+		path: 'foo.bar.baz.bar.qux',
+		search: 'bar',
+		expected: ['foo', 'bar'],
+		desc: 'single segment - first occurrence',
+	},
+	{
+		path: 'foo.bar.baz.bar.qux',
+		search: 'bar.baz',
+		expected: ['foo', 'bar', 'baz'],
+		desc: 'multi-segment sequence',
+	},
+	{
+		path: 'foo.bar.baz.qux',
+		search: 'foo',
+		expected: ['foo'],
+		desc: 'match at beginning',
+	},
+	{
+		path: 'foo.bar.baz.qux',
+		search: 'qux',
+		expected: ['foo', 'bar', 'baz', 'qux'],
+		desc: 'match at end',
+	},
+	{
+		path: 'foo.bar.baz.qux',
+		search: 'foo.bar.baz.qux',
+		expected: ['foo', 'bar', 'baz', 'qux'],
+		desc: 'match entire path',
+	},
+	{
+		path: [0, 'foo', 1, 'bar', 2],
+		search: ['foo', 1],
+		expected: [0, 'foo', 1],
+		desc: 'array segments in middle',
+	},
+	{
+		path: [0, 'foo', 1, 'bar', 2],
+		search: [0],
+		expected: [0],
+		desc: 'single array segment at start',
+	},
+	{
+		path: 'foo.bar.baz',
+		search: 'notfound',
+		expected: [],
+		desc: 'not found returns empty path',
+	},
+	{
+		path: 'foo.bar.baz',
+		search: 'bar.qux',
+		expected: [],
+		desc: 'partial match returns empty path',
+	},
+];
+
+for (const { path, search, expected, desc } of pathToCases) {
+	test(`pathTo: ${desc}`, (t) => {
+		const p = new Pathist(path);
+		const result = p.pathTo(search);
+		t.deepEqual(result.toArray(), expected);
+	});
+}
+
+test('pathTo accepts different input types', (t) => {
+	const p = new Pathist('foo.bar.baz.bar.qux');
+
+	// String input
+	t.deepEqual(p.pathTo('bar').toArray(), ['foo', 'bar']);
+
+	// Array input
+	t.deepEqual(p.pathTo(['bar']).toArray(), ['foo', 'bar']);
+
+	// Pathist input
+	t.deepEqual(p.pathTo(new Pathist('bar')).toArray(), ['foo', 'bar']);
+});
+
+test('pathTo with empty search returns empty path', (t) => {
+	const p = new Pathist('foo.bar.baz');
+	t.deepEqual(p.pathTo('').toArray(), []);
+	t.deepEqual(p.pathTo([]).toArray(), []);
+});
+
+test('pathTo on empty path returns empty path', (t) => {
+	const p = new Pathist('');
+	t.deepEqual(p.pathTo('foo').toArray(), []);
+	t.deepEqual(p.pathTo([]).toArray(), []);
+});
+
+test('pathTo throws on invalid input', (t) => {
+	const p = new Pathist('foo.bar');
+	t.throws(() => p.pathTo(null as any), { instanceOf: TypeError });
+	t.throws(() => p.pathTo(undefined as any), { instanceOf: TypeError });
+	t.throws(() => p.pathTo(123 as any), { instanceOf: TypeError });
+});
+
+test('pathTo preserves instance config', (t) => {
+	const p = new Pathist('foo.bar.baz', { notation: 'bracket' });
+	const result = p.pathTo('bar');
+	t.is(result.toString(), '["foo"]["bar"]');
+});
+
+test('pathTo returns first match when multiple exist', (t) => {
+	const p = new Pathist(['foo', 'bar', 'foo', 'baz', 'foo']);
+	const result = p.pathTo('foo');
+	t.deepEqual(result.toArray(), ['foo']);
+});
+
+// pathToLast Method
+test('pathToLast returns path including last match', (t) => {
+	const p = new Pathist('foo.bar.baz.bar.qux');
+	const result = p.pathToLast('bar');
+	t.deepEqual(result.toArray(), ['foo', 'bar', 'baz', 'bar']);
+});
+
+// Parameterized pathToLast tests
+const pathToLastCases = [
+	{
+		path: 'foo.bar.baz.bar.qux',
+		search: 'bar',
+		expected: ['foo', 'bar', 'baz', 'bar'],
+		desc: 'single segment - last occurrence',
+	},
+	{
+		path: 'foo.bar.baz.bar.qux',
+		search: 'bar.baz',
+		expected: ['foo', 'bar', 'baz'],
+		desc: 'multi-segment sequence (only one match)',
+	},
+	{
+		path: 'foo.bar.baz.qux',
+		search: 'foo',
+		expected: ['foo'],
+		desc: 'match at beginning (only one)',
+	},
+	{
+		path: 'foo.bar.baz.qux',
+		search: 'qux',
+		expected: ['foo', 'bar', 'baz', 'qux'],
+		desc: 'match at end',
+	},
+	{
+		path: 'foo.bar.baz.qux',
+		search: 'foo.bar.baz.qux',
+		expected: ['foo', 'bar', 'baz', 'qux'],
+		desc: 'match entire path',
+	},
+	{
+		path: [0, 'foo', 1, 'foo', 2, 'foo', 3],
+		search: ['foo'],
+		expected: [0, 'foo', 1, 'foo', 2, 'foo'],
+		desc: 'last of multiple matches in array',
+	},
+	{
+		path: ['a', 'b', 'a', 'b', 'a', 'b'],
+		search: ['a', 'b'],
+		expected: ['a', 'b', 'a', 'b', 'a', 'b'],
+		desc: 'last occurrence of repeating pattern',
+	},
+	{
+		path: 'foo.bar.baz',
+		search: 'notfound',
+		expected: [],
+		desc: 'not found returns empty path',
+	},
+	{
+		path: 'foo.bar.baz',
+		search: 'bar.qux',
+		expected: [],
+		desc: 'partial match returns empty path',
+	},
+];
+
+for (const { path, search, expected, desc } of pathToLastCases) {
+	test(`pathToLast: ${desc}`, (t) => {
+		const p = new Pathist(path);
+		const result = p.pathToLast(search);
+		t.deepEqual(result.toArray(), expected);
+	});
+}
+
+test('pathToLast accepts different input types', (t) => {
+	const p = new Pathist('foo.bar.baz.bar.qux');
+
+	// String input
+	t.deepEqual(p.pathToLast('bar').toArray(), ['foo', 'bar', 'baz', 'bar']);
+
+	// Array input
+	t.deepEqual(p.pathToLast(['bar']).toArray(), ['foo', 'bar', 'baz', 'bar']);
+
+	// Pathist input
+	t.deepEqual(p.pathToLast(new Pathist('bar')).toArray(), ['foo', 'bar', 'baz', 'bar']);
+});
+
+test('pathToLast with empty search returns empty path', (t) => {
+	const p = new Pathist('foo.bar.baz');
+	t.deepEqual(p.pathToLast('').toArray(), []);
+	t.deepEqual(p.pathToLast([]).toArray(), []);
+});
+
+test('pathToLast on empty path returns empty path', (t) => {
+	const p = new Pathist('');
+	t.deepEqual(p.pathToLast('foo').toArray(), []);
+	t.deepEqual(p.pathToLast([]).toArray(), []);
+});
+
+test('pathToLast throws on invalid input', (t) => {
+	const p = new Pathist('foo.bar');
+	t.throws(() => p.pathToLast(null as any), { instanceOf: TypeError });
+	t.throws(() => p.pathToLast(undefined as any), { instanceOf: TypeError });
+	t.throws(() => p.pathToLast(123 as any), { instanceOf: TypeError });
+});
+
+test('pathToLast preserves instance config', (t) => {
+	const p = new Pathist('foo.bar.baz.bar', { notation: 'bracket' });
+	const result = p.pathToLast('bar');
+	t.is(result.toString(), '["foo"]["bar"]["baz"]["bar"]');
+});
+
+test('pathToLast returns last match when multiple exist', (t) => {
+	const p = new Pathist(['foo', 'bar', 'foo', 'baz', 'foo']);
+	const result = p.pathToLast('foo');
+	t.deepEqual(result.toArray(), ['foo', 'bar', 'foo', 'baz', 'foo']);
+});
+
+test('pathTo vs pathToLast with multiple matches', (t) => {
+	const p = new Pathist('a.b.c.b.d.b.e');
+
+	// pathTo returns first match
+	t.deepEqual(p.pathTo('b').toArray(), ['a', 'b']);
+
+	// pathToLast returns last match
+	t.deepEqual(p.pathToLast('b').toArray(), ['a', 'b', 'c', 'b', 'd', 'b']);
+});

@@ -655,6 +655,83 @@ export class Pathist {
 		return -1;
 	}
 
+	/**
+	 * Returns the path up to and including the first occurrence of the specified path segment sequence.
+	 *
+	 * This method searches for the first match of the provided path within this path and returns
+	 * a new Pathist instance containing all segments from the start up to and including the match.
+	 *
+	 * @param other - The path segment sequence to search for (can be a Pathist instance, string, or array)
+	 * @param options - Optional comparison options (e.g., indices mode)
+	 * @returns A new Pathist instance containing the path up to and including the first match,
+	 *          or an empty path if no match is found
+	 *
+	 * @example
+	 * ```typescript
+	 * const p = new Pathist('foo.bar.baz.bar.qux');
+	 * p.pathTo('bar').toString();        // 'foo.bar'
+	 * p.pathTo('bar.baz').toString();    // 'foo.bar.baz'
+	 * p.pathTo('notfound').toString();   // ''
+	 * ```
+	 */
+	pathTo(other: Pathist | PathInput, options?: ComparisonOptions): Pathist {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
+		}
+
+		const position = this.positionOf(other, options);
+
+		// If not found, return empty path
+		if (position === -1) {
+			return new Pathist('', this.cloneConfig());
+		}
+
+		// Return path up to and including the match
+		return this.slice(0, position + otherSegments.length);
+	}
+
+	/**
+	 * Returns the path up to and including the last occurrence of the specified path segment sequence.
+	 *
+	 * This method searches for the last match of the provided path within this path and returns
+	 * a new Pathist instance containing all segments from the start up to and including the last match.
+	 *
+	 * @param other - The path segment sequence to search for (can be a Pathist instance, string, or array)
+	 * @param options - Optional comparison options (e.g., indices mode)
+	 * @returns A new Pathist instance containing the path up to and including the last match,
+	 *          or an empty path if no match is found
+	 *
+	 * @example
+	 * ```typescript
+	 * const p = new Pathist('foo.bar.baz.bar.qux');
+	 * p.pathToLast('bar').toString();        // 'foo.bar.baz.bar'
+	 * p.pathToLast('bar.baz').toString();    // 'foo.bar.baz'
+	 * p.pathToLast('notfound').toString();   // ''
+	 * ```
+	 */
+	pathToLast(other: Pathist | PathInput, options?: ComparisonOptions): Pathist {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
+		}
+
+		// Empty path search returns empty path
+		if (otherSegments.length === 0) {
+			return new Pathist('', this.cloneConfig());
+		}
+
+		const position = this.lastPositionOf(other, options);
+
+		// If not found, return empty path
+		if (position === -1) {
+			return new Pathist('', this.cloneConfig());
+		}
+
+		// Return path up to and including the match
+		return this.slice(0, position + otherSegments.length);
+	}
+
 	slice(start?: number, end?: number): Pathist {
 		const slicedSegments = this.segments.slice(start, end);
 		return new Pathist(slicedSegments, this.cloneConfig());
