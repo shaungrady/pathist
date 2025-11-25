@@ -72,6 +72,52 @@ pnpm test test/unit/constructor.test.ts
 
 ## Writing New Tests
 
+### Prefer Parametric Tests
+
+**Always prefer parametric (data-driven) tests** over repetitive individual test cases:
+
+```typescript
+// ✅ Good: Parametric approach
+const equalsCases = [
+  { p1: [0, 'foo'], p2: [0, 'foo'], expected: true, desc: 'identical arrays' },
+  { p1: [0, 'foo'], p2: [0, 'bar'], expected: false, desc: 'different values' },
+  { p1: [0, 'foo'], p2: [0, 'foo', 1], expected: false, desc: 'different lengths' },
+];
+
+for (const { p1, p2, expected, desc } of equalsCases) {
+  test(`equals: ${desc}`, (t) => {
+    t.is(new Pathist(p1).equals(p2), expected);
+  });
+}
+
+// ❌ Avoid: Repetitive individual tests
+test('equals returns true for identical arrays', (t) => {
+  const p1 = new Pathist([0, 'foo']);
+  const p2 = new Pathist([0, 'foo']);
+  t.true(p1.equals(p2));
+});
+
+test('equals returns false for different values', (t) => {
+  const p1 = new Pathist([0, 'foo']);
+  const p2 = new Pathist([0, 'bar']);
+  t.false(p1.equals(p2));
+});
+```
+
+**Benefits:**
+- Easier to add new test cases (just add to the array)
+- Reduces code duplication and boilerplate
+- Makes test patterns more visible
+- Improves maintainability
+
+**When to use:**
+- Testing similar behavior with different inputs
+- Error validation with multiple invalid cases
+- Round-trip or transformation tests
+- Any time you find yourself copy-pasting test code
+
+**Examples:** See `test/unit/parsing.test.ts` for comprehensive parametric test patterns.
+
 ### Adding Unit Tests
 Place unit tests in the appropriate file based on the method being tested:
 - Constructor/validation → `test/unit/constructor.test.ts`
