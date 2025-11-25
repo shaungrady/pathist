@@ -13,6 +13,7 @@
 		"format": "biome format --write .",
 		"check": "biome check --write .",
 		"ci": "biome ci . && tsc --noEmit && ava",
+		"docs": "typedoc",
 		"prepare": "husky"
 	},
 	"keywords": [],
@@ -25,6 +26,7 @@
 		"ava": "^6.4.1",
 		"husky": "^9.1.7",
 		"tsx": "^4.20.6",
+		"typedoc": "^0.28.14",
 		"typescript": "^5.9.3"
 	},
 	"ava": {

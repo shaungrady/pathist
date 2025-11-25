@@ -1,19 +1,83 @@
+/**
+ * A single segment in a path, either a string property name or a numeric index.
+ */
 type PathSegment = string | number;
+
+/**
+ * Valid input types for constructing a Pathist instance.
+ * Can be a path string (e.g., "foo.bar"), an array of segments, or an existing Pathist instance.
+ */
 type PathInput = string | PathSegment[];
 
+/**
+ * Configuration options for creating a Pathist instance.
+ */
 export interface PathistConfig {
+	/**
+	 * The notation style to use when converting the path to a string.
+	 * @defaultValue The global `Pathist.defaultNotation` setting
+	 */
 	notation?: Notation;
+
+	/**
+	 * How to handle numeric indices during path comparisons.
+	 * - `'Preserve'`: Indices must match exactly
+	 * - `'Ignore'`: Any numeric index matches any other numeric index
+	 * @defaultValue The global `Pathist.defaultIndices` setting
+	 */
 	indices?: Indices;
+
+	/**
+	 * Property name(s) that contain child nodes in tree structures.
+	 * Used by node-related methods to identify tree relationships.
+	 * @defaultValue The global `Pathist.defaultNodeChildrenProperties` setting
+	 */
 	nodeChildrenProperties?: ReadonlySet<string> | string[] | string;
 }
 
+/**
+ * A path utility class for parsing, manipulating, and comparing object property paths.
+ *
+ * Pathist provides a comprehensive API for working with property paths in JavaScript objects.
+ * It supports multiple notation styles (dot, bracket, and mixed), handles numeric indices,
+ * and offers powerful comparison and manipulation methods.
+ *
+ * @example
+ * Basic usage
+ * ```typescript
+ * const path = new Pathist('foo.bar.baz');
+ * console.log(path.length); // 3
+ * console.log(path.toArray()); // ['foo', 'bar', 'baz']
+ * ```
+ *
+ * @example
+ * Path comparison
+ * ```typescript
+ * const path1 = new Pathist('foo.bar');
+ * const path2 = new Pathist('foo.bar.baz');
+ * console.log(path2.startsWith(path1)); // true
+ * ```
+ */
 export class Pathist {
+	/**
+	 * Notation styles for converting paths to strings.
+	 *
+	 * - `Mixed`: Combines dot notation for properties and bracket notation for indices (e.g., `foo.bar[0].baz`)
+	 * - `Dot`: Uses dot notation exclusively (e.g., `foo.bar.0.baz`)
+	 * - `Bracket`: Uses bracket notation exclusively (e.g., `["foo"]["bar"][0]["baz"]`)
+	 */
 	static readonly Notation = {
 		Mixed: 'Mixed',
 		Dot: 'Dot',
 		Bracket: 'Bracket',
 	} as const;
 
+	/**
+	 * Modes for handling numeric indices during path comparisons.
+	 *
+	 * - `Preserve`: Numeric indices must match exactly for paths to be considered equal
+	 * - `Ignore`: Any numeric index matches any other numeric index (useful for comparing paths across different array positions)
+	 */
 	static readonly Indices = {
 		Preserve: 'Preserve',
 		Ignore: 'Ignore',
@@ -24,28 +88,67 @@ export class Pathist {
 	static #indexWildcards: ReadonlySet<string | number> = new Set([-1, '*']);
 	static #defaultNodeChildrenProperties: ReadonlySet<string> = new Set(['children']);
 
+	/**
+	 * Gets the default notation style used when converting paths to strings.
+	 *
+	 * @defaultValue `Pathist.Notation.Mixed`
+	 */
 	static get defaultNotation(): Notation {
 		return Pathist.#defaultNotation;
 	}
 
+	/**
+	 * Sets the default notation style for all new Pathist instances.
+	 *
+	 * @param notation - The notation style to use as default
+	 * @throws {TypeError} If the notation value is invalid
+	 */
 	static set defaultNotation(notation: Notation) {
 		Pathist.#validateNotation(notation);
 		Pathist.#defaultNotation = notation;
 	}
 
+	/**
+	 * Gets the default indices comparison mode.
+	 *
+	 * @defaultValue `Pathist.Indices.Preserve`
+	 */
 	static get defaultIndices(): Indices {
 		return Pathist.#defaultIndices;
 	}
 
+	/**
+	 * Sets the default indices comparison mode for all new Pathist instances.
+	 *
+	 * @param mode - The indices mode to use as default
+	 * @throws {TypeError} If the indices mode is invalid
+	 */
 	static set defaultIndices(mode: Indices) {
 		Pathist.#validateIndices(mode);
 		Pathist.#defaultIndices = mode;
 	}
 
+	/**
+	 * Gets the set of values that are treated as index wildcards.
+	 *
+	 * Wildcard values match any numeric index during comparisons.
+	 *
+	 * @defaultValue `Set([-1, '*'])`
+	 */
 	static get indexWildcards(): ReadonlySet<string | number> {
 		return Pathist.#indexWildcards;
 	}
 
+	/**
+	 * Sets the values that should be treated as index wildcards.
+	 *
+	 * Wildcard values can be:
+	 * - Negative numbers or non-finite numbers (Infinity, -Infinity, NaN)
+	 * - Strings that don't match the pattern `/^[0-9]+$/`
+	 *
+	 * @param value - A Set, Array, or single string/number value to use as wildcards
+	 * @throws {TypeError} If any wildcard value is invalid (e.g., positive finite number or numeric string)
+	 */
 	static set indexWildcards(value:
 		| ReadonlySet<string | number>
 		| Array<string | number>
@@ -81,10 +184,23 @@ export class Pathist {
 		Pathist.#indexWildcards = validatedSet;
 	}
 
+	/**
+	 * Gets the default property names that contain child nodes in tree structures.
+	 *
+	 * These properties are used by node-related methods to identify and traverse tree relationships.
+	 *
+	 * @defaultValue `Set(['children'])`
+	 */
 	static get defaultNodeChildrenProperties(): ReadonlySet<string> {
 		return Pathist.#defaultNodeChildrenProperties;
 	}
 
+	/**
+	 * Sets the default property names that should be treated as node children properties.
+	 *
+	 * @param value - A Set, Array, or single string value representing property names
+	 * @throws {TypeError} If the value is not a Set, Array, or string, or if any value is not a string
+	 */
 	static set defaultNodeChildrenProperties(value: ReadonlySet<string> | string[] | string) {
 		// Handle empty values - unset properties
 		if (
@@ -349,17 +465,40 @@ export class Pathist {
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
 
+	/**
+	 * The number of segments in this path.
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz');
+	 * console.log(path.length); // 3
+	 * ```
+	 */
 	readonly length: number;
 
-	// Instance getters that resolve: instance → static default
+	/**
+	 * Gets the notation style for this instance.
+	 *
+	 * Returns the instance-specific notation if set, otherwise returns the global default.
+	 */
 	get notation(): Notation {
 		return this.#notation ?? Pathist.defaultNotation;
 	}
 
+	/**
+	 * Gets the indices comparison mode for this instance.
+	 *
+	 * Returns the instance-specific mode if set, otherwise returns the global default.
+	 */
 	get indices(): Indices {
 		return this.#indices ?? Pathist.defaultIndices;
 	}
 
+	/**
+	 * Gets the node children properties for this instance.
+	 *
+	 * Returns the instance-specific properties if set, otherwise returns the global default.
+	 */
 	get nodeChildrenProperties(): ReadonlySet<string> {
 		return this.#nodeChildrenProperties ?? Pathist.defaultNodeChildrenProperties;
 	}
@@ -373,6 +512,36 @@ export class Pathist {
 		};
 	}
 
+	/**
+	 * Creates a new Pathist instance from a string, array, or existing Pathist.
+	 *
+	 * @param input - The path input (string like "foo.bar", array like ['foo', 'bar'], or Pathist instance)
+	 * @param config - Optional configuration for notation, indices mode, and node children properties
+	 *
+	 * @throws {Error} If the string path contains syntax errors (unclosed brackets, mismatched quotes, etc.)
+	 * @throws {TypeError} If array segments contain invalid types (must be string or number)
+	 *
+	 * @example
+	 * From string
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz');
+	 * ```
+	 *
+	 * @example
+	 * From array
+	 * ```typescript
+	 * const path = new Pathist(['foo', 'bar', 0, 'baz']);
+	 * ```
+	 *
+	 * @example
+	 * With custom configuration
+	 * ```typescript
+	 * const path = new Pathist('foo.bar', {
+	 *   notation: Pathist.Notation.Bracket,
+	 *   indices: Pathist.Indices.Ignore
+	 * });
+	 * ```
+	 */
 	constructor(input: PathInput, config?: PathistConfig) {
 		this.#notation = config?.notation;
 		this.#indices = config?.indices;
@@ -399,15 +568,62 @@ export class Pathist {
 		this.length = this.segments.length;
 	}
 
+	/**
+	 * Returns the path as an array of segments.
+	 *
+	 * Returns a copy of the internal segments array to maintain immutability.
+	 *
+	 * @returns A new array containing all path segments
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar[0].baz');
+	 * console.log(path.toArray()); // ['foo', 'bar', 0, 'baz']
+	 * ```
+	 */
 	toArray(): PathSegment[] {
 		// Return a copy to maintain immutability
 		return [...this.segments];
 	}
 
+	/**
+	 * Gets the path as an array of segments.
+	 *
+	 * Alias for {@link toArray}.
+	 */
 	get array(): PathSegment[] {
 		return this.toArray();
 	}
 
+	/**
+	 * Converts the path to a string representation using the specified notation.
+	 *
+	 * Results are cached for performance. The notation parameter allows overriding
+	 * the instance's default notation on a per-call basis.
+	 *
+	 * @param notation - Optional notation style to use (overrides instance default)
+	 * @returns The path as a string
+	 * @throws {TypeError} If the notation value is invalid
+	 *
+	 * @example
+	 * Default notation (Mixed)
+	 * ```typescript
+	 * const path = new Pathist(['foo', 'bar', 0, 'baz']);
+	 * console.log(path.toString()); // 'foo.bar[0].baz'
+	 * ```
+	 *
+	 * @example
+	 * Bracket notation
+	 * ```typescript
+	 * console.log(path.toString(Pathist.Notation.Bracket)); // '["foo"]["bar"][0]["baz"]'
+	 * ```
+	 *
+	 * @example
+	 * Dot notation
+	 * ```typescript
+	 * console.log(path.toString(Pathist.Notation.Dot)); // 'foo.bar.0.baz'
+	 * ```
+	 */
 	toString(notation?: Notation): string {
 		const resolved = notation ?? this.notation;
 		Pathist.#validateNotation(resolved);
@@ -441,10 +657,44 @@ export class Pathist {
 		return result;
 	}
 
+	/**
+	 * Gets the path as a string using the instance's default notation.
+	 *
+	 * Alias for {@link toString} with no arguments.
+	 */
 	get string(): string {
 		return this.toString();
 	}
 
+	/**
+	 * Converts the path to JSONPath format (RFC 9535).
+	 *
+	 * JSONPath is a standardized query language for JSON. This method converts
+	 * the path to a JSONPath selector string starting with `$` (the root).
+	 *
+	 * @returns The path as a JSONPath string
+	 *
+	 * @example
+	 * Basic usage
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz');
+	 * console.log(path.toJSONPath()); // '$.foo.bar.baz'
+	 * ```
+	 *
+	 * @example
+	 * With numeric indices
+	 * ```typescript
+	 * const path = new Pathist('items[0].name');
+	 * console.log(path.toJSONPath()); // '$.items[0].name'
+	 * ```
+	 *
+	 * @example
+	 * With wildcards
+	 * ```typescript
+	 * const path = new Pathist('items[*].name');
+	 * console.log(path.toJSONPath()); // '$.items[*].name'
+	 * ```
+	 */
 	toJSONPath(): string {
 		// Empty path returns root
 		if (this.segments.length === 0) {
@@ -478,10 +728,56 @@ export class Pathist {
 		return result;
 	}
 
+	/**
+	 * Makes the Pathist instance iterable, allowing use in for...of loops and spread operators.
+	 *
+	 * @returns An iterator over the path segments
+	 *
+	 * @example
+	 * Using for...of
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz');
+	 * for (const segment of path) {
+	 *   console.log(segment); // 'foo', 'bar', 'baz'
+	 * }
+	 * ```
+	 *
+	 * @example
+	 * Using spread operator
+	 * ```typescript
+	 * const segments = [...path]; // ['foo', 'bar', 'baz']
+	 * ```
+	 */
 	*[Symbol.iterator](): Iterator<PathSegment> {
 		yield* this.segments;
 	}
 
+	/**
+	 * Checks if this path is equal to another path.
+	 *
+	 * Two paths are equal if they have the same length and all corresponding segments match.
+	 * The indices option controls how numeric indices are compared.
+	 *
+	 * @param other - The path to compare against
+	 * @param options - Optional comparison options
+	 * @returns `true` if the paths are equal, `false` otherwise
+	 *
+	 * @example
+	 * Exact comparison (default)
+	 * ```typescript
+	 * const path1 = new Pathist('foo[0].bar');
+	 * const path2 = new Pathist('foo[0].bar');
+	 * console.log(path1.equals(path2)); // true
+	 * ```
+	 *
+	 * @example
+	 * Ignoring indices
+	 * ```typescript
+	 * const path1 = new Pathist('foo[0].bar');
+	 * const path2 = new Pathist('foo[5].bar');
+	 * console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
+	 * ```
+	 */
 	equals(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
@@ -506,10 +802,38 @@ export class Pathist {
 		return true;
 	}
 
+	/**
+	 * Checks if this path starts with the specified path segment sequence.
+	 *
+	 * @param other - The path segment sequence to check
+	 * @param options - Optional comparison options
+	 * @returns `true` if this path starts with the specified sequence, `false` otherwise
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz');
+	 * console.log(path.startsWith('foo.bar')); // true
+	 * console.log(path.startsWith('bar')); // false
+	 * ```
+	 */
 	startsWith(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
 		return this.positionOf(other, options) === 0;
 	}
 
+	/**
+	 * Checks if this path ends with the specified path segment sequence.
+	 *
+	 * @param other - The path segment sequence to check
+	 * @param options - Optional comparison options
+	 * @returns `true` if this path ends with the specified sequence, `false` otherwise
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz');
+	 * console.log(path.endsWith('bar.baz')); // true
+	 * console.log(path.endsWith('bar')); // false
+	 * ```
+	 */
 	endsWith(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
@@ -524,10 +848,40 @@ export class Pathist {
 		return this.lastPositionOf(other, options) === this.segments.length - otherSegments.length;
 	}
 
+	/**
+	 * Checks if this path contains the specified path segment sequence anywhere within it.
+	 *
+	 * @param other - The path segment sequence to search for
+	 * @param options - Optional comparison options
+	 * @returns `true` if this path contains the specified sequence, `false` otherwise
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz.qux');
+	 * console.log(path.includes('bar.baz')); // true
+	 * console.log(path.includes('baz.foo')); // false
+	 * ```
+	 */
 	includes(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
 		return this.positionOf(other, options) !== -1;
 	}
 
+	/**
+	 * Finds the first position where the specified path segment sequence occurs within this path.
+	 *
+	 * Returns the index of the first segment where the match begins, or -1 if not found.
+	 *
+	 * @param other - The path segment sequence to search for
+	 * @param options - Optional comparison options
+	 * @returns The zero-based position of the first match, or -1 if not found
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz.bar');
+	 * console.log(path.positionOf('bar')); // 1 (first occurrence)
+	 * console.log(path.positionOf('qux')); // -1 (not found)
+	 * ```
+	 */
 	positionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
@@ -565,6 +919,22 @@ export class Pathist {
 		return -1;
 	}
 
+	/**
+	 * Finds the last position where the specified path segment sequence occurs within this path.
+	 *
+	 * Returns the index of the first segment where the last match begins, or -1 if not found.
+	 *
+	 * @param other - The path segment sequence to search for
+	 * @param options - Optional comparison options
+	 * @returns The zero-based position of the last match, or -1 if not found
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz.bar');
+	 * console.log(path.lastPositionOf('bar')); // 3 (last occurrence)
+	 * console.log(path.lastPositionOf('qux')); // -1 (not found)
+	 * ```
+	 */
 	lastPositionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
@@ -679,11 +1049,52 @@ export class Pathist {
 		return this.slice(0, position + otherSegments.length);
 	}
 
+	/**
+	 * Returns a new path containing a subset of this path's segments.
+	 *
+	 * Works like Array.slice(), extracting segments from start to end (end not included).
+	 * The new path preserves this path's configuration.
+	 *
+	 * @param start - Zero-based index at which to start extraction (default: 0)
+	 * @param end - Zero-based index before which to end extraction (default: path length)
+	 * @returns A new Pathist instance containing the extracted segments
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar.baz.qux');
+	 * console.log(path.slice(1, 3).toString()); // 'bar.baz'
+	 * console.log(path.slice(2).toString()); // 'baz.qux'
+	 * ```
+	 */
 	slice(start?: number, end?: number): Pathist {
 		const slicedSegments = this.segments.slice(start, end);
 		return Pathist.from(slicedSegments, this.cloneConfig());
 	}
 
+	/**
+	 * Returns a new path that combines this path with one or more other paths.
+	 *
+	 * Creates a new path by concatenating all segments in order. The new path
+	 * preserves this path's configuration.
+	 *
+	 * @param paths - One or more paths to concatenate
+	 * @returns A new Pathist instance containing all concatenated segments
+	 * @throws {TypeError} If any path input is invalid
+	 *
+	 * @example
+	 * ```typescript
+	 * const path1 = new Pathist('foo.bar');
+	 * const path2 = new Pathist('baz.qux');
+	 * console.log(path1.concat(path2).toString()); // 'foo.bar.baz.qux'
+	 * ```
+	 *
+	 * @example
+	 * Multiple paths
+	 * ```typescript
+	 * const result = path1.concat('baz', ['qux', 'quux']);
+	 * console.log(result.toString()); // 'foo.bar.baz.qux.quux'
+	 * ```
+	 */
 	concat(...paths: Array<Pathist | PathInput>): Pathist {
 		const allSegments: PathSegment[] = [...this.segments];
 
@@ -698,6 +1109,23 @@ export class Pathist {
 		return Pathist.from(allSegments, this.cloneConfig());
 	}
 
+	/**
+	 * Finds the position of the first numeric index in this path.
+	 *
+	 * This represents the start of a contiguous tree structure in the path.
+	 * Used for working with tree-like data structures (e.g., nested arrays of objects).
+	 *
+	 * @returns The zero-based position of the first numeric index, or -1 if none exists
+	 *
+	 * @example
+	 * ```typescript
+	 * const path1 = new Pathist('foo.bar[0].children[1].name');
+	 * console.log(path1.firstNodePosition()); // 2 (position of [0])
+	 *
+	 * const path2 = new Pathist('foo.bar.baz');
+	 * console.log(path2.firstNodePosition()); // -1 (no indices)
+	 * ```
+	 */
 	firstNodePosition(): number {
 		// Find the first numeric index in the path
 		for (let i = 0; i < this.segments.length; i++) {
@@ -708,6 +1136,25 @@ export class Pathist {
 		return -1;
 	}
 
+	/**
+	 * Finds the position of the last numeric index in a contiguous tree structure.
+	 *
+	 * Starting from the first node position, continues as long as the path follows
+	 * the pattern of node children properties (e.g., "children") followed by numeric indices.
+	 *
+	 * @returns The zero-based position of the last node index in the tree, or -1 if no tree exists
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('items[0].children[1].children[2].name');
+	 * console.log(path.lastNodePosition()); // 6 (position of [2])
+	 * // The tree continues through "children" properties
+	 *
+	 * const path2 = new Pathist('items[0].data.value');
+	 * console.log(path2.lastNodePosition()); // 2 (position of [0])
+	 * // The tree ends because "data" is not a children property
+	 * ```
+	 */
 	lastNodePosition(): number {
 		const firstIdx = this.firstNodePosition();
 		if (firstIdx === -1) {
@@ -746,10 +1193,21 @@ export class Pathist {
 	}
 
 	/**
-	 * Returns the actual index values from the contiguous tree path.
+	 * Returns the numeric index values from the contiguous tree structure.
 	 *
-	 * For example, `[5].children[1].children[3].foo` returns `[5, 1, 3]`.
-	 * Only includes indices within the contiguous tree sequence.
+	 * Extracts all numeric indices between the first and last node positions,
+	 * representing the tree path coordinates.
+	 *
+	 * @returns An array of numeric indices, or an empty array if no tree structure exists
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('items[5].children[1].children[3].name');
+	 * console.log(path.nodeIndices()); // [5, 1, 3]
+	 *
+	 * const path2 = new Pathist('foo.bar.baz');
+	 * console.log(path2.nodeIndices()); // []
+	 * ```
 	 */
 	nodeIndices(): number[] {
 		const firstIdx = this.firstNodePosition();
@@ -762,34 +1220,115 @@ export class Pathist {
 
 		// Collect all numeric values from firstIdx to lastIdx
 		for (let i = firstIdx; i <= lastIdx; i++) {
-			if (typeof this.segments[i] === 'number') {
-				values.push(this.segments[i]);
+			const segment = this.segments[i];
+			if (typeof segment === 'number') {
+				values.push(segment);
 			}
 		}
 
 		return values;
 	}
 
+	/**
+	 * Returns the path up to and including the first node index.
+	 *
+	 * @returns A new path ending at the first node, or an empty path if no nodes exist
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * console.log(path.firstNodePath().toString()); // 'foo.bar[0]'
+	 * ```
+	 */
 	firstNodePath(): Pathist {
 		const pos = this.firstNodePosition();
 		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos + 1);
 	}
 
+	/**
+	 * Returns the path up to and including the last node index in the tree.
+	 *
+	 * @returns A new path ending at the last node, or an empty path if no nodes exist
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * console.log(path.lastNodePath().toString()); // 'foo.bar[0].children[1]'
+	 * ```
+	 */
 	lastNodePath(): Pathist {
 		const pos = this.lastNodePosition();
 		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos + 1);
 	}
 
+	/**
+	 * Returns the path segments before the first node index.
+	 *
+	 * @returns A new path containing only the segments before the tree structure, or an empty path if no nodes exist
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * console.log(path.beforeNodePath().toString()); // 'foo.bar'
+	 * ```
+	 */
 	beforeNodePath(): Pathist {
 		const pos = this.firstNodePosition();
 		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos);
 	}
 
+	/**
+	 * Returns the path segments after the last node index in the tree.
+	 *
+	 * @returns A new path containing only the segments after the tree structure, or the full path if no nodes exist
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * console.log(path.afterNodePath().toString()); // 'name'
+	 * ```
+	 */
 	afterNodePath(): Pathist {
 		const pos = this.lastNodePosition();
 		return pos === -1 ? this.slice() : this.slice(pos + 1);
 	}
 
+	/**
+	 * Intelligently merges another path with this path by detecting overlapping segments.
+	 *
+	 * Finds the longest suffix of this path that matches a prefix of the other path,
+	 * then combines them by merging at the overlap point. When overlapping segments
+	 * include wildcards, concrete values take precedence.
+	 *
+	 * @param path - The path to merge with this path
+	 * @returns A new Pathist instance containing the merged path
+	 * @throws {TypeError} If the path input is invalid
+	 *
+	 * @example
+	 * Basic merge with overlap
+	 * ```typescript
+	 * const left = new Pathist('foo.bar.baz');
+	 * const right = new Pathist('baz.qux');
+	 * console.log(left.merge(right).toString()); // 'foo.bar.baz.qux'
+	 * ```
+	 *
+	 * @example
+	 * Merge with wildcard replacement
+	 * ```typescript
+	 * const left = new Pathist('foo[*].bar');
+	 * const right = new Pathist('foo[5].bar.baz');
+	 * console.log(left.merge(right).toString()); // 'foo[5].bar.baz'
+	 * // The wildcard is replaced with the concrete index
+	 * ```
+	 *
+	 * @example
+	 * No overlap - simple concatenation
+	 * ```typescript
+	 * const left = new Pathist('foo.bar');
+	 * const right = new Pathist('qux.quux');
+	 * console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
+	 * ```
+	 */
 	merge(path: Pathist | PathInput): Pathist {
 		const rightSegments = Pathist.#toSegments(path);
 		if (rightSegments === null) {
@@ -798,10 +1337,10 @@ export class Pathist {
 
 		// If either path is empty, just concatenate
 		if (this.segments.length === 0) {
-			return Pathist.from(rightSegments, this.cloneConfig());
+			return Pathist.from([...rightSegments], this.cloneConfig());
 		}
 		if (rightSegments.length === 0) {
-			return Pathist.from(this.segments, this.cloneConfig());
+			return Pathist.from([...this.segments], this.cloneConfig());
 		}
 
 		// Find the longest overlap: suffix of left path matches prefix of right path
@@ -964,9 +1503,29 @@ export class Pathist {
 	}
 }
 
+/**
+ * The notation style for converting paths to strings.
+ *
+ * Valid values: `'Mixed'`, `'Dot'`, or `'Bracket'`
+ */
 export type Notation = (typeof Pathist.Notation)[keyof typeof Pathist.Notation];
+
+/**
+ * The mode for handling numeric indices during path comparisons.
+ *
+ * Valid values: `'Preserve'` or `'Ignore'`
+ */
 export type Indices = (typeof Pathist.Indices)[keyof typeof Pathist.Indices];
 
+/**
+ * Options for comparing paths.
+ */
 export interface ComparisonOptions {
+	/**
+	 * How to handle numeric indices during comparison.
+	 * - `'Preserve'`: Indices must match exactly
+	 * - `'Ignore'`: Any numeric index matches any other numeric index
+	 * @defaultValue The path instance's `indices` setting
+	 */
 	indices?: Indices;
 }

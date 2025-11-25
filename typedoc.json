@@ -1,0 +1,27 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["src/pathist.ts"],
+	"out": "api-docs",
+	"plugin": [],
+	"name": "Pathist",
+	"includeVersion": true,
+	"navigationLinks": {
+		"GitHub": "https://github.com/shaungrady/pathist"
+	},
+	"sidebarLinks": {
+		"GitHub": "https://github.com/shaungrady/pathist"
+	},
+	"excludePrivate": true,
+	"excludeProtected": true,
+	"excludeInternal": true,
+	"sort": ["source-order"],
+	"kindSortOrder": [
+		"Class",
+		"Interface",
+		"TypeAlias",
+		"Constructor",
+		"Property",
+		"Method",
+		"Function"
+	]
+}
