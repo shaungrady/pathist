@@ -1252,7 +1252,6 @@ export class Pathist {
 		return lastIdx;
 	}
 
-
 	/**
 	 * Returns the numeric index values from the contiguous tree structure.
 	 *
@@ -1365,7 +1364,6 @@ export class Pathist {
 		const lastIdx = this.#findLastNodeIndex(firstIdx);
 		return this.slice(0, lastIdx + 1);
 	}
-
 
 	/**
 	 * Returns the path segments after the last node in the tree.
