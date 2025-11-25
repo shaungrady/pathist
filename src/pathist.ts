@@ -232,6 +232,18 @@ export class Pathist {
 		return segment.includes('.') || segment.includes('[') || segment.includes(']') || segment.includes(' ');
 	}
 
+	static #needsJSONPathBracketNotation(segment: string): boolean {
+		// Empty strings need bracket notation
+		if (segment.length === 0) {
+			return true;
+		}
+
+		// Check if it's a valid JavaScript identifier
+		// Valid identifiers: start with letter, _, or $; contain only letters, digits, _, or $
+		const identifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+		return !identifierRegex.test(segment);
+	}
+
 	static #findClosingBracket(input: string, startIndex: number): number {
 		// Find the closing bracket, accounting for properly quoted strings
 		// startIndex should point to the '[' character
@@ -354,6 +366,39 @@ export class Pathist {
 
 	get string(): string {
 		return this.toString();
+	}
+
+	toJSONPath(): string {
+		// Empty path returns root
+		if (this.segments.length === 0) {
+			return '$';
+		}
+
+		// Build the JSONPath string
+		let result = '$';
+
+		for (const segment of this.segments) {
+			// Check for wildcards first (before checking if it's a number)
+			if (Pathist.#isWildcard(segment)) {
+				// Wildcard segments → [*] notation (RFC 9535)
+				result += '[*]';
+			} else if (typeof segment === 'number') {
+				// Numeric segments → [n] notation
+				result += `[${segment}]`;
+			} else {
+				// String segment - check if it needs bracket notation
+				if (Pathist.#needsJSONPathBracketNotation(segment)) {
+					// Use bracket notation with single quotes, escaping any single quotes
+					const escaped = segment.replace(/'/g, "\\'");
+					result += `['${escaped}']`;
+				} else {
+					// Use dot notation for valid identifiers
+					result += `.${segment}`;
+				}
+			}
+		}
+
+		return result;
 	}
 
 	*[Symbol.iterator](): Iterator<PathSegment> {
