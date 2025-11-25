@@ -51,6 +51,32 @@ test('parses bracket notation', (t) => {
 
 See `test/unit/parsing.test.ts` for comprehensive examples.
 
+## Coding Conventions
+
+### Path Naming
+
+When working with two paths in comparisons or operations, use **"left"** and **"right"** terminology:
+
+```typescript
+// ✅ Good: Clear left/right naming
+static #segmentsMatch(segL: PathSegment, segR: PathSegment, indices: Indices): boolean {
+  // left segment vs right segment
+}
+
+// Comments should use left/right terminology
+// Check if the last `len` segments of the left path match
+// the first `len` segments of the right path
+
+// ✅ Good: Variable naming in merge operations
+const leftSegment = this.segments[this.segments.length - overlapLength + i];
+const rightSegment = otherSegments[i];
+```
+
+**Benefits:**
+- Consistent terminology across the codebase
+- Clear differentiation when comparing paths
+- Reduces cognitive load (no mixing "this/other", "first/second", etc.)
+
 ## Documentation
 
 Project documentation is located in `./docs`:

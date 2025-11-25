@@ -507,32 +507,7 @@ export class Pathist {
 	}
 
 	startsWith(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
-		const otherSegments = Pathist.#toSegments(other);
-		if (otherSegments === null) {
-			return false;
-		}
-
-		// Empty path starts with empty path
-		if (otherSegments.length === 0) {
-			return true;
-		}
-
-		// Can't start with a longer path
-		if (otherSegments.length > this.segments.length) {
-			return false;
-		}
-
-		// Determine indices mode
-		const indices = options?.indices ?? this.indices;
-
-		// Compare each segment from the start
-		for (let i = 0; i < otherSegments.length; i++) {
-			if (!Pathist.#segmentsMatch(this.segments[i], otherSegments[i], indices)) {
-				return false;
-			}
-		}
-
-		return true;
+		return this.positionOf(other, options) === 0;
 	}
 
 	endsWith(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
@@ -541,65 +516,16 @@ export class Pathist {
 			return false;
 		}
 
-		// Empty path ends with empty path
-		if (otherSegments.length === 0) {
-			return true;
-		}
-
 		// Can't end with a longer path
 		if (otherSegments.length > this.segments.length) {
 			return false;
 		}
 
-		// Determine indices mode
-		const indices = options?.indices ?? this.indices;
-
-		// Compare each segment from the end
-		const offset = this.segments.length - otherSegments.length;
-		for (let i = 0; i < otherSegments.length; i++) {
-			if (!Pathist.#segmentsMatch(this.segments[offset + i], otherSegments[i], indices)) {
-				return false;
-			}
-		}
-
-		return true;
+		return this.lastPositionOf(other, options) === this.segments.length - otherSegments.length;
 	}
 
 	includes(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
-		const otherSegments = Pathist.#toSegments(other);
-		if (otherSegments === null) {
-			return false;
-		}
-
-		// Empty path is included in any path
-		if (otherSegments.length === 0) {
-			return true;
-		}
-
-		// Can't include a longer path
-		if (otherSegments.length > this.segments.length) {
-			return false;
-		}
-
-		// Determine indices mode
-		const indices = options?.indices ?? this.indices;
-
-		// Try to find the sequence starting at each position
-		const maxStartIndex = this.segments.length - otherSegments.length;
-		for (let start = 0; start <= maxStartIndex; start++) {
-			let found = true;
-			for (let i = 0; i < otherSegments.length; i++) {
-				if (!Pathist.#segmentsMatch(this.segments[start + i], otherSegments[i], indices)) {
-					found = false;
-					break;
-				}
-			}
-			if (found) {
-				return true;
-			}
-		}
-
-		return false;
+		return this.positionOf(other, options) !== -1;
 	}
 
 	positionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
@@ -865,56 +791,29 @@ export class Pathist {
 	}
 
 	merge(path: Pathist | PathInput): Pathist {
-		const otherSegments = Pathist.#toSegments(path);
-		if (otherSegments === null) {
+		const rightSegments = Pathist.#toSegments(path);
+		if (rightSegments === null) {
 			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
 		}
 
 		// If either path is empty, just concatenate
 		if (this.segments.length === 0) {
-			return Pathist.from(otherSegments, this.cloneConfig());
+			return Pathist.from(rightSegments, this.cloneConfig());
 		}
-		if (otherSegments.length === 0) {
+		if (rightSegments.length === 0) {
 			return Pathist.from(this.segments, this.cloneConfig());
 		}
 
-		// Find the longest overlap: suffix of this path matches prefix of other path
+		// Find the longest overlap: suffix of left path matches prefix of right path
 		let overlapLength = 0;
-		const maxOverlap = Math.min(this.segments.length, otherSegments.length);
+		const maxOverlap = Math.min(this.segments.length, rightSegments.length);
 
 		for (let len = maxOverlap; len > 0; len--) {
-			// Check if the last `len` segments of this path match the first `len` segments of other path
-			let match = true;
-			for (let i = 0; i < len; i++) {
-				const thisSegment = this.segments[this.segments.length - len + i];
-				const otherSegment = otherSegments[i];
+			const prefix = rightSegments.slice(0, len);
+			const pos = this.lastPositionOf(prefix);
 
-				// Check if segments match using wildcard-aware logic
-				const thisIsWildcard = Pathist.#isWildcard(thisSegment);
-				const otherIsWildcard = Pathist.#isWildcard(otherSegment);
-
-				if (thisIsWildcard && otherIsWildcard) {
-					// Both wildcards - match
-					continue;
-				}
-				if (thisIsWildcard || otherIsWildcard) {
-					// One wildcard, one concrete - check if concrete is a number
-					const concrete = thisIsWildcard ? otherSegment : thisSegment;
-					if (typeof concrete !== 'number') {
-						match = false;
-						break;
-					}
-					// Match, but we'll use the concrete value in the result
-					continue;
-				}
-				// Both concrete - must be equal
-				if (thisSegment !== otherSegment) {
-					match = false;
-					break;
-				}
-			}
-
-			if (match) {
+			// Check if the prefix appears at the end of the left path
+			if (pos !== -1 && pos === this.segments.length - len) {
 				overlapLength = len;
 				break;
 			}
@@ -926,25 +825,25 @@ export class Pathist {
 		if (overlapLength > 0) {
 			// Replace overlapping wildcards with concrete values
 			for (let i = 0; i < overlapLength; i++) {
-				const thisSegment = this.segments[this.segments.length - overlapLength + i];
-				const otherSegment = otherSegments[i];
+				const leftSegment = this.segments[this.segments.length - overlapLength + i];
+				const rightSegment = rightSegments[i];
 
-				const thisIsWildcard = Pathist.#isWildcard(thisSegment);
-				const otherIsWildcard = Pathist.#isWildcard(otherSegment);
+				const leftIsWildcard = Pathist.#isWildcard(leftSegment);
+				const rightIsWildcard = Pathist.#isWildcard(rightSegment);
 
-				// If other has a concrete value and this has wildcard, use concrete
-				if (thisIsWildcard && !otherIsWildcard) {
-					mergedSegments[this.segments.length - overlapLength + i] = otherSegment;
+				// If right has a concrete value and left has wildcard, use concrete
+				if (leftIsWildcard && !rightIsWildcard) {
+					mergedSegments[this.segments.length - overlapLength + i] = rightSegment;
 				}
 			}
 
-			// Add non-overlapping segments from other path
-			for (let i = overlapLength; i < otherSegments.length; i++) {
-				mergedSegments.push(otherSegments[i]);
+			// Add non-overlapping segments from right path
+			for (let i = overlapLength; i < rightSegments.length; i++) {
+				mergedSegments.push(rightSegments[i]);
 			}
 		} else {
 			// No overlap - just concatenate
-			mergedSegments.push(...otherSegments);
+			mergedSegments.push(...rightSegments);
 		}
 
 		return Pathist.from(mergedSegments, this.cloneConfig());
