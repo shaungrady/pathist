@@ -140,3 +140,134 @@ test('array getter returns a new array each time', (t) => {
 	t.not(arr1, arr2);
 	t.deepEqual(arr1, arr2);
 });
+
+// toJSONPath() Method
+test('toJSONPath with empty path returns root', (t) => {
+	const p = new Pathist('');
+	t.is(p.toJSONPath(), '$');
+});
+
+test('toJSONPath with basic dot notation', (t) => {
+	const p = new Pathist('users[0].name');
+	t.is(p.toJSONPath(), '$.users[0].name');
+});
+
+test('toJSONPath with nested properties', (t) => {
+	const p = new Pathist('data.results[5].items[2]');
+	t.is(p.toJSONPath(), '$.data.results[5].items[2]');
+});
+
+test('toJSONPath converts -1 wildcard to *', (t) => {
+	const p = new Pathist('items[-1].value');
+	t.is(p.toJSONPath(), '$.items[*].value');
+});
+
+test('toJSONPath converts * wildcard to *', (t) => {
+	const p = new Pathist('items[*].name');
+	t.is(p.toJSONPath(), '$.items[*].name');
+});
+
+test('toJSONPath with multiple wildcards', (t) => {
+	const p = new Pathist('data[*].items[*]');
+	t.is(p.toJSONPath(), '$.data[*].items[*]');
+});
+
+test('toJSONPath with mixed wildcards (-1 and *)', (t) => {
+	const p = new Pathist('data[-1].items[*].values');
+	t.is(p.toJSONPath(), '$.data[*].items[*].values');
+});
+
+test('toJSONPath with properties requiring bracket notation - hyphen', (t) => {
+	const p = new Pathist(['foo-bar']);
+	t.is(p.toJSONPath(), "$['foo-bar']");
+});
+
+test('toJSONPath with properties requiring bracket notation - dot', (t) => {
+	const p = new Pathist(['baz.qux']);
+	t.is(p.toJSONPath(), "$['baz.qux']");
+});
+
+test('toJSONPath with multiple special character properties', (t) => {
+	const p = new Pathist(['foo-bar', 'baz.qux']);
+	t.is(p.toJSONPath(), "$['foo-bar']['baz.qux']");
+});
+
+test('toJSONPath with property containing single quote', (t) => {
+	const p = new Pathist(["it's"]);
+	t.is(p.toJSONPath(), "$['it\\'s']");
+});
+
+test('toJSONPath with property containing multiple single quotes', (t) => {
+	const p = new Pathist(["it's what's"]);
+	t.is(p.toJSONPath(), "$['it\\'s what\\'s']");
+});
+
+test('toJSONPath with property containing spaces', (t) => {
+	const p = new Pathist(['my property']);
+	t.is(p.toJSONPath(), "$['my property']");
+});
+
+test('toJSONPath with property containing brackets', (t) => {
+	const p = new Pathist(['prop[0]']);
+	t.is(p.toJSONPath(), "$['prop[0]']");
+});
+
+test('toJSONPath with empty string property', (t) => {
+	const p = new Pathist(['']);
+	t.is(p.toJSONPath(), "$['']");
+});
+
+test('toJSONPath with property starting with number', (t) => {
+	const p = new Pathist(['123abc']);
+	t.is(p.toJSONPath(), "$['123abc']");
+});
+
+test('toJSONPath with valid identifier using underscore', (t) => {
+	const p = new Pathist('_private');
+	t.is(p.toJSONPath(), '$._private');
+});
+
+test('toJSONPath with valid identifier using dollar sign', (t) => {
+	const p = new Pathist('$special');
+	t.is(p.toJSONPath(), '$.$special');
+});
+
+test('toJSONPath with valid identifier containing numbers', (t) => {
+	const p = new Pathist('prop123');
+	t.is(p.toJSONPath(), '$.prop123');
+});
+
+test('toJSONPath with complex mixed path', (t) => {
+	const p = new Pathist(['api', 'users', 0, 'profile-data', 'settings']);
+	t.is(p.toJSONPath(), "$.api.users[0]['profile-data'].settings");
+});
+
+test('toJSONPath with array construction and wildcards', (t) => {
+	const p = new Pathist(['store', 'books', -1, 'author']);
+	t.is(p.toJSONPath(), '$.store.books[*].author');
+});
+
+test('toJSONPath with only numeric indices', (t) => {
+	const p = new Pathist([0, 1, 2]);
+	t.is(p.toJSONPath(), '$[0][1][2]');
+});
+
+test('toJSONPath with only wildcards', (t) => {
+	const p = new Pathist([-1, '*', -1]);
+	t.is(p.toJSONPath(), '$[*][*][*]');
+});
+
+test('toJSONPath with single property', (t) => {
+	const p = new Pathist('foo');
+	t.is(p.toJSONPath(), '$.foo');
+});
+
+test('toJSONPath with single numeric index', (t) => {
+	const p = new Pathist([0]);
+	t.is(p.toJSONPath(), '$[0]');
+});
+
+test('toJSONPath with special characters requiring escaping', (t) => {
+	const p = new Pathist(["a'b'c"]);
+	t.is(p.toJSONPath(), "$['a\\'b\\'c']");
+});
