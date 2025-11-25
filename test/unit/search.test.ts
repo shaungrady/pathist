@@ -429,7 +429,7 @@ test('pathTo throws on invalid input', (t) => {
 });
 
 test('pathTo preserves instance config', (t) => {
-	const p = new Pathist('foo.bar.baz', { notation: 'bracket' });
+	const p = new Pathist('foo.bar.baz', { notation: 'Bracket' });
 	const result = p.pathTo('bar');
 	t.is(result.toString(), '["foo"]["bar"]');
 });
@@ -546,7 +546,7 @@ test('pathToLast throws on invalid input', (t) => {
 });
 
 test('pathToLast preserves instance config', (t) => {
-	const p = new Pathist('foo.bar.baz.bar', { notation: 'bracket' });
+	const p = new Pathist('foo.bar.baz.bar', { notation: 'Bracket' });
 	const result = p.pathToLast('bar');
 	t.is(result.toString(), '["foo"]["bar"]["baz"]["bar"]');
 });

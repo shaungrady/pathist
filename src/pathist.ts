@@ -9,14 +9,14 @@ export interface PathistConfig {
 
 export class Pathist {
 	static readonly Notation = {
-		Mixed: 'mixed',
-		Dot: 'dot',
-		Bracket: 'bracket',
+		Mixed: 'Mixed',
+		Dot: 'Dot',
+		Bracket: 'Bracket',
 	} as const;
 
 	static readonly Indices = {
-		Preserve: 'preserve',
-		Ignore: 'ignore',
+		Preserve: 'Preserve',
+		Ignore: 'Ignore',
 	} as const;
 
 	static #defaultNotation: Notation = Pathist.Notation.Mixed;
@@ -119,19 +119,17 @@ export class Pathist {
 	}
 
 	static #validateNotation(notation: Notation): void {
-		const validNotations = Object.values(Pathist.Notation);
-		if (!validNotations.includes(notation)) {
+		if (!(notation in Pathist.Notation)) {
 			throw new TypeError(
-				`Invalid notation: "${notation}". Must be one of: ${validNotations.join(', ')}`
+				`Invalid notation: "${notation}". Must be one of: ${Object.keys(Pathist.Notation).join(', ')}`
 			);
 		}
 	}
 
 	static #validateIndices(mode: Indices): void {
-		const validModes = Object.values(Pathist.Indices);
-		if (!validModes.includes(mode)) {
+		if (!(mode in Pathist.Indices)) {
 			throw new TypeError(
-				`Invalid indices mode: "${mode}". Must be one of: ${validModes.join(', ')}`
+				`Invalid indices mode: "${mode}". Must be one of: ${Object.keys(Pathist.Indices).join(', ')}`
 			);
 		}
 	}
