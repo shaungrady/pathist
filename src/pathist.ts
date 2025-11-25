@@ -1152,12 +1152,17 @@ export class Pathist {
 	}
 
 	/**
-	 * Finds the position of the first numeric index in this path.
+	 * Finds the position of the first numeric index that represents a tree node.
+	 *
+	 * A numeric index is considered a valid tree node if it is:
+	 * - At the root (position 0), OR
+	 * - Preceded by a children property (e.g., `children[0]`), OR
+	 * - Followed by a children property (e.g., `[0].children`)
 	 *
 	 * This represents the start of a contiguous tree structure in the path.
 	 * Used for working with tree-like data structures (e.g., nested arrays of objects).
 	 *
-	 * @returns The zero-based position of the first numeric index, or -1 if none exists
+	 * @returns The zero-based position of the first tree node index, or -1 if none exists
 	 *
 	 * @see {@link lastNodePosition} for finding the last node in the tree
 	 * @see {@link firstNodePath} for extracting the path up to the first node
@@ -1168,8 +1173,14 @@ export class Pathist {
 	 * const path1 = new Pathist('foo.bar[0].children[1].name');
 	 * console.log(path1.firstNodePosition()); // 2 (position of [0])
 	 *
-	 * const path2 = new Pathist('foo.bar.baz');
-	 * console.log(path2.firstNodePosition()); // -1 (no indices)
+	 * const path2 = new Pathist('[0].children[1]');
+	 * console.log(path2.firstNodePosition()); // 0 (root-level index)
+	 *
+	 * const path3 = new Pathist('foo[0].bar');
+	 * console.log(path3.firstNodePosition()); // -1 (not preceded or followed by children property)
+	 *
+	 * const path4 = new Pathist('foo.bar.baz');
+	 * console.log(path4.firstNodePosition()); // -1 (no indices)
 	 * ```
 	 */
 	firstNodePosition(): number {
