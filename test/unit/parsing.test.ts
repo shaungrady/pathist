@@ -45,81 +45,127 @@ test('round-trip: parse and render string wildcard', (t) => {
 	t.is(p.toString(), input);
 });
 
-// Quote Validation
-test('rejects mismatched quotes - single to double', (t) => {
-	t.throws(
-		() => new Pathist("foo[\'bar\"]"),
-		{ message: /mismatched quotes/i },
-	);
-});
+// Parameterized Quote Validation Tests
+const mismatchedQuoteCases = [
+	{ input: "foo[\'bar\"]", desc: 'single to double' },
+	{ input: 'foo["bar\']', desc: 'double to single' },
+	{ input: 'foo["bar]', desc: 'opening double quote without closing' },
+	{ input: "foo[\'bar]", desc: 'opening single quote without closing' },
+	{ input: 'foo[bar"]', desc: 'closing double quote without opening' },
+	{ input: "foo[bar\']", desc: 'closing single quote without opening' },
+];
 
-test('rejects mismatched quotes - double to single', (t) => {
-	t.throws(
-		() => new Pathist('foo["bar\']'),
-		{ message: /mismatched quotes/i },
-	);
-});
+for (const { input, desc } of mismatchedQuoteCases) {
+	test(`rejects mismatched quotes: ${desc}`, (t) => {
+		t.throws(
+			() => new Pathist(input),
+			{ message: /mismatched quotes/i },
+		);
+	});
+}
 
-test('rejects opening quote without closing', (t) => {
-	t.throws(
-		() => new Pathist('foo["bar]'),
-		{ message: /mismatched quotes/i },
-	);
-	t.throws(
-		() => new Pathist("foo[\'bar]"),
-		{ message: /mismatched quotes/i },
-	);
-});
+// Parameterized Round-trip Tests for Special Characters
+const roundTripCases = [
+	{
+		array: ['foo.bar', 'baz'],
+		expected: '["foo.bar"].baz',
+		desc: 'property with dot',
+	},
+	{
+		array: ['foo[0]', 'baz'],
+		expected: '["foo[0]"].baz',
+		desc: 'property with brackets',
+	},
+	{
+		array: ['foo bar', 'baz'],
+		expected: '["foo bar"].baz',
+		desc: 'property with spaces',
+	},
+	{
+		array: ['', 'baz'],
+		expected: '[""].baz',
+		desc: 'empty string property',
+	},
+	{
+		array: ['123', 'baz'],
+		expected: '123.baz',
+		desc: 'numeric string property',
+	},
+	{
+		array: ['foo', 'bar.baz', 'qux'],
+		expected: 'foo["bar.baz"].qux',
+		desc: 'dot in middle segment',
+	},
+	{
+		array: ['a[b]', 'c[d]', 'e'],
+		expected: '["a[b]"]["c[d]"].e',
+		desc: 'multiple segments with brackets',
+	},
+	{
+		array: ['', '', ''],
+		expected: '[""][""][""]',
+		desc: 'multiple empty strings',
+	},
+	{
+		array: [' ', '  ', 'foo'],
+		expected: '[" "]["  "].foo',
+		desc: 'whitespace-only segments',
+	},
+];
 
-test('rejects closing quote without opening', (t) => {
-	t.throws(
-		() => new Pathist('foo[bar"]'),
-		{ message: /mismatched quotes/i },
-	);
-	t.throws(
-		() => new Pathist("foo[bar\']"),
-		{ message: /mismatched quotes/i },
-	);
-});
+for (const { array, expected, desc } of roundTripCases) {
+	test(`round-trip: ${desc}`, (t) => {
+		const p1 = new Pathist(array);
+		const str = p1.toString();
+		const p2 = new Pathist(str);
 
-// Round-trip Tests for Special Characters
-test('round-trip: property with dot', (t) => {
-	const p1 = new Pathist(['foo.bar', 'baz']);
-	const str = p1.toString();
-	const p2 = new Pathist(str);
-	t.deepEqual(p2.toArray(), ['foo.bar', 'baz']);
-	t.is(str, '["foo.bar"].baz');
-});
+		t.is(str, expected, 'serialization matches expected format');
+		t.deepEqual(p2.toArray(), array, 'round-trip preserves segments');
+	});
+}
 
-test('round-trip: property with brackets', (t) => {
-	const p1 = new Pathist(['foo[0]', 'baz']);
-	const str = p1.toString();
-	const p2 = new Pathist(str);
-	t.deepEqual(p2.toArray(), ['foo[0]', 'baz']);
-	t.is(str, '["foo[0]"].baz');
-});
+// Parameterized Parsing Tests
+const parsingCases = [
+	{
+		input: 'foo["bar"]["baz"]',
+		expected: ['foo', 'bar', 'baz'],
+		desc: 'mixed dot and bracket with quotes',
+	},
+	{
+		input: '["a"]["b"]["c"]',
+		expected: ['a', 'b', 'c'],
+		desc: 'all bracket notation with quotes',
+	},
+	{
+		input: '[0][1][2]',
+		expected: [0, 1, 2],
+		desc: 'numeric bracket notation',
+	},
+	{
+		input: 'a[0].b[1].c',
+		expected: ['a', 0, 'b', 1, 'c'],
+		desc: 'alternating dot and numeric bracket',
+	},
+	{
+		input: '["a.b"]["c[d]"]',
+		expected: ['a.b', 'c[d]'],
+		desc: 'special chars inside quoted brackets',
+	},
+	{
+		input: '[" "][" "]',
+		expected: [' ', ' '],
+		desc: 'space-only segments',
+	},
+	{
+		input: '[""][""]',
+		expected: ['', ''],
+		desc: 'empty quoted segments',
+	},
+];
 
-test('round-trip: property with spaces', (t) => {
-	const p1 = new Pathist(['foo bar', 'baz']);
-	const str = p1.toString();
-	const p2 = new Pathist(str);
-	t.deepEqual(p2.toArray(), ['foo bar', 'baz']);
-	t.is(str, '["foo bar"].baz');
-});
-
-test('round-trip: empty string property', (t) => {
-	const p1 = new Pathist(['', 'baz']);
-	const str = p1.toString();
-	const p2 = new Pathist(str);
-	t.deepEqual(p2.toArray(), ['', 'baz']);
-	t.is(str, '[""].baz');
-});
-
-test('round-trip: numeric string property', (t) => {
-	const p1 = new Pathist(['123', 'baz']);
-	const str = p1.toString();
-	const p2 = new Pathist(str);
-	t.deepEqual(p2.toArray(), ['123', 'baz']);
-	// Numeric strings don't need brackets in mixed notation
-	t.is(str, '123.baz');
-});
+for (const { input, expected, desc } of parsingCases) {
+	test(`parses: ${desc}`, (t) => {
+		const p = new Pathist(input);
+		t.deepEqual(p.toArray(), expected);
+	});
+}
