@@ -1173,12 +1173,32 @@ export class Pathist {
 	 * ```
 	 */
 	firstNodePosition(): number {
-		// Find the first numeric index in the path
+		// Find the first numeric index in the path that represents a tree node.
+		// A valid tree node must be either:
+		// 1. Preceded by a children property: childrenProp[index]
+		// 2. Followed by a children property: [index].childrenProp
+		// Without one of these, we can't definitively identify it as a tree node.
+
 		for (let i = 0; i < this.segments.length; i++) {
 			if (typeof this.segments[i] === 'number') {
-				return i;
+				// Check if preceded by a children property
+				if (i > 0) {
+					const prevSegment = this.segments[i - 1];
+					if (typeof prevSegment === 'string' && this.nodeChildrenProperties.has(prevSegment)) {
+						return i;
+					}
+				}
+
+				// Check if followed by a children property
+				if (i + 1 < this.segments.length) {
+					const nextSegment = this.segments[i + 1];
+					if (typeof nextSegment === 'string' && this.nodeChildrenProperties.has(nextSegment)) {
+						return i;
+					}
+				}
 			}
 		}
+
 		return -1;
 	}
 

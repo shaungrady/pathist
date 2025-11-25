@@ -74,7 +74,7 @@ const firstNodePositionCases = [
 	},
 	{
 		input: 'foo.bar.content[0]',
-		expected: 3,
+		expected: -1,
 		desc: 'path ends on index without child property',
 	},
 	{
@@ -127,7 +127,7 @@ const lastNodePositionCases = [
 	},
 	{
 		input: 'foo.bar.content[0]',
-		expected: 3,
+		expected: -1,
 		desc: 'single node at end',
 	},
 	{
@@ -137,7 +137,7 @@ const lastNodePositionCases = [
 	},
 	{
 		input: '[0]',
-		expected: 0,
+		expected: -1,
 		desc: 'single root node',
 	},
 	{
@@ -205,12 +205,12 @@ const nodeIndicesCases = [
 	},
 	{
 		input: '[7]',
-		expected: [7],
+		expected: [],
 		desc: 'single root node',
 	},
 	{
 		input: 'content[0]',
-		expected: [0],
+		expected: [],
 		desc: 'single node without child property',
 	},
 	{
