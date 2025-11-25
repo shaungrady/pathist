@@ -4,6 +4,7 @@ type PathInput = string | PathSegment[];
 export interface PathistConfig {
 	notation?: Notation;
 	indices?: Indices;
+	nodeChildrenProperties?: ReadonlySet<string> | string[] | string;
 }
 
 export class Pathist {
@@ -21,6 +22,7 @@ export class Pathist {
 	static #defaultNotation: Notation = Pathist.Notation.Mixed;
 	static #defaultIndices: Indices = Pathist.Indices.Preserve;
 	static #indexWildcards: ReadonlySet<string | number> = new Set([-1, '*']);
+	static #defaultNodeChildrenProperties: ReadonlySet<string> = new Set(['children']);
 
 	static get defaultNotation(): Notation {
 		return Pathist.#defaultNotation;
@@ -77,6 +79,43 @@ export class Pathist {
 		}
 
 		Pathist.#indexWildcards = validatedSet;
+	}
+
+	static get defaultNodeChildrenProperties(): ReadonlySet<string> {
+		return Pathist.#defaultNodeChildrenProperties;
+	}
+
+	static set defaultNodeChildrenProperties(value: ReadonlySet<string> | string[] | string) {
+		// Handle empty values - unset properties
+		if (
+			value === '' ||
+			(Array.isArray(value) && value.length === 0) ||
+			(value instanceof Set && value.size === 0)
+		) {
+			Pathist.#defaultNodeChildrenProperties = new Set();
+			return;
+		}
+
+		// Get iterable values
+		let values: Iterable<string>;
+		if (value instanceof Set || Array.isArray(value)) {
+			values = value;
+		} else if (typeof value === 'string') {
+			values = [value];
+		} else {
+			throw new TypeError('nodeChildrenProperties must be a Set, Array, or string');
+		}
+
+		// Validate each value and build new Set
+		const validatedSet = new Set<string>();
+		for (const v of values) {
+			if (typeof v !== 'string') {
+				throw new TypeError('nodeChildrenProperties must contain only strings');
+			}
+			validatedSet.add(v);
+		}
+
+		Pathist.#defaultNodeChildrenProperties = validatedSet;
 	}
 
 	static #validateNotation(notation: Notation): void {
@@ -284,6 +323,7 @@ export class Pathist {
 	// Instance-level config
 	#notation?: Notation;
 	#indices?: Indices;
+	#nodeChildrenProperties?: ReadonlySet<string>;
 
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
@@ -299,17 +339,35 @@ export class Pathist {
 		return this.#indices ?? Pathist.defaultIndices;
 	}
 
+	get nodeChildrenProperties(): ReadonlySet<string> {
+		return this.#nodeChildrenProperties ?? Pathist.defaultNodeChildrenProperties;
+	}
+
 	// Helper to propagate config when creating new instances
 	private cloneConfig(): PathistConfig {
 		return {
 			notation: this.#notation,
 			indices: this.#indices,
+			nodeChildrenProperties: this.#nodeChildrenProperties,
 		};
 	}
 
 	constructor(input: PathInput, config?: PathistConfig) {
 		this.#notation = config?.notation;
 		this.#indices = config?.indices;
+
+		// Handle nodeChildrenProperties config
+		if (config?.nodeChildrenProperties !== undefined) {
+			const value = config.nodeChildrenProperties;
+			if (value instanceof Set) {
+				this.#nodeChildrenProperties = value;
+			} else if (Array.isArray(value)) {
+				this.#nodeChildrenProperties = new Set(value);
+			} else if (typeof value === 'string') {
+				this.#nodeChildrenProperties = new Set([value]);
+			}
+		}
+
 		if (typeof input === 'string') {
 			this.segments = this.parseString(input);
 		} else {
@@ -614,6 +672,98 @@ export class Pathist {
 		}
 
 		return new Pathist(allSegments, this.cloneConfig());
+	}
+
+	firstNodePosition(): number {
+		// Find the first numeric index in the path
+		for (let i = 0; i < this.segments.length; i++) {
+			if (typeof this.segments[i] === 'number') {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	lastNodePosition(): number {
+		const firstIdx = this.firstNodePosition();
+		if (firstIdx === -1) {
+			return -1;
+		}
+
+		// Start from the first index and continue as long as we follow the pattern
+		let lastIdx = firstIdx;
+		let i = firstIdx + 1;
+
+		while (i < this.segments.length) {
+			const segment = this.segments[i];
+
+			// If we hit a string segment, check if it's a child property
+			if (typeof segment === 'string') {
+				// Check if it's a child property and followed by a numeric
+				if (
+					i + 1 < this.segments.length &&
+					typeof this.segments[i + 1] === 'number' &&
+					this.nodeChildrenProperties.has(segment)
+				) {
+					// This is a child property followed by an index - continue the tree
+					lastIdx = i + 1;
+					i += 2; // Skip both the property and the index
+				} else {
+					// Not a child property, or not followed by numeric - tree ends
+					break;
+				}
+			} else {
+				// Unexpected numeric without a property before it - shouldn't happen in valid paths
+				break;
+			}
+		}
+
+		return lastIdx;
+	}
+
+	/**
+	 * Returns the actual index values from the contiguous tree path.
+	 *
+	 * For example, `[5].children[1].children[3].foo` returns `[5, 1, 3]`.
+	 * Only includes indices within the contiguous tree sequence.
+	 */
+	nodeIndices(): number[] {
+		const firstIdx = this.firstNodePosition();
+		if (firstIdx === -1) {
+			return [];
+		}
+
+		const lastIdx = this.lastNodePosition();
+		const values: number[] = [];
+
+		// Collect all numeric values from firstIdx to lastIdx
+		for (let i = firstIdx; i <= lastIdx; i++) {
+			if (typeof this.segments[i] === 'number') {
+				values.push(this.segments[i]);
+			}
+		}
+
+		return values;
+	}
+
+	firstNodePath(): Pathist {
+		const pos = this.firstNodePosition();
+		return pos === -1 ? new Pathist('', this.cloneConfig()) : this.slice(0, pos + 1);
+	}
+
+	lastNodePath(): Pathist {
+		const pos = this.lastNodePosition();
+		return pos === -1 ? new Pathist('', this.cloneConfig()) : this.slice(0, pos + 1);
+	}
+
+	beforeNodePath(): Pathist {
+		const pos = this.firstNodePosition();
+		return pos === -1 ? new Pathist('', this.cloneConfig()) : this.slice(0, pos);
+	}
+
+	afterNodePath(): Pathist {
+		const pos = this.lastNodePosition();
+		return pos === -1 ? this.slice() : this.slice(pos + 1);
 	}
 
 	merge(path: Pathist | PathInput): Pathist {
