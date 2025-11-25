@@ -581,7 +581,7 @@ export class Pathist {
 		return false;
 	}
 
-	indexOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
+	positionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			return -1;
@@ -618,7 +618,7 @@ export class Pathist {
 		return -1;
 	}
 
-	lastIndexOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
+	lastPositionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			return -1;
