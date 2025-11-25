@@ -114,59 +114,59 @@ test('includes with indices: Ignore - finds subsequence anywhere', (t) => {
 });
 
 // IndexOf with Indices Options
-test('indexOf with indices: Preserve - different indices do not match', (t) => {
+test('positionOf with indices: Preserve - different indices do not match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
-	t.is(p.indexOf([9, 'bar']), -1);
-	t.is(p.indexOf([9, 'bar'], { indices: Pathist.Indices.Preserve }), -1);
+	t.is(p.positionOf([9, 'bar']), -1);
+	t.is(p.positionOf([9, 'bar'], { indices: Pathist.Indices.Preserve }), -1);
 });
 
-test('indexOf with indices: Ignore - different indices match', (t) => {
+test('positionOf with indices: Ignore - different indices match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
-	t.is(p.indexOf([9, 'bar'], { indices: Pathist.Indices.Ignore }), 2);
-	t.is(p.indexOf([999], { indices: Pathist.Indices.Ignore }), 0);
-	t.is(p.indexOf([7, 'foo', 8], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.positionOf([9, 'bar'], { indices: Pathist.Indices.Ignore }), 2);
+	t.is(p.positionOf([999], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.positionOf([7, 'foo', 8], { indices: Pathist.Indices.Ignore }), 0);
 });
 
-test('indexOf with indices: Ignore - string segments must match', (t) => {
+test('positionOf with indices: Ignore - string segments must match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
-	t.is(p.indexOf([9, 'baz'], { indices: Pathist.Indices.Ignore }), -1);
+	t.is(p.positionOf([9, 'baz'], { indices: Pathist.Indices.Ignore }), -1);
 });
 
-test('indexOf with indices: Ignore - finds subsequence at correct position', (t) => {
+test('positionOf with indices: Ignore - finds subsequence at correct position', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2, 'baz']);
 	// Middle subsequence
-	t.is(p.indexOf([999, 'bar', 888], { indices: Pathist.Indices.Ignore }), 2);
+	t.is(p.positionOf([999, 'bar', 888], { indices: Pathist.Indices.Ignore }), 2);
 	// Start subsequence
-	t.is(p.indexOf([777, 'foo'], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.positionOf([777, 'foo'], { indices: Pathist.Indices.Ignore }), 0);
 	// End subsequence
-	t.is(p.indexOf([666, 'baz'], { indices: Pathist.Indices.Ignore }), 4);
+	t.is(p.positionOf([666, 'baz'], { indices: Pathist.Indices.Ignore }), 4);
 });
 
 // LastIndexOf with Indices Options
-test('lastIndexOf with indices: Preserve - different indices do not match', (t) => {
+test('lastPositionOf with indices: Preserve - different indices do not match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
-	t.is(p.lastIndexOf([9, 'bar']), -1);
-	t.is(p.lastIndexOf([9, 'bar'], { indices: Pathist.Indices.Preserve }), -1);
+	t.is(p.lastPositionOf([9, 'bar']), -1);
+	t.is(p.lastPositionOf([9, 'bar'], { indices: Pathist.Indices.Preserve }), -1);
 });
 
-test('lastIndexOf with indices: Ignore - different indices match', (t) => {
+test('lastPositionOf with indices: Ignore - different indices match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2]);
-	t.is(p.lastIndexOf([9, 'bar'], { indices: Pathist.Indices.Ignore }), 2);
-	t.is(p.lastIndexOf([999], { indices: Pathist.Indices.Ignore }), 4);
-	t.is(p.lastIndexOf([7, 'foo', 8], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.lastPositionOf([9, 'bar'], { indices: Pathist.Indices.Ignore }), 2);
+	t.is(p.lastPositionOf([999], { indices: Pathist.Indices.Ignore }), 4);
+	t.is(p.lastPositionOf([7, 'foo', 8], { indices: Pathist.Indices.Ignore }), 0);
 });
 
-test('lastIndexOf with indices: Ignore - string segments must match', (t) => {
+test('lastPositionOf with indices: Ignore - string segments must match', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar']);
-	t.is(p.lastIndexOf([9, 'baz'], { indices: Pathist.Indices.Ignore }), -1);
+	t.is(p.lastPositionOf([9, 'baz'], { indices: Pathist.Indices.Ignore }), -1);
 });
 
-test('lastIndexOf with indices: Ignore - finds last subsequence at correct position', (t) => {
+test('lastPositionOf with indices: Ignore - finds last subsequence at correct position', (t) => {
 	const p = new Pathist([0, 'foo', 1, 'bar', 2, 'baz', 3, 'bar', 4]);
 	// Multiple 'bar' segments - should find last one (at index 6: segment 3 and 'bar')
-	t.is(p.lastIndexOf([999, 'bar'], { indices: Pathist.Indices.Ignore }), 6);
+	t.is(p.lastPositionOf([999, 'bar'], { indices: Pathist.Indices.Ignore }), 6);
 	// Start subsequence
-	t.is(p.lastIndexOf([777, 'foo'], { indices: Pathist.Indices.Ignore }), 0);
+	t.is(p.lastPositionOf([777, 'foo'], { indices: Pathist.Indices.Ignore }), 0);
 	// Find last occurrence of 'baz' followed by any number
-	t.is(p.lastIndexOf(['baz', 888], { indices: Pathist.Indices.Ignore }), 5);
+	t.is(p.lastPositionOf(['baz', 888], { indices: Pathist.Indices.Ignore }), 5);
 });
