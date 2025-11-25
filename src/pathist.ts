@@ -1179,47 +1179,19 @@ export class Pathist {
 	}
 
 	/**
-	 * Finds the position of the first numeric index that represents a tree node.
+	 * Helper: Finds the position of the first numeric index that's part of a tree structure.
 	 *
-	 * A numeric index is considered a valid tree node if it is:
-	 * - At the root (position 0), OR
-	 * - Preceded by a children property (e.g., `children[0]`), OR
-	 * - Followed by a children property (e.g., `[0].children`)
-	 *
-	 * This represents the start of a contiguous tree structure in the path.
-	 * Used for working with tree-like data structures (e.g., nested arrays of objects).
+	 * A numeric index is part of a tree if it's either:
+	 * - At position 0 (root-level array of nodes), OR
+	 * - Preceded by a children property
 	 *
 	 * @returns The zero-based position of the first tree node index, or -1 if none exists
-	 *
-	 * @see {@link lastNodePosition} for finding the last node in the tree
-	 * @see {@link firstNodePath} for extracting the path up to the first node
-	 * @see {@link nodeIndices} for getting all node indices
-	 *
-	 * @example
-	 * ```typescript
-	 * const path1 = Pathist.from('foo.bar[0].children[1].name');
-	 * console.log(path1.firstNodePosition()); // 2 (position of [0])
-	 *
-	 * const path2 = Pathist.from('[0].children[1]');
-	 * console.log(path2.firstNodePosition()); // 0 (root-level index)
-	 *
-	 * const path3 = Pathist.from('foo[0].bar');
-	 * console.log(path3.firstNodePosition()); // -1 (not preceded or followed by children property)
-	 *
-	 * const path4 = Pathist.from('foo.bar.baz');
-	 * console.log(path4.firstNodePosition()); // -1 (no indices)
-	 * ```
+	 * @private
 	 */
-	firstNodePosition(): number {
-		// Find the first numeric index in the path that represents a tree node.
-		// A valid tree node must be either:
-		// 1. At the root (position 0) - assume it's a tree node
-		// 2. Preceded by a children property: childrenProp[index]
-		// 3. Followed by a children property: [index].childrenProp
-
+	#findFirstNumericIndex(): number {
 		for (let i = 0; i < this.segments.length; i++) {
 			if (typeof this.segments[i] === 'number') {
-				// Root-level index - assume it's a tree node
+				// Root-level index - it's a node
 				if (i === 0) {
 					return i;
 				}
@@ -1231,73 +1203,48 @@ export class Pathist {
 						return i;
 					}
 				}
-
-				// Check if followed by a children property
-				if (i + 1 < this.segments.length) {
-					const nextSegment = this.segments[i + 1];
-					if (typeof nextSegment === 'string' && this.nodeChildrenProperties.has(nextSegment)) {
-						return i;
-					}
-				}
 			}
 		}
-
 		return -1;
 	}
 
 	/**
-	 * Finds the position of the last numeric index in a contiguous tree structure.
+	 * Helper: Finds the position of the last node index in a contiguous tree structure.
 	 *
-	 * Starting from the first node position, continues as long as the path follows
-	 * the pattern of node children properties (e.g., "children") followed by numeric indices.
+	 * Starting from the first numeric index, continues as long as the path follows
+	 * the pattern of node children properties followed by numeric indices.
 	 *
-	 * @returns The zero-based position of the last node index in the tree, or -1 if no tree exists
-	 *
-	 * @see {@link firstNodePosition} for finding the first node in the tree
-	 * @see {@link lastNodePath} for extracting the path up to the last node
-	 * @see {@link nodeIndices} for getting all node indices
-	 *
-	 * @example
-	 * ```typescript
-	 * const path = Pathist.from('items[0].children[1].children[2].name');
-	 * console.log(path.lastNodePosition()); // 6 (position of [2])
-	 * // The tree continues through "children" properties
-	 *
-	 * const path2 = Pathist.from('items[0].data.value');
-	 * console.log(path2.lastNodePosition()); // 2 (position of [0])
-	 * // The tree ends because "data" is not a children property
-	 * ```
+	 * @param firstIdx - The position of the first numeric index
+	 * @returns The zero-based position of the last node index, or -1 if firstIdx is -1
+	 * @private
 	 */
-	lastNodePosition(): number {
-		const firstIdx = this.firstNodePosition();
+	#findLastNodeIndex(firstIdx: number): number {
 		if (firstIdx === -1) {
 			return -1;
 		}
 
-		// Start from the first index and continue as long as we follow the pattern
 		let lastIdx = firstIdx;
 		let i = firstIdx + 1;
 
 		while (i < this.segments.length) {
 			const segment = this.segments[i];
 
-			// If we hit a string segment, check if it's a child property
 			if (typeof segment === 'string') {
-				// Check if it's a child property and followed by a numeric
+				// Check if it's a children property followed by numeric
 				if (
 					i + 1 < this.segments.length &&
 					typeof this.segments[i + 1] === 'number' &&
 					this.nodeChildrenProperties.has(segment)
 				) {
-					// This is a child property followed by an index - continue the tree
+					// This is a children property followed by an index - continue the tree
 					lastIdx = i + 1;
 					i += 2; // Skip both the property and the index
 				} else {
-					// Not a child property, or not followed by numeric - tree ends
+					// Not a children property, or not followed by numeric - tree ends
 					break;
 				}
 			} else {
-				// Unexpected numeric without a property before it - shouldn't happen in valid paths
+				// Unexpected numeric without a property before it
 				break;
 			}
 		}
@@ -1305,11 +1252,11 @@ export class Pathist {
 		return lastIdx;
 	}
 
+
 	/**
 	 * Returns the numeric index values from the contiguous tree structure.
 	 *
-	 * Extracts all numeric indices between the first and last node positions,
-	 * representing the tree path coordinates.
+	 * Extracts all numeric indices from the tree path, representing the tree path coordinates.
 	 *
 	 * @returns An array of numeric indices, or an empty array if no tree structure exists
 	 *
@@ -1323,12 +1270,12 @@ export class Pathist {
 	 * ```
 	 */
 	nodeIndices(): number[] {
-		const firstIdx = this.firstNodePosition();
+		const firstIdx = this.#findFirstNumericIndex();
 		if (firstIdx === -1) {
 			return [];
 		}
 
-		const lastIdx = this.lastNodePosition();
+		const lastIdx = this.#findLastNodeIndex(firstIdx);
 		const values: number[] = [];
 
 		// Collect all numeric values from firstIdx to lastIdx
@@ -1343,81 +1290,117 @@ export class Pathist {
 	}
 
 	/**
-	 * Returns the path up to and including the first node index.
+	 * Returns the path to the first node.
 	 *
-	 * @returns A new path ending at the first node, or an empty path if no nodes exist
+	 * - If the path starts with a numeric index, returns the path up to and including that index
+	 * - Otherwise, returns an empty path (representing the root node)
 	 *
-	 * @see {@link lastNodePath} for extracting up to the last node
-	 * @see {@link firstNodePosition} for getting just the position
-	 * @see {@link beforeNodePath} for extracting the path before any nodes
+	 * @returns A new Pathist representing the path to the first node
+	 *
+	 * @see {@link lastNodePath} for extracting the full node path
+	 * @see {@link afterNodePath} for extracting the path after all nodes
 	 *
 	 * @example
+	 * Path starting with index
 	 * ```typescript
-	 * const path = Pathist.from('foo.bar[0].children[1].name');
-	 * console.log(path.firstNodePath().toString()); // 'foo.bar[0]'
+	 * const path = new Pathist('[0].children[1].foo');
+	 * console.log(path.firstNodePath().toString()); // '[0]'
+	 * ```
+	 *
+	 * @example
+	 * Path starting with property
+	 * ```typescript
+	 * const path = new Pathist('children[0].children[1].foo');
+	 * console.log(path.firstNodePath().toString()); // '' (root)
+	 * ```
+	 *
+	 * @example
+	 * Path with no indices
+	 * ```typescript
+	 * const path = new Pathist('foo.bar');
+	 * console.log(path.firstNodePath().toString()); // '' (root)
 	 * ```
 	 */
 	firstNodePath(): Pathist {
-		const pos = this.firstNodePosition();
-		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos + 1);
+		// If path starts with numeric index, return path up to it
+		if (this.segments.length > 0 && typeof this.segments[0] === 'number') {
+			return this.slice(0, 1);
+		}
+		// Otherwise root is first node
+		return Pathist.from('', this.cloneConfig());
 	}
 
 	/**
-	 * Returns the path up to and including the last node index in the tree.
+	 * Returns the full path to the last node in the contiguous tree structure.
 	 *
-	 * @returns A new path ending at the last node, or an empty path if no nodes exist
+	 * - If the path contains numeric indices, returns the path up to and including the last node
+	 * - Otherwise, returns an empty path (representing the root node)
 	 *
-	 * @see {@link firstNodePath} for extracting up to the first node
-	 * @see {@link lastNodePosition} for getting just the position
+	 * @returns A new Pathist representing the full node path
+	 *
+	 * @see {@link firstNodePath} for extracting the path to the first node
 	 * @see {@link afterNodePath} for extracting the path after all nodes
 	 *
 	 * @example
+	 * Tree structure
 	 * ```typescript
-	 * const path = Pathist.from('foo.bar[0].children[1].name');
-	 * console.log(path.lastNodePath().toString()); // 'foo.bar[0].children[1]'
+	 * const path = new Pathist('children[0].children[1].foo');
+	 * console.log(path.lastNodePath().toString()); // 'children[0].children[1]'
+	 * ```
+	 *
+	 * @example
+	 * Path with no indices
+	 * ```typescript
+	 * const path = new Pathist('foo.bar');
+	 * console.log(path.lastNodePath().toString()); // '' (root)
 	 * ```
 	 */
 	lastNodePath(): Pathist {
-		const pos = this.lastNodePosition();
-		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos + 1);
+		const firstIdx = this.#findFirstNumericIndex();
+		if (firstIdx === -1) {
+			// No indices - root is the node
+			return Pathist.from('', this.cloneConfig());
+		}
+
+		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		return this.slice(0, lastIdx + 1);
 	}
 
+
 	/**
-	 * Returns the path segments before the first node index.
+	 * Returns the path segments after the last node in the tree.
 	 *
-	 * @returns A new path containing only the segments before the tree structure, or an empty path if no nodes exist
+	 * - If the path contains numeric indices, returns the path after the last node
+	 * - Otherwise, returns the full path (all segments are relative to the root node)
 	 *
-	 * @see {@link afterNodePath} for extracting the path after all nodes
-	 * @see {@link firstNodePath} for extracting up to and including the first node
+	 * @returns A new Pathist containing the segments after the tree structure
+	 *
+	 * @see {@link lastNodePath} for extracting the full node path
+	 * @see {@link firstNodePath} for extracting the path to the first node
 	 *
 	 * @example
+	 * Tree with properties after
 	 * ```typescript
-	 * const path = Pathist.from('foo.bar[0].children[1].name');
-	 * console.log(path.beforeNodePath().toString()); // 'foo.bar'
+	 * const path = new Pathist('children[0].children[1].foo');
+	 * console.log(path.afterNodePath().toString()); // 'foo'
 	 * ```
-	 */
-	beforeNodePath(): Pathist {
-		const pos = this.firstNodePosition();
-		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos);
-	}
-
-	/**
-	 * Returns the path segments after the last node index in the tree.
-	 *
-	 * @returns A new path containing only the segments after the tree structure, or the full path if no nodes exist
-	 *
-	 * @see {@link beforeNodePath} for extracting the path before any nodes
-	 * @see {@link lastNodePath} for extracting up to and including the last node
 	 *
 	 * @example
+	 * No indices - all relative to root
 	 * ```typescript
-	 * const path = Pathist.from('foo.bar[0].children[1].name');
-	 * console.log(path.afterNodePath().toString()); // 'name'
+	 * const path = new Pathist('foo.bar');
+	 * console.log(path.afterNodePath().toString()); // 'foo.bar'
 	 * ```
 	 */
 	afterNodePath(): Pathist {
-		const pos = this.lastNodePosition();
-		return pos === -1 ? this.slice() : this.slice(pos + 1);
+		const firstIdx = this.#findFirstNumericIndex();
+		if (firstIdx === -1) {
+			// No nodes - entire path is after (relative to root)
+			return this.slice();
+		}
+
+		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		return this.slice(lastIdx + 1);
 	}
 
 	/**
