@@ -21,68 +21,98 @@ test('modifying toArray result does not affect instance', (t) => {
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
-// toString() - Mixed Notation (Default)
-test('toString with mixed notation - numbers and strings', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
-	t.is(p.toString(), '[0].foo[1]');
-});
+// Parameterized toString() tests for Mixed Notation (Default)
+const mixedNotationCases = [
+	{
+		input: [0, 'foo', 1],
+		expected: '[0].foo[1]',
+		desc: 'numbers and strings',
+	},
+	{
+		input: ['foo', 'bar'],
+		expected: 'foo.bar',
+		desc: 'only strings',
+	},
+	{
+		input: [0, 1, 2],
+		expected: '[0][1][2]',
+		desc: 'only numbers',
+	},
+	{
+		input: [],
+		expected: '',
+		desc: 'empty path',
+	},
+];
 
-test('toString with mixed notation - only strings', (t) => {
-	const p = new Pathist(['foo', 'bar']);
-	t.is(p.toString(), 'foo.bar');
-});
+for (const { input, expected, desc } of mixedNotationCases) {
+	test(`toString with mixed notation - ${desc}`, (t) => {
+		const p = new Pathist(input);
+		t.is(p.toString(), expected);
+	});
+}
 
-test('toString with mixed notation - only numbers', (t) => {
-	const p = new Pathist([0, 1, 2]);
-	t.is(p.toString(), '[0][1][2]');
-});
+// Parameterized toString() tests for Bracket Notation
+const bracketNotationCases = [
+	{
+		input: [0, 'foo', 1],
+		expected: '[0]["foo"][1]',
+		desc: 'numbers and strings',
+	},
+	{
+		input: ['foo', 'bar'],
+		expected: '["foo"]["bar"]',
+		desc: 'only strings',
+	},
+	{
+		input: [0, 1, 2],
+		expected: '[0][1][2]',
+		desc: 'only numbers',
+	},
+	{
+		input: [],
+		expected: '',
+		desc: 'empty path',
+	},
+];
 
-test('toString with mixed notation - empty path', (t) => {
-	const p = new Pathist([]);
-	t.is(p.toString(), '');
-});
+for (const { input, expected, desc } of bracketNotationCases) {
+	test(`toString with bracket notation - ${desc}`, (t) => {
+		const p = new Pathist(input);
+		t.is(p.toString(Pathist.Notation.Bracket), expected);
+	});
+}
 
-// toString() - Bracket Notation
-test('toString with bracket notation - numbers and strings', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
-	t.is(p.toString(Pathist.Notation.Bracket), '[0]["foo"][1]');
-});
+// Parameterized toString() tests for Dot Notation
+const dotNotationCases = [
+	{
+		input: [0, 'foo', 1],
+		expected: '0.foo.1',
+		desc: 'numbers and strings',
+	},
+	{
+		input: ['foo', 'bar'],
+		expected: 'foo.bar',
+		desc: 'only strings',
+	},
+	{
+		input: [0],
+		expected: '0',
+		desc: 'single number',
+	},
+	{
+		input: [],
+		expected: '',
+		desc: 'empty path',
+	},
+];
 
-test('toString with bracket notation - only strings', (t) => {
-	const p = new Pathist(['foo', 'bar']);
-	t.is(p.toString(Pathist.Notation.Bracket), '["foo"]["bar"]');
-});
-
-test('toString with bracket notation - only numbers', (t) => {
-	const p = new Pathist([0, 1, 2]);
-	t.is(p.toString(Pathist.Notation.Bracket), '[0][1][2]');
-});
-
-test('toString with bracket notation - empty path', (t) => {
-	const p = new Pathist([]);
-	t.is(p.toString(Pathist.Notation.Bracket), '');
-});
-
-// toString() - Dot Notation
-test('toString with dot notation - numbers and strings', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
-	t.is(p.toString(Pathist.Notation.Dot), '0.foo.1');
-});
-
-test('toString with dot notation - only strings', (t) => {
-	const p = new Pathist(['foo', 'bar']);
-	t.is(p.toString(Pathist.Notation.Dot), 'foo.bar');
-});
-
-test('toString with dot notation - single number', (t) => {
-	const p = new Pathist([0]);
-	t.is(p.toString(Pathist.Notation.Dot), '0');
-});
-
-test('toString with dot notation - empty path', (t) => {
-	const p = new Pathist([]);
-	t.is(p.toString(Pathist.Notation.Dot), '');
-});
+for (const { input, expected, desc } of dotNotationCases) {
+	test(`toString with dot notation - ${desc}`, (t) => {
+		const p = new Pathist(input);
+		t.is(p.toString(Pathist.Notation.Dot), expected);
+	});
+}
 
 test('toString validates notation parameter', (t) => {
 	const p = new Pathist(['foo', 'bar']);
@@ -141,133 +171,143 @@ test('array getter returns a new array each time', (t) => {
 	t.deepEqual(arr1, arr2);
 });
 
-// toJSONPath() Method
-test('toJSONPath with empty path returns root', (t) => {
-	const p = new Pathist('');
-	t.is(p.toJSONPath(), '$');
-});
+// Parameterized toJSONPath() tests
+const jsonPathCases = [
+	{
+		input: '',
+		expected: '$',
+		desc: 'empty path returns root',
+	},
+	{
+		input: 'users[0].name',
+		expected: '$.users[0].name',
+		desc: 'basic dot notation',
+	},
+	{
+		input: 'data.results[5].items[2]',
+		expected: '$.data.results[5].items[2]',
+		desc: 'nested properties',
+	},
+	{
+		input: 'items[-1].value',
+		expected: '$.items[*].value',
+		desc: '-1 wildcard to *',
+	},
+	{
+		input: 'items[*].name',
+		expected: '$.items[*].name',
+		desc: '* wildcard to *',
+	},
+	{
+		input: 'data[*].items[*]',
+		expected: '$.data[*].items[*]',
+		desc: 'multiple wildcards',
+	},
+	{
+		input: 'data[-1].items[*].values',
+		expected: '$.data[*].items[*].values',
+		desc: 'mixed wildcards (-1 and *)',
+	},
+	{
+		input: ['foo-bar'],
+		expected: "$['foo-bar']",
+		desc: 'property with hyphen',
+	},
+	{
+		input: ['baz.qux'],
+		expected: "$['baz.qux']",
+		desc: 'property with dot',
+	},
+	{
+		input: ['foo-bar', 'baz.qux'],
+		expected: "$['foo-bar']['baz.qux']",
+		desc: 'multiple special character properties',
+	},
+	{
+		input: ["it's"],
+		expected: "$['it\\'s']",
+		desc: 'property containing single quote',
+	},
+	{
+		input: ["it's what's"],
+		expected: "$['it\\'s what\\'s']",
+		desc: 'property containing multiple single quotes',
+	},
+	{
+		input: ['my property'],
+		expected: "$['my property']",
+		desc: 'property containing spaces',
+	},
+	{
+		input: ['prop[0]'],
+		expected: "$['prop[0]']",
+		desc: 'property containing brackets',
+	},
+	{
+		input: [''],
+		expected: "$['']",
+		desc: 'empty string property',
+	},
+	{
+		input: ['123abc'],
+		expected: "$['123abc']",
+		desc: 'property starting with number',
+	},
+	{
+		input: '_private',
+		expected: '$._private',
+		desc: 'valid identifier using underscore',
+	},
+	{
+		input: '$special',
+		expected: '$.$special',
+		desc: 'valid identifier using dollar sign',
+	},
+	{
+		input: 'prop123',
+		expected: '$.prop123',
+		desc: 'valid identifier containing numbers',
+	},
+	{
+		input: ['api', 'users', 0, 'profile-data', 'settings'],
+		expected: "$.api.users[0]['profile-data'].settings",
+		desc: 'complex mixed path',
+	},
+	{
+		input: ['store', 'books', -1, 'author'],
+		expected: '$.store.books[*].author',
+		desc: 'array construction with wildcards',
+	},
+	{
+		input: [0, 1, 2],
+		expected: '$[0][1][2]',
+		desc: 'only numeric indices',
+	},
+	{
+		input: [-1, '*', -1],
+		expected: '$[*][*][*]',
+		desc: 'only wildcards',
+	},
+	{
+		input: 'foo',
+		expected: '$.foo',
+		desc: 'single property',
+	},
+	{
+		input: [0],
+		expected: '$[0]',
+		desc: 'single numeric index',
+	},
+	{
+		input: ["a'b'c"],
+		expected: "$['a\\'b\\'c']",
+		desc: 'special characters requiring escaping',
+	},
+];
 
-test('toJSONPath with basic dot notation', (t) => {
-	const p = new Pathist('users[0].name');
-	t.is(p.toJSONPath(), '$.users[0].name');
-});
-
-test('toJSONPath with nested properties', (t) => {
-	const p = new Pathist('data.results[5].items[2]');
-	t.is(p.toJSONPath(), '$.data.results[5].items[2]');
-});
-
-test('toJSONPath converts -1 wildcard to *', (t) => {
-	const p = new Pathist('items[-1].value');
-	t.is(p.toJSONPath(), '$.items[*].value');
-});
-
-test('toJSONPath converts * wildcard to *', (t) => {
-	const p = new Pathist('items[*].name');
-	t.is(p.toJSONPath(), '$.items[*].name');
-});
-
-test('toJSONPath with multiple wildcards', (t) => {
-	const p = new Pathist('data[*].items[*]');
-	t.is(p.toJSONPath(), '$.data[*].items[*]');
-});
-
-test('toJSONPath with mixed wildcards (-1 and *)', (t) => {
-	const p = new Pathist('data[-1].items[*].values');
-	t.is(p.toJSONPath(), '$.data[*].items[*].values');
-});
-
-test('toJSONPath with properties requiring bracket notation - hyphen', (t) => {
-	const p = new Pathist(['foo-bar']);
-	t.is(p.toJSONPath(), "$['foo-bar']");
-});
-
-test('toJSONPath with properties requiring bracket notation - dot', (t) => {
-	const p = new Pathist(['baz.qux']);
-	t.is(p.toJSONPath(), "$['baz.qux']");
-});
-
-test('toJSONPath with multiple special character properties', (t) => {
-	const p = new Pathist(['foo-bar', 'baz.qux']);
-	t.is(p.toJSONPath(), "$['foo-bar']['baz.qux']");
-});
-
-test('toJSONPath with property containing single quote', (t) => {
-	const p = new Pathist(["it's"]);
-	t.is(p.toJSONPath(), "$['it\\'s']");
-});
-
-test('toJSONPath with property containing multiple single quotes', (t) => {
-	const p = new Pathist(["it's what's"]);
-	t.is(p.toJSONPath(), "$['it\\'s what\\'s']");
-});
-
-test('toJSONPath with property containing spaces', (t) => {
-	const p = new Pathist(['my property']);
-	t.is(p.toJSONPath(), "$['my property']");
-});
-
-test('toJSONPath with property containing brackets', (t) => {
-	const p = new Pathist(['prop[0]']);
-	t.is(p.toJSONPath(), "$['prop[0]']");
-});
-
-test('toJSONPath with empty string property', (t) => {
-	const p = new Pathist(['']);
-	t.is(p.toJSONPath(), "$['']");
-});
-
-test('toJSONPath with property starting with number', (t) => {
-	const p = new Pathist(['123abc']);
-	t.is(p.toJSONPath(), "$['123abc']");
-});
-
-test('toJSONPath with valid identifier using underscore', (t) => {
-	const p = new Pathist('_private');
-	t.is(p.toJSONPath(), '$._private');
-});
-
-test('toJSONPath with valid identifier using dollar sign', (t) => {
-	const p = new Pathist('$special');
-	t.is(p.toJSONPath(), '$.$special');
-});
-
-test('toJSONPath with valid identifier containing numbers', (t) => {
-	const p = new Pathist('prop123');
-	t.is(p.toJSONPath(), '$.prop123');
-});
-
-test('toJSONPath with complex mixed path', (t) => {
-	const p = new Pathist(['api', 'users', 0, 'profile-data', 'settings']);
-	t.is(p.toJSONPath(), "$.api.users[0]['profile-data'].settings");
-});
-
-test('toJSONPath with array construction and wildcards', (t) => {
-	const p = new Pathist(['store', 'books', -1, 'author']);
-	t.is(p.toJSONPath(), '$.store.books[*].author');
-});
-
-test('toJSONPath with only numeric indices', (t) => {
-	const p = new Pathist([0, 1, 2]);
-	t.is(p.toJSONPath(), '$[0][1][2]');
-});
-
-test('toJSONPath with only wildcards', (t) => {
-	const p = new Pathist([-1, '*', -1]);
-	t.is(p.toJSONPath(), '$[*][*][*]');
-});
-
-test('toJSONPath with single property', (t) => {
-	const p = new Pathist('foo');
-	t.is(p.toJSONPath(), '$.foo');
-});
-
-test('toJSONPath with single numeric index', (t) => {
-	const p = new Pathist([0]);
-	t.is(p.toJSONPath(), '$[0]');
-});
-
-test('toJSONPath with special characters requiring escaping', (t) => {
-	const p = new Pathist(["a'b'c"]);
-	t.is(p.toJSONPath(), "$['a\\'b\\'c']");
-});
+for (const { input, expected, desc } of jsonPathCases) {
+	test(`toJSONPath: ${desc}`, (t) => {
+		const p = new Pathist(input);
+		t.is(p.toJSONPath(), expected);
+	});
+}
