@@ -169,3 +169,72 @@ for (const { input, expected, desc } of parsingCases) {
 		t.deepEqual(p.toArray(), expected);
 	});
 }
+
+// Parameterized Error Tests
+const errorCases = [
+	{
+		input: 'foo[bar',
+		error: /unclosed bracket/i,
+		desc: 'unclosed bracket with string',
+	},
+	{
+		input: 'foo[0',
+		error: /unclosed bracket/i,
+		desc: 'unclosed bracket with number',
+	},
+	{
+		input: '[foo',
+		error: /unclosed bracket/i,
+		desc: 'unclosed bracket at start',
+	},
+	{
+		input: 'foo[',
+		error: /unclosed bracket/i,
+		desc: 'unclosed bracket at end',
+	},
+	{
+		input: 'foo["bar',
+		error: /unclosed bracket/i,
+		desc: 'unclosed bracket with quoted string',
+	},
+	{
+		input: 'a[0].b[1',
+		error: /unclosed bracket/i,
+		desc: 'unclosed bracket in middle of path',
+	},
+];
+
+for (const { input, error, desc } of errorCases) {
+	test(`throws error: ${desc}`, (t) => {
+		t.throws(
+			() => new Pathist(input),
+			{ message: error },
+		);
+	});
+}
+
+// Edge cases that DO parse successfully (unusual but valid)
+const unusualButValidCases = [
+	{
+		input: 'foo[[bar]]',
+		expected: ['foo', '[bar', ']'],
+		desc: 'double brackets create separate segments',
+	},
+	{
+		input: 'foo]["bar"]',
+		expected: ['foo]', 'bar'],
+		desc: 'closing bracket in dot notation segment',
+	},
+	{
+		input: 'foo].bar',
+		expected: ['foo]', 'bar'],
+		desc: 'closing bracket as part of property name',
+	},
+];
+
+for (const { input, expected, desc } of unusualButValidCases) {
+	test(`parses unusual but valid: ${desc}`, (t) => {
+		const p = new Pathist(input);
+		t.deepEqual(p.toArray(), expected);
+	});
+}
