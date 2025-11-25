@@ -158,6 +158,29 @@ export class Pathist {
 		}
 	}
 
+	// ============================================================================
+	// Static Factory Method
+	// ============================================================================
+
+	/**
+	 * Creates a new Pathist instance from various input types.
+	 * This is the Temporal-style factory method alternative to using `new Pathist()`.
+	 *
+	 * @param input - Path string, array of segments, or existing Pathist instance
+	 * @param config - Optional configuration for notation, indices mode, etc.
+	 * @returns A new Pathist instance
+	 *
+	 * @example
+	 * ```typescript
+	 * Pathist.from('foo.bar.baz')
+	 * Pathist.from(['foo', 'bar', 'baz'])
+	 * Pathist.from('foo.bar', { notation: 'bracket' })
+	 * ```
+	 */
+	static from(input: PathInput, config?: PathistConfig): Pathist {
+		return new Pathist(input, config);
+	}
+
 	static #toSegments(input: Pathist | PathInput): ReadonlyArray<PathSegment> | null {
 		// Handle null/undefined
 		if (input == null) {
@@ -172,7 +195,7 @@ export class Pathist {
 		// If it's a string or array, parse it
 		if (typeof input === 'string' || Array.isArray(input)) {
 			try {
-				const temp = new Pathist(input);
+				const temp = Pathist.from(input);
 				return temp.segments;
 			} catch {
 				// If construction fails (invalid input), return null
@@ -684,7 +707,7 @@ export class Pathist {
 
 		// If not found, return empty path
 		if (position === -1) {
-			return new Pathist('', this.cloneConfig());
+			return Pathist.from('', this.cloneConfig());
 		}
 
 		// Return path up to and including the match
@@ -718,14 +741,14 @@ export class Pathist {
 
 		// Empty path search returns empty path
 		if (otherSegments.length === 0) {
-			return new Pathist('', this.cloneConfig());
+			return Pathist.from('', this.cloneConfig());
 		}
 
 		const position = this.lastPositionOf(other, options);
 
 		// If not found, return empty path
 		if (position === -1) {
-			return new Pathist('', this.cloneConfig());
+			return Pathist.from('', this.cloneConfig());
 		}
 
 		// Return path up to and including the match
@@ -734,7 +757,7 @@ export class Pathist {
 
 	slice(start?: number, end?: number): Pathist {
 		const slicedSegments = this.segments.slice(start, end);
-		return new Pathist(slicedSegments, this.cloneConfig());
+		return Pathist.from(slicedSegments, this.cloneConfig());
 	}
 
 	concat(...paths: Array<Pathist | PathInput>): Pathist {
@@ -748,7 +771,7 @@ export class Pathist {
 			allSegments.push(...segments);
 		}
 
-		return new Pathist(allSegments, this.cloneConfig());
+		return Pathist.from(allSegments, this.cloneConfig());
 	}
 
 	firstNodePosition(): number {
@@ -825,17 +848,17 @@ export class Pathist {
 
 	firstNodePath(): Pathist {
 		const pos = this.firstNodePosition();
-		return pos === -1 ? new Pathist('', this.cloneConfig()) : this.slice(0, pos + 1);
+		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos + 1);
 	}
 
 	lastNodePath(): Pathist {
 		const pos = this.lastNodePosition();
-		return pos === -1 ? new Pathist('', this.cloneConfig()) : this.slice(0, pos + 1);
+		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos + 1);
 	}
 
 	beforeNodePath(): Pathist {
 		const pos = this.firstNodePosition();
-		return pos === -1 ? new Pathist('', this.cloneConfig()) : this.slice(0, pos);
+		return pos === -1 ? Pathist.from('', this.cloneConfig()) : this.slice(0, pos);
 	}
 
 	afterNodePath(): Pathist {
@@ -851,10 +874,10 @@ export class Pathist {
 
 		// If either path is empty, just concatenate
 		if (this.segments.length === 0) {
-			return new Pathist(otherSegments, this.cloneConfig());
+			return Pathist.from(otherSegments, this.cloneConfig());
 		}
 		if (otherSegments.length === 0) {
-			return new Pathist(this.segments, this.cloneConfig());
+			return Pathist.from(this.segments, this.cloneConfig());
 		}
 
 		// Find the longest overlap: suffix of this path matches prefix of other path
@@ -926,7 +949,7 @@ export class Pathist {
 			mergedSegments.push(...otherSegments);
 		}
 
-		return new Pathist(mergedSegments, this.cloneConfig());
+		return Pathist.from(mergedSegments, this.cloneConfig());
 	}
 
 	private parseString(input: string): PathSegment[] {
