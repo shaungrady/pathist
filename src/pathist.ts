@@ -1,13 +1,26 @@
 /**
  * A single segment in a path, either a string property name or a numeric index.
+ *
+ * @example
+ * ```typescript
+ * const segment1: PathSegment = 'foo';  // property name
+ * const segment2: PathSegment = 0;      // array index
+ * ```
  */
-type PathSegment = string | number;
+export type PathSegment = string | number;
 
 /**
  * Valid input types for constructing a Pathist instance.
  * Can be a path string (e.g., "foo.bar"), an array of segments, or an existing Pathist instance.
+ *
+ * @example
+ * ```typescript
+ * const input1: PathistInput = 'foo.bar.baz';
+ * const input2: PathistInput = ['foo', 'bar', 'baz'];
+ * const input3: PathistInput = ['foo', 'bar', 0, 'baz'];
+ * ```
  */
-type PathInput = string | PathSegment[];
+export type PathistInput = string | PathSegment[];
 
 /**
  * Configuration options for creating a Pathist instance.
@@ -291,11 +304,11 @@ export class Pathist {
 	 * Pathist.from('foo.bar', { notation: 'bracket' })
 	 * ```
 	 */
-	static from(input: PathInput, config?: PathistConfig): Pathist {
+	static from(input: PathistInput, config?: PathistConfig): Pathist {
 		return new Pathist(input, config);
 	}
 
-	static #toSegments(input: Pathist | PathInput): ReadonlyArray<PathSegment> | null {
+	static #toSegments(input: Pathist | PathistInput): ReadonlyArray<PathSegment> | null {
 		// Handle null/undefined
 		if (input == null) {
 			return null;
@@ -542,7 +555,7 @@ export class Pathist {
 	 * });
 	 * ```
 	 */
-	constructor(input: PathInput, config?: PathistConfig) {
+	constructor(input: PathistInput, config?: PathistConfig) {
 		this.#notation = config?.notation;
 		this.#indices = config?.indices;
 
@@ -646,7 +659,6 @@ export class Pathist {
 				case Pathist.Notation.Dot:
 					result = this.toDotNotation();
 					break;
-				case Pathist.Notation.Mixed:
 				default:
 					result = this.toMixedNotation();
 			}
@@ -762,6 +774,10 @@ export class Pathist {
 	 * @param options - Optional comparison options
 	 * @returns `true` if the paths are equal, `false` otherwise
 	 *
+	 * @see {@link startsWith} for checking if this path starts with another
+	 * @see {@link endsWith} for checking if this path ends with another
+	 * @see {@link includes} for checking if this path contains another
+	 *
 	 * @example
 	 * Exact comparison (default)
 	 * ```typescript
@@ -778,7 +794,7 @@ export class Pathist {
 	 * console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
 	 * ```
 	 */
-	equals(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
+	equals(other: Pathist | PathistInput, options?: ComparisonOptions): boolean {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			return false;
@@ -809,6 +825,10 @@ export class Pathist {
 	 * @param options - Optional comparison options
 	 * @returns `true` if this path starts with the specified sequence, `false` otherwise
 	 *
+	 * @see {@link endsWith} for checking if this path ends with a sequence
+	 * @see {@link equals} for exact path comparison
+	 * @see {@link positionOf} for finding the position of a sequence
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar.baz');
@@ -816,7 +836,7 @@ export class Pathist {
 	 * console.log(path.startsWith('bar')); // false
 	 * ```
 	 */
-	startsWith(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
+	startsWith(other: Pathist | PathistInput, options?: ComparisonOptions): boolean {
 		return this.positionOf(other, options) === 0;
 	}
 
@@ -827,6 +847,10 @@ export class Pathist {
 	 * @param options - Optional comparison options
 	 * @returns `true` if this path ends with the specified sequence, `false` otherwise
 	 *
+	 * @see {@link startsWith} for checking if this path starts with a sequence
+	 * @see {@link equals} for exact path comparison
+	 * @see {@link lastPositionOf} for finding the last position of a sequence
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar.baz');
@@ -834,7 +858,7 @@ export class Pathist {
 	 * console.log(path.endsWith('bar')); // false
 	 * ```
 	 */
-	endsWith(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
+	endsWith(other: Pathist | PathistInput, options?: ComparisonOptions): boolean {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			return false;
@@ -855,6 +879,10 @@ export class Pathist {
 	 * @param options - Optional comparison options
 	 * @returns `true` if this path contains the specified sequence, `false` otherwise
 	 *
+	 * @see {@link positionOf} for finding the exact position of the sequence
+	 * @see {@link startsWith} for checking if the sequence is at the start
+	 * @see {@link endsWith} for checking if the sequence is at the end
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar.baz.qux');
@@ -862,7 +890,7 @@ export class Pathist {
 	 * console.log(path.includes('baz.foo')); // false
 	 * ```
 	 */
-	includes(other: Pathist | PathInput, options?: ComparisonOptions): boolean {
+	includes(other: Pathist | PathistInput, options?: ComparisonOptions): boolean {
 		return this.positionOf(other, options) !== -1;
 	}
 
@@ -875,6 +903,10 @@ export class Pathist {
 	 * @param options - Optional comparison options
 	 * @returns The zero-based position of the first match, or -1 if not found
 	 *
+	 * @see {@link lastPositionOf} for finding the last occurrence
+	 * @see {@link includes} for checking if a sequence exists without needing the position
+	 * @see {@link pathTo} for extracting the path up to the first occurrence
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar.baz.bar');
@@ -882,7 +914,7 @@ export class Pathist {
 	 * console.log(path.positionOf('qux')); // -1 (not found)
 	 * ```
 	 */
-	positionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
+	positionOf(other: Pathist | PathistInput, options?: ComparisonOptions): number {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			return -1;
@@ -928,6 +960,9 @@ export class Pathist {
 	 * @param options - Optional comparison options
 	 * @returns The zero-based position of the last match, or -1 if not found
 	 *
+	 * @see {@link positionOf} for finding the first occurrence
+	 * @see {@link pathToLast} for extracting the path up to the last occurrence
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar.baz.bar');
@@ -935,7 +970,7 @@ export class Pathist {
 	 * console.log(path.lastPositionOf('qux')); // -1 (not found)
 	 * ```
 	 */
-	lastPositionOf(other: Pathist | PathInput, options?: ComparisonOptions): number {
+	lastPositionOf(other: Pathist | PathistInput, options?: ComparisonOptions): number {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			return -1;
@@ -983,6 +1018,10 @@ export class Pathist {
 	 * @returns A new Pathist instance containing the path up to and including the first match,
 	 *          or an empty path if no match is found
 	 *
+	 * @see {@link pathToLast} for extracting up to the last occurrence
+	 * @see {@link positionOf} for getting just the position without extraction
+	 * @see {@link slice} for general segment extraction
+	 *
 	 * @example
 	 * ```typescript
 	 * const p = new Pathist('foo.bar.baz.bar.qux');
@@ -991,7 +1030,7 @@ export class Pathist {
 	 * p.pathTo('notfound').toString();   // ''
 	 * ```
 	 */
-	pathTo(other: Pathist | PathInput, options?: ComparisonOptions): Pathist {
+	pathTo(other: Pathist | PathistInput, options?: ComparisonOptions): Pathist {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
@@ -1019,6 +1058,9 @@ export class Pathist {
 	 * @returns A new Pathist instance containing the path up to and including the last match,
 	 *          or an empty path if no match is found
 	 *
+	 * @see {@link pathTo} for extracting up to the first occurrence
+	 * @see {@link lastPositionOf} for getting just the position without extraction
+	 *
 	 * @example
 	 * ```typescript
 	 * const p = new Pathist('foo.bar.baz.bar.qux');
@@ -1027,7 +1069,7 @@ export class Pathist {
 	 * p.pathToLast('notfound').toString();   // ''
 	 * ```
 	 */
-	pathToLast(other: Pathist | PathInput, options?: ComparisonOptions): Pathist {
+	pathToLast(other: Pathist | PathistInput, options?: ComparisonOptions): Pathist {
 		const otherSegments = Pathist.#toSegments(other);
 		if (otherSegments === null) {
 			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
@@ -1095,7 +1137,7 @@ export class Pathist {
 	 * console.log(result.toString()); // 'foo.bar.baz.qux.quux'
 	 * ```
 	 */
-	concat(...paths: Array<Pathist | PathInput>): Pathist {
+	concat(...paths: Array<Pathist | PathistInput>): Pathist {
 		const allSegments: PathSegment[] = [...this.segments];
 
 		for (const path of paths) {
@@ -1116,6 +1158,10 @@ export class Pathist {
 	 * Used for working with tree-like data structures (e.g., nested arrays of objects).
 	 *
 	 * @returns The zero-based position of the first numeric index, or -1 if none exists
+	 *
+	 * @see {@link lastNodePosition} for finding the last node in the tree
+	 * @see {@link firstNodePath} for extracting the path up to the first node
+	 * @see {@link nodeIndices} for getting all node indices
 	 *
 	 * @example
 	 * ```typescript
@@ -1143,6 +1189,10 @@ export class Pathist {
 	 * the pattern of node children properties (e.g., "children") followed by numeric indices.
 	 *
 	 * @returns The zero-based position of the last node index in the tree, or -1 if no tree exists
+	 *
+	 * @see {@link firstNodePosition} for finding the first node in the tree
+	 * @see {@link lastNodePath} for extracting the path up to the last node
+	 * @see {@link nodeIndices} for getting all node indices
 	 *
 	 * @example
 	 * ```typescript
@@ -1234,6 +1284,10 @@ export class Pathist {
 	 *
 	 * @returns A new path ending at the first node, or an empty path if no nodes exist
 	 *
+	 * @see {@link lastNodePath} for extracting up to the last node
+	 * @see {@link firstNodePosition} for getting just the position
+	 * @see {@link beforeNodePath} for extracting the path before any nodes
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar[0].children[1].name');
@@ -1249,6 +1303,10 @@ export class Pathist {
 	 * Returns the path up to and including the last node index in the tree.
 	 *
 	 * @returns A new path ending at the last node, or an empty path if no nodes exist
+	 *
+	 * @see {@link firstNodePath} for extracting up to the first node
+	 * @see {@link lastNodePosition} for getting just the position
+	 * @see {@link afterNodePath} for extracting the path after all nodes
 	 *
 	 * @example
 	 * ```typescript
@@ -1266,6 +1324,9 @@ export class Pathist {
 	 *
 	 * @returns A new path containing only the segments before the tree structure, or an empty path if no nodes exist
 	 *
+	 * @see {@link afterNodePath} for extracting the path after all nodes
+	 * @see {@link firstNodePath} for extracting up to and including the first node
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = new Pathist('foo.bar[0].children[1].name');
@@ -1281,6 +1342,9 @@ export class Pathist {
 	 * Returns the path segments after the last node index in the tree.
 	 *
 	 * @returns A new path containing only the segments after the tree structure, or the full path if no nodes exist
+	 *
+	 * @see {@link beforeNodePath} for extracting the path before any nodes
+	 * @see {@link lastNodePath} for extracting up to and including the last node
 	 *
 	 * @example
 	 * ```typescript
@@ -1329,7 +1393,7 @@ export class Pathist {
 	 * console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
 	 * ```
 	 */
-	merge(path: Pathist | PathInput): Pathist {
+	merge(path: Pathist | PathistInput): Pathist {
 		const rightSegments = Pathist.#toSegments(path);
 		if (rightSegments === null) {
 			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
