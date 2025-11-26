@@ -14,52 +14,6 @@ Pathist provides a comprehensive API for working with property paths in JavaScri
 It supports multiple notation styles (dot, bracket, and mixed), handles numeric indices,
 and offers powerful comparison and manipulation methods.
 
-## Quick Reference
-
-### Methods
-
-| Method | Description |
-| ------ | ----------- |
-| [from()](#from) | Creates a new Pathist instance from various input types |
-| [toArray()](#toarray) | Returns the path as an array of segments |
-| [toString()](#tostring) | Converts the path to a string representation using the specified notation |
-| [toJSONPath()](#tojsonpath) | Converts the path to JSONPath format (RFC 9535) |
-| [\[iterator]\()](#iterator) | Makes the Pathist instance iterable, allowing use in for...of loops and spread operators |
-| [equals()](#equals) | Checks if this path is equal to another path |
-| [startsWith()](#startswith) | Checks if this path starts with the specified path segment sequence |
-| [endsWith()](#endswith) | Checks if this path ends with the specified path segment sequence |
-| [includes()](#includes) | Checks if this path contains the specified path segment sequence anywhere within it |
-| [positionOf()](#positionof) | Finds the first position where the specified path segment sequence occurs within this path |
-| [lastPositionOf()](#lastpositionof) | Finds the last position where the specified path segment sequence occurs within this path |
-| [pathTo()](#pathto) | Returns the path up to and including the first occurrence of the specified path segment sequence |
-| [pathToLast()](#pathtolast) | Returns the path up to and including the last occurrence of the specified path segment sequence |
-| [slice()](#slice) | Returns a new path containing a subset of this path's segments |
-| [parent()](#parent) | Returns the parent path by removing segments from the end |
-| [concat()](#concat) | Returns a new path that combines this path with one or more other paths |
-| [merge()](#merge) | Intelligently merges another path with this path by detecting overlapping segments |
-| [firstNodePath()](#firstnodepath) | Returns the path to the first node |
-| [lastNodePath()](#lastnodepath) | Returns the full path to the last node in the contiguous tree structure |
-| [afterNodePath()](#afternodepath) | Returns the path segments after the last node in the tree |
-| [parentNode()](#parentnode) | Returns the parent node in the tree structure by removing nodes from the end |
-| [nodeIndices()](#nodeindices) | Returns the numeric index values from the contiguous tree structure |
-| [nodePaths()](#nodepaths) | Generates paths to each successive node in the tree structure |
-
-### Accessors
-
-| Accessor | Description |
-| -------- | ----------- |
-| [defaultNotation](#defaultnotation) | Gets or sets the default notation style used when converting paths to strings |
-| [defaultIndices](#defaultindices) | Gets or sets the default indices comparison mode |
-| [indexWildcards](#indexwildcards) | Gets or sets the values that are treated as index wildcards |
-| [defaultNodeChildrenProperties](#defaultnodechildrenproperties) | No description |
-| [notation](#notation) | Gets the notation style for this instance |
-| [indices](#indices) | Gets the indices comparison mode for this instance |
-| [nodeChildrenProperties](#nodechildrenproperties) | Gets the node children properties for this instance |
-| [array](#array) | Gets the path as an array of segments |
-| [string](#string) | Gets the path as a string using the instance's default notation |
-| [jsonPath](#jsonpath) | Gets the path as a JSONPath string |
-
-
 ## Examples
 
 Basic usage

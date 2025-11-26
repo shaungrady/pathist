@@ -51,6 +51,95 @@ test('slice handles out-of-bounds indices gracefully', (t) => {
 	t.is(sliced.string, '');
 });
 
+// parent() method tests
+test('parent returns path with last segment removed', (t) => {
+	const p = Pathist.from('foo.bar.baz');
+	const parent = p.parent();
+	t.is(parent.string, 'foo.bar');
+});
+
+test('parent with depth of 2', (t) => {
+	const p = Pathist.from('foo.bar.baz.qux');
+	const parent = p.parent(2);
+	t.is(parent.string, 'foo.bar');
+});
+
+test('parent with depth equal to length returns empty path', (t) => {
+	const p = Pathist.from('foo.bar.baz');
+	const parent = p.parent(3);
+	t.is(parent.length, 0);
+	t.is(parent.string, '');
+});
+
+test('parent with depth exceeding length returns empty path', (t) => {
+	const p = Pathist.from('foo.bar');
+	const parent = p.parent(10);
+	t.is(parent.length, 0);
+	t.is(parent.string, '');
+});
+
+test('parent with depth of 0 returns clone', (t) => {
+	const p = Pathist.from('foo.bar.baz');
+	const clone = p.parent(0);
+	t.is(clone.string, 'foo.bar.baz');
+	t.not(clone, p); // Should be a new instance
+});
+
+test('parent on empty path returns empty path', (t) => {
+	const p = Pathist.from('');
+	const parent = p.parent();
+	t.is(parent.length, 0);
+	t.is(parent.string, '');
+});
+
+test('parent on single segment path returns empty path', (t) => {
+	const p = Pathist.from('foo');
+	const parent = p.parent();
+	t.is(parent.length, 0);
+	t.is(parent.string, '');
+});
+
+test('parent throws on negative depth', (t) => {
+	const p = Pathist.from('foo.bar');
+	t.throws(() => p.parent(-1), {
+		instanceOf: RangeError,
+		message: /non-negative/,
+	});
+});
+
+test('parent propagates config to new instance', (t) => {
+	const p = Pathist.from('foo.bar.baz', {
+		notation: Pathist.Notation.Bracket,
+		indices: Pathist.Indices.Ignore,
+	});
+	const parent = p.parent();
+	t.is(parent.notation, Pathist.Notation.Bracket);
+	t.is(parent.indices, Pathist.Indices.Ignore);
+});
+
+test('parent works with paths containing indices', (t) => {
+	const p = Pathist.from('items[0].children[1].name');
+	const parent = p.parent();
+	t.is(parent.string, 'items[0].children[1]');
+});
+
+// Parametric tests for parent with different depths
+const parentDepthCases = [
+	{ path: 'a.b.c.d.e', depth: 1, expected: 'a.b.c.d', desc: 'depth 1' },
+	{ path: 'a.b.c.d.e', depth: 2, expected: 'a.b.c', desc: 'depth 2' },
+	{ path: 'a.b.c.d.e', depth: 3, expected: 'a.b', desc: 'depth 3' },
+	{ path: 'a.b.c.d.e', depth: 4, expected: 'a', desc: 'depth 4' },
+	{ path: 'a.b.c.d.e', depth: 5, expected: '', desc: 'depth 5 (full length)' },
+	{ path: 'a.b.c.d.e', depth: 6, expected: '', desc: 'depth 6 (exceeds length)' },
+];
+
+for (const { path, depth, expected, desc } of parentDepthCases) {
+	test(`parent with ${desc}`, (t) => {
+		const p = Pathist.from(path);
+		t.is(p.parent(depth).string, expected);
+	});
+}
+
 // concat() method tests
 test('concat combines two Pathist instances', (t) => {
 	const nodePath = Pathist.from('children[2].children[3]');

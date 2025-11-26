@@ -1,22 +1,18 @@
-**Pathist v1.0.0**
-
-***
-
-# \["Path"].ist
+# ["Path"].ist
 
 Pathist is a TypeScript library for parsing, manipulating, and comparing object property paths with support for multiple notations, wildcards, and tree traversal.
 
 ## Features
 
-* **Multiple notation styles**: Mixed (`foo.bar[0]`), Dot (`foo.bar.0`), and Bracket (`["foo"]["bar"][0]`)
-* **Path parsing**: Convert strings and arrays to structured path objects
-* **Path comparison**: Check equality, prefixes, suffixes, and containment
-* **Path manipulation**: Slice, concat, and intelligently merge paths
-* **Tree traversal**: Navigate hierarchical structures with node-aware methods
-* **JSONPath conversion**: Export paths to RFC 9535 JSONPath format
-* **Wildcard support**: Use wildcards for flexible matching
-* **TypeScript-first**: Full type safety with comprehensive type definitions
-* **Composable design**: Works seamlessly with [lodash][lodash], [jsonpath-plus][jsonpath-plus], [type-fest][type-fest], [ArkType][arktype], and other path-based libraries
+- **Multiple notation styles**: Mixed (`foo.bar[0]`), Dot (`foo.bar.0`), and Bracket (`["foo"]["bar"][0]`)
+- **Path parsing**: Convert strings and arrays to structured path objects
+- **Path comparison**: Check equality, prefixes, suffixes, and containment
+- **Path manipulation**: Slice, concat, and intelligently merge paths
+- **Tree traversal**: Navigate hierarchical structures with node-aware methods
+- **JSONPath conversion**: Export paths to RFC 9535 JSONPath format
+- **Wildcard support**: Use wildcards for flexible matching
+- **TypeScript-first**: Full type safety with comprehensive type definitions
+- **Composable design**: Works seamlessly with [lodash][lodash], [jsonpath-plus][jsonpath-plus], [type-fest][type-fest], [ArkType][arktype], and other path-based libraries
 
 ## Why Pathist?
 
@@ -377,10 +373,10 @@ console.log(path1.equals(path2)); // true (same path, different notation)
 
 For complete API documentation with all methods, properties, and options, see:
 
-* **[API Overview](_media/README.md)** - All classes, interfaces, and types
-* **[Pathist Class](_media/Pathist.md)** - Complete method reference
-* **[Interfaces](_media/interfaces)** - Configuration and options interfaces
-* **[Type Aliases](_media/type-aliases)** - Type definitions
+- **[API Overview](docs/README.md)** - All classes, interfaces, and types
+- **[Pathist Class](docs/classes/Pathist.md)** - Complete method reference
+- **[Interfaces](docs/interfaces/)** - Configuration and options interfaces
+- **[Type Aliases](docs/type-aliases/)** - Type definitions
 
 ## TypeScript Support
 
@@ -424,13 +420,10 @@ MIT
 
 ## Links
 
-* [API Documentation](_media/README.md)
-* [GitHub Repository](https://github.com/yourusername/pathist)
+- [API Documentation](docs/README.md)
+- [GitHub Repository](https://github.com/yourusername/pathist)
 
 [lodash]: https://lodash.com/
-
 [jsonpath-plus]: https://github.com/JSONPath-Plus/JSONPath
-
 [type-fest]: https://github.com/sindresorhus/type-fest
-
 [arktype]: https://arktype.io/

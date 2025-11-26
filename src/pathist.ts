@@ -1158,6 +1158,60 @@ export class Pathist {
 	}
 
 	/**
+	 * Returns the parent path by removing segments from the end.
+	 *
+	 * Removes the specified number of segments from the end of the path, returning
+	 * a new path representing the parent. If the depth exceeds the path length,
+	 * returns an empty path rather than throwing an error.
+	 *
+	 * @param depth - Number of levels to go up (default: 1)
+	 * @returns A new Pathist instance representing the parent path
+	 * @throws {RangeError} If depth is negative
+	 *
+	 * @see {@link slice} - General segment extraction
+	 * @see {@link concat} - Combine paths
+	 *
+	 * @example
+	 * Basic usage
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * console.log(path.parent().toString()); // 'foo.bar'
+	 * console.log(path.parent(2).toString()); // 'foo'
+	 * console.log(path.parent(3).toString()); // '' (empty path)
+	 * ```
+	 *
+	 * @example
+	 * Exceeding depth returns empty path
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar');
+	 * console.log(path.parent(5).toString()); // '' (empty path, not error)
+	 * ```
+	 *
+	 * @example
+	 * With zero depth
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * const clone = path.parent(0); // Returns clone of full path
+	 * console.log(clone.toString()); // 'foo.bar.baz'
+	 * ```
+	 */
+	parent(depth: number = 1): Pathist {
+		if (depth < 0) {
+			throw new RangeError('Depth must be non-negative');
+		}
+
+		if (depth === 0) {
+			return this.slice();
+		}
+
+		if (depth > this.length) {
+			return Pathist.from('', this.cloneConfig());
+		}
+
+		return this.slice(0, -depth);
+	}
+
+	/**
 	 * Returns a new path that combines this path with one or more other paths.
 	 *
 	 * Creates a new path by concatenating all segments in order. The new path
@@ -1486,6 +1540,85 @@ export class Pathist {
 
 		const lastIdx = this.#findLastNodeIndex(firstIdx);
 		return this.slice(lastIdx + 1);
+	}
+
+	/**
+	 * Returns the parent node in the tree structure by removing nodes from the end.
+	 *
+	 * Navigates up the tree hierarchy by the specified depth, removing nodes from
+	 * the end of the node path. If the depth exceeds the number of nodes, returns
+	 * the first node (or empty path for root).
+	 *
+	 * @param depth - Number of node levels to go up (default: 1)
+	 * @returns A new Pathist instance representing the parent node path
+	 * @throws {RangeError} If depth is negative
+	 *
+	 * @see {@link parent} - Remove segments (not node-aware)
+	 * @see {@link lastNodePath} - Get path to last node
+	 * @see {@link firstNodePath} - Get path to first node
+	 * @see {@link nodePaths} - Iterate over all node paths
+	 *
+	 * @example
+	 * Basic usage
+	 * ```typescript
+	 * const path = Pathist.from('children[0].children[1].children[2].value');
+	 * console.log(path.lastNodePath().toString()); // 'children[0].children[1].children[2]'
+	 * console.log(path.parentNode().toString()); // 'children[0].children[1]'
+	 * console.log(path.parentNode(2).toString()); // 'children[0]'
+	 * console.log(path.parentNode(3).toString()); // '' (root)
+	 * ```
+	 *
+	 * @example
+	 * Path starting with index
+	 * ```typescript
+	 * const path = Pathist.from('[0].children[1].name');
+	 * console.log(path.parentNode().toString()); // '[0]'
+	 * console.log(path.parentNode(2).toString()); // '[0]' (can't go higher)
+	 * ```
+	 *
+	 * @example
+	 * Exceeding depth returns first node
+	 * ```typescript
+	 * const path = Pathist.from('children[0].children[1].value');
+	 * console.log(path.parentNode(10).toString()); // '' (root)
+	 * ```
+	 *
+	 * @example
+	 * No tree structure
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * console.log(path.parentNode().toString()); // '' (root, no nodes in path)
+	 * ```
+	 */
+	parentNode(depth: number = 1): Pathist {
+		if (depth < 0) {
+			throw new RangeError('Depth must be non-negative');
+		}
+
+		// Collect all node paths
+		const nodePaths = [...this.nodePaths()];
+
+		// If no nodes or only root, return empty path
+		if (nodePaths.length === 0) {
+			return Pathist.from('', this.cloneConfig());
+		}
+
+		// If depth is 0, return last node
+		if (depth === 0) {
+			return nodePaths[nodePaths.length - 1].slice();
+		}
+
+		// Calculate which node to return
+		// nodePaths includes all nodes (possibly root + actual nodes)
+		// We want to go back `depth` levels from the last node
+		const targetIndex = nodePaths.length - 1 - depth;
+
+		// If we've gone past the first node, return the first node
+		if (targetIndex < 0) {
+			return nodePaths[0].slice();
+		}
+
+		return nodePaths[targetIndex].slice();
 	}
 
 	/**

@@ -312,6 +312,121 @@ test('afterNodePath returns full path when no indices', (t) => {
 	t.not(after, p);
 });
 
+// parentNode() tests
+test('parentNode on path starting with index', (t) => {
+	const p = new Pathist('[0].children[1].name');
+	const parent = p.parentNode();
+	t.is(parent.string, '[0]');
+});
+
+test('parentNode on path starting with index - exceeding depth', (t) => {
+	const p = new Pathist('[0].children[1].name');
+	const parent = p.parentNode(2);
+	t.is(parent.string, '[0]'); // Can't go higher than first node
+});
+
+test('parentNode on path with no tree structure returns root', (t) => {
+	const p = new Pathist('foo.bar.baz');
+	const parent = p.parentNode();
+	t.is(parent.string, '');
+});
+
+test('parentNode on empty path returns root', (t) => {
+	const p = new Pathist('');
+	const parent = p.parentNode();
+	t.is(parent.string, '');
+});
+
+test('parentNode on single node returns root', (t) => {
+	const p = new Pathist('children[0].value');
+	const parent = p.parentNode();
+	t.is(parent.string, '');
+});
+
+test('parentNode throws on negative depth', (t) => {
+	const p = new Pathist('children[0].children[1]');
+	t.throws(() => p.parentNode(-1), {
+		instanceOf: RangeError,
+		message: /non-negative/,
+	});
+});
+
+test('parentNode propagates config to new instance', (t) => {
+	const p = new Pathist('items[0].items[1].items[2]', {
+		notation: Pathist.Notation.Bracket,
+		indices: Pathist.Indices.Ignore,
+		nodeChildrenProperties: ['items'],
+	});
+	const parent = p.parentNode();
+	t.is(parent.notation, Pathist.Notation.Bracket);
+	t.is(parent.indices, Pathist.Indices.Ignore);
+	t.deepEqual(parent.nodeChildrenProperties, new Set(['items']));
+});
+
+test('parentNode with custom child properties', (t) => {
+	const p = new Pathist('items[0].items[1].value', {
+		nodeChildrenProperties: ['items'],
+	});
+	const parent = p.parentNode();
+	t.is(parent.string, 'items[0]');
+});
+
+test('parentNode stops at non-child property boundary', (t) => {
+	const p = new Pathist('children[0].other[1].value', {
+		nodeChildrenProperties: ['children'],
+	});
+	const parent = p.parentNode();
+	// lastNodePath should be 'children[0]', so parent is root
+	t.is(parent.string, '');
+});
+
+// Parametric tests for parentNode with different depths
+const parentNodeDepthCases = [
+	{
+		path: 'children[0].children[1].children[2].children[3].value',
+		depth: 0,
+		expected: 'children[0].children[1].children[2].children[3]',
+		desc: 'depth 0 (last node)',
+	},
+	{
+		path: 'children[0].children[1].children[2].children[3].value',
+		depth: 1,
+		expected: 'children[0].children[1].children[2]',
+		desc: 'depth 1',
+	},
+	{
+		path: 'children[0].children[1].children[2].children[3].value',
+		depth: 2,
+		expected: 'children[0].children[1]',
+		desc: 'depth 2',
+	},
+	{
+		path: 'children[0].children[1].children[2].children[3].value',
+		depth: 3,
+		expected: 'children[0]',
+		desc: 'depth 3',
+	},
+	{
+		path: 'children[0].children[1].children[2].children[3].value',
+		depth: 4,
+		expected: '',
+		desc: 'depth 4 (root)',
+	},
+	{
+		path: 'children[0].children[1].children[2].children[3].value',
+		depth: 5,
+		expected: '',
+		desc: 'depth 5 (exceeds, returns root)',
+	},
+];
+
+for (const { path, depth, expected, desc } of parentNodeDepthCases) {
+	test(`parentNode with ${desc}`, (t) => {
+		const p = Pathist.from(path);
+		t.is(p.parentNode(depth).string, expected);
+	});
+}
+
 test('Path methods propagate config', (t) => {
 	const config = { nodeChildrenProperties: ['items'] as const };
 	const p = new Pathist('items[0].items[1].foo', config);
