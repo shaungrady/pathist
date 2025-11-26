@@ -1289,6 +1289,69 @@ export class Pathist {
 	}
 
 	/**
+	 * Generates paths to each successive node in the tree structure.
+	 *
+	 * Yields the path to each node level, starting with the root (empty path) and
+	 * progressively building up through each node in the tree.
+	 *
+	 * @returns A generator that yields Pathist instances for each node level
+	 *
+	 * @example
+	 * Full tree structure
+	 * ```typescript
+	 * const path = new Pathist('children[0].children[1].foo');
+	 * for (const nodePath of path.nodePaths()) {
+	 *   console.log(nodePath.string);
+	 * }
+	 * // Output:
+	 * // ''                            (root)
+	 * // 'children[0]'                 (first node)
+	 * // 'children[0].children[1]'     (second node)
+	 * ```
+	 *
+	 * @example
+	 * Path starting with index
+	 * ```typescript
+	 * const path = new Pathist('[0].children[1].children[2]');
+	 * const paths = [...path.nodePaths()];
+	 * // paths = [
+	 * //   Pathist(''),
+	 * //   Pathist('[0]'),
+	 * //   Pathist('[0].children[1]'),
+	 * //   Pathist('[0].children[1].children[2]')
+	 * // ]
+	 * ```
+	 *
+	 * @example
+	 * No tree structure - just root
+	 * ```typescript
+	 * const path = new Pathist('foo.bar');
+	 * const paths = [...path.nodePaths()];
+	 * // paths = [Pathist('')]
+	 * ```
+	 */
+	*nodePaths(): Generator<Pathist, void, undefined> {
+		// Always yield root first
+		yield Pathist.from('', this.cloneConfig());
+
+		const firstIdx = this.#findFirstNumericIndex();
+		if (firstIdx === -1) {
+			// No tree structure, only root was yielded
+			return;
+		}
+
+		const lastIdx = this.#findLastNodeIndex(firstIdx);
+
+		// Yield path at each node index
+		for (let i = firstIdx; i <= lastIdx; i++) {
+			const segment = this.segments[i];
+			if (typeof segment === 'number') {
+				yield this.slice(0, i + 1);
+			}
+		}
+	}
+
+	/**
 	 * Returns the path to the first node.
 	 *
 	 * - If the path starts with a numeric index, returns the path up to and including that index
