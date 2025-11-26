@@ -28,7 +28,7 @@ test('defaultNotation setter validates notation value', (t) => {
 		() => {
 			Pathist.defaultNotation = 'invalid' as any;
 		},
-		{ instanceOf: TypeError }
+		{ instanceOf: TypeError },
 	);
 	t.regex(error.message, /invalid notation/i);
 });
@@ -59,7 +59,7 @@ test('defaultIndices setter validates mode value', (t) => {
 		() => {
 			Pathist.defaultIndices = 'invalid' as any;
 		},
-		{ instanceOf: TypeError }
+		{ instanceOf: TypeError },
 	);
 	t.regex(error.message, /invalid indices mode/i);
 });

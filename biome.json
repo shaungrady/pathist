@@ -19,10 +19,12 @@
 			"recommended": true
 		}
 	},
+	"assist": {
+		"enabled": true
+	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "single",
-			"trailingCommas": "es5"
+			"quoteStyle": "single"
 		}
 	}
 }

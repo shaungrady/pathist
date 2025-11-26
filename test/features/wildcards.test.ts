@@ -19,7 +19,7 @@ test.serial('indexWildcards can be set with a Set', (t) => {
 	Pathist.indexWildcards = new Set([NaN, 'wild']);
 	t.deepEqual(
 		Array.from(Pathist.indexWildcards).filter((x) => typeof x === 'string'),
-		['wild']
+		['wild'],
 	);
 	// NaN requires special handling
 	t.true(Array.from(Pathist.indexWildcards).some((x) => Number.isNaN(x)));
@@ -55,7 +55,7 @@ test.serial('indexWildcards accepts negative numbers', (t) => {
 	Pathist.indexWildcards = [-1, -2, -999];
 	t.deepEqual(
 		Array.from(Pathist.indexWildcards).sort((a, b) => (a as number) - (b as number)),
-		[-999, -2, -1]
+		[-999, -2, -1],
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -83,13 +83,13 @@ test.serial('indexWildcards rejects non-negative finite numbers', (t) => {
 		() => {
 			Pathist.indexWildcards = [0];
 		},
-		{ message: /negative or non-finite/ }
+		{ message: /negative or non-finite/ },
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = [5];
 		},
-		{ message: /negative or non-finite/ }
+		{ message: /negative or non-finite/ },
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -100,19 +100,19 @@ test.serial('indexWildcards rejects numeric strings', (t) => {
 		() => {
 			Pathist.indexWildcards = ['0'];
 		},
-		{ message: /cannot be numeric strings/ }
+		{ message: /cannot be numeric strings/ },
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = ['123'];
 		},
-		{ message: /cannot be numeric strings/ }
+		{ message: /cannot be numeric strings/ },
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = ['01'];
 		},
-		{ message: /cannot be numeric strings/ }
+		{ message: /cannot be numeric strings/ },
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -130,19 +130,19 @@ test.serial('indexWildcards rejects invalid types', (t) => {
 		() => {
 			Pathist.indexWildcards = null as any;
 		},
-		{ message: /must be a Set, Array, string, or number/ }
+		{ message: /must be a Set, Array, string, or number/ },
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = undefined as any;
 		},
-		{ message: /must be a Set, Array, string, or number/ }
+		{ message: /must be a Set, Array, string, or number/ },
 	);
 	t.throws(
 		() => {
 			Pathist.indexWildcards = {} as any;
 		},
-		{ message: /must be a Set, Array, string, or number/ }
+		{ message: /must be a Set, Array, string, or number/ },
 	);
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -154,7 +154,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = [0, '*'];
 		},
-		{ message: /negative or non-finite/ }
+		{ message: /negative or non-finite/ },
 	);
 
 	// Arrays with numeric strings
@@ -162,7 +162,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = [-1, '123'];
 		},
-		{ message: /cannot be numeric strings/ }
+		{ message: /cannot be numeric strings/ },
 	);
 
 	// Sets with non-negative numbers
@@ -170,7 +170,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = new Set([42]);
 		},
-		{ message: /negative or non-finite/ }
+		{ message: /negative or non-finite/ },
 	);
 
 	// Sets with numeric strings
@@ -178,7 +178,7 @@ test.serial('indexWildcards validates values in collections', (t) => {
 		() => {
 			Pathist.indexWildcards = new Set(['*', '0']);
 		},
-		{ message: /cannot be numeric strings/ }
+		{ message: /cannot be numeric strings/ },
 	);
 
 	// Reset to default

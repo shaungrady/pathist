@@ -202,7 +202,6 @@ export class Pathist {
 		Pathist.#indexWildcards = validatedSet;
 	}
 
-
 	static get defaultNodeChildrenProperties(): ReadonlySet<string> {
 		return Pathist.#defaultNodeChildrenProperties;
 	}
@@ -251,7 +250,7 @@ export class Pathist {
 	static #validateNotation(notation: Notation): void {
 		if (!(notation in Pathist.Notation)) {
 			throw new TypeError(
-				`Invalid notation: "${notation}". Must be one of: ${Object.keys(Pathist.Notation).join(', ')}`
+				`Invalid notation: "${notation}". Must be one of: ${Object.keys(Pathist.Notation).join(', ')}`,
 			);
 		}
 	}
@@ -259,7 +258,7 @@ export class Pathist {
 	static #validateIndices(mode: Indices): void {
 		if (!(mode in Pathist.Indices)) {
 			throw new TypeError(
-				`Invalid indices mode: "${mode}". Must be one of: ${Object.keys(Pathist.Indices).join(', ')}`
+				`Invalid indices mode: "${mode}". Must be one of: ${Object.keys(Pathist.Indices).join(', ')}`,
 			);
 		}
 	}
@@ -269,19 +268,19 @@ export class Pathist {
 			// Must be negative or non-finite
 			if (value >= 0 && Number.isFinite(value)) {
 				throw new TypeError(
-					`Invalid wildcard: ${value}. Numeric wildcards must be negative or non-finite (Infinity, -Infinity, NaN)`
+					`Invalid wildcard: ${value}. Numeric wildcards must be negative or non-finite (Infinity, -Infinity, NaN)`,
 				);
 			}
 		} else if (typeof value === 'string') {
 			// Must not be a numeric string (cannot match /^[0-9]+$/)
 			if (/^[0-9]+$/.test(value)) {
 				throw new TypeError(
-					`Invalid wildcard: "${value}". String wildcards cannot be numeric strings matching /^[0-9]+$/`
+					`Invalid wildcard: "${value}". String wildcards cannot be numeric strings matching /^[0-9]+$/`,
 				);
 			}
 		} else {
 			throw new TypeError(
-				`Invalid wildcard type: ${typeof value}. Wildcards must be string or number`
+				`Invalid wildcard type: ${typeof value}. Wildcards must be string or number`,
 			);
 		}
 	}
@@ -368,7 +367,7 @@ export class Pathist {
 	static #validatePropertySegment(segment: string, index: number): void {
 		if (Pathist.#indexWildcards.has(segment)) {
 			throw new Error(
-				`Index wildcard '${segment}' cannot appear in property position (at index ${index})`
+				`Index wildcard '${segment}' cannot appear in property position (at index ${index})`,
 			);
 		}
 	}
@@ -1600,7 +1599,7 @@ export class Pathist {
 				}
 				// Check if string requires bracket notation (dots, brackets, spaces, etc.)
 				if (Pathist.#requiresBracketNotation(segment)) {
-					return `["${segment.replaceAll(`"`, `\"`)}}"]`;
+					return `["${segment.replaceAll(`"`, `\\"`)}"]`;
 				}
 				// Regular string segment - use dot notation
 				if (index === 0) {
@@ -1621,7 +1620,7 @@ export class Pathist {
 				if (Pathist.#isWildcard(segment)) {
 					return `[${segment}]`;
 				}
-				return `["${segment.replaceAll(`"`, `\"`)}"]`;
+				return `["${segment.replaceAll(`"`, `\\"`)}"]`;
 			})
 			.join('');
 	}
@@ -1642,7 +1641,7 @@ export type Notation = (typeof Pathist.Notation)[keyof typeof Pathist.Notation];
 /**
  * The mode for handling numeric indices during path comparisons.
  *
- * Valid values: `Pathist.Indices.Preserve'` or `Pathist.Indices.Ignore`
+ * Valid values: `Pathist.Indices.Preserve` or `Pathist.Indices.Ignore`
  */
 export type Indices = (typeof Pathist.Indices)[keyof typeof Pathist.Indices];
 

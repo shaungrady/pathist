@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      run: pnpm exec biome check --write --staged --no-errors-on-unmatched
+    - name: tests
+      run: pnpm test --fail-fast
+    - name: tsc
+      run: pnpm exec tsc --noEmit
+

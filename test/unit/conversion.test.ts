@@ -120,7 +120,7 @@ test('toString validates notation parameter', (t) => {
 		() => {
 			p.toString('invalid' as any);
 		},
-		{ instanceOf: TypeError }
+		{ instanceOf: TypeError },
 	);
 	t.regex(error.message, /invalid notation/i);
 });
