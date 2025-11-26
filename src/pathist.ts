@@ -55,8 +55,6 @@ export interface PathistConfig {
  * It supports multiple notation styles (dot, bracket, and mixed), handles numeric indices,
  * and offers powerful comparison and manipulation methods.
  *
- * @todo Order methods in a logical way for TypeDoc generation.
- *
  * @example
  * Basic usage
  * ```typescript
@@ -103,70 +101,59 @@ export class Pathist {
 	static #indexWildcards: ReadonlySet<string | number> = new Set([-1, '*']);
 	static #defaultNodeChildrenProperties: ReadonlySet<string> = new Set(['children']);
 
-	// TODO: Move/combine this with the setter since typedoc doesn't support individual docs for a getter and a setter
 	/**
-	 * Gets the default notation style used when converting paths to strings.
+	 * Gets or sets the default notation style used when converting paths to strings.
 	 *
+	 * When setting, the notation is validated and applied to all new Pathist instances.
+	 *
+	 * @param notation - When setting: The notation style to use as default
+	 * @throws {TypeError} When setting: If the notation value is invalid
 	 * @defaultValue `Pathist.Notation.Mixed`
 	 */
 	static get defaultNotation(): Notation {
 		return Pathist.#defaultNotation;
 	}
 
-	/**
-	 * Sets the default notation style for all new Pathist instances.
-	 *
-	 * @param notation - The notation style to use as default
-	 * @throws {TypeError} If the notation value is invalid
-	 */
 	static set defaultNotation(notation: Notation) {
 		Pathist.#validateNotation(notation);
 		Pathist.#defaultNotation = notation;
 	}
 
-	// TODO: Move/combine this with the setter since typedoc doesn't support individual docs for a getter and a setter
 	/**
-	 * Gets the default indices comparison mode.
+	 * Gets or sets the default indices comparison mode.
 	 *
+	 * When setting, the mode is validated and applied to all new Pathist instances.
+	 *
+	 * @param mode - When setting: The indices mode to use as default
+	 * @throws {TypeError} When setting: If the indices mode is invalid
 	 * @defaultValue `Pathist.Indices.Preserve`
 	 */
 	static get defaultIndices(): Indices {
 		return Pathist.#defaultIndices;
 	}
 
-	/**
-	 * Sets the default indices comparison mode for all new Pathist instances.
-	 *
-	 * @param mode - The indices mode to use as default
-	 * @throws {TypeError} If the indices mode is invalid
-	 */
 	static set defaultIndices(mode: Indices) {
 		Pathist.#validateIndices(mode);
 		Pathist.#defaultIndices = mode;
 	}
 
-	// TODO: Move/combine this with the setter since typedoc doesn't support individual docs for a getter and a setter
 	/**
-	 * Gets the set of values that are treated as index wildcards.
+	 * Gets or sets the values that are treated as index wildcards.
 	 *
 	 * Wildcard values match any numeric index during comparisons.
 	 *
+	 * When setting, wildcard values can be:
+	 * - Negative numbers or non-finite numbers (Infinity, -Infinity, NaN)
+	 * - Strings that don't match the pattern `/^[0-9]+$/`
+	 *
+	 * @param value - When setting: A Set, Array, or single string/number value to use as wildcards
+	 * @throws {TypeError} When setting: If any wildcard value is invalid (e.g., positive finite number or numeric string)
 	 * @defaultValue `Set([-1, '*'])`
 	 */
 	static get indexWildcards(): ReadonlySet<string | number> {
 		return Pathist.#indexWildcards;
 	}
 
-	/**
-	 * Sets the values that should be treated as index wildcards.
-	 *
-	 * Wildcard values can be:
-	 * - Negative numbers or non-finite numbers (Infinity, -Infinity, NaN)
-	 * - Strings that don't match the pattern `/^[0-9]+$/`
-	 *
-	 * @param value - A Set, Array, or single string/number value to use as wildcards
-	 * @throws {TypeError} If any wildcard value is invalid (e.g., positive finite number or numeric string)
-	 */
 	static set indexWildcards(value:
 		| ReadonlySet<string | number>
 		| Array<string | number>
@@ -402,33 +389,6 @@ export class Pathist {
 	}
 
 	static #requiresBracketNotation(segment: string): boolean {
-		/**
-		 * @TODO:
-		 *  This should check if any characters being used aren't in an allowed list.
-		 *
-		 *  For dot notation (obj.property), the property name must be a valid JavaScript identifier, which allows:
-		 *
-		 * Allowed characters:
-		 *
-		 *     Letters (a–z, A–Z)
-		 *     Numbers (0–9)
-		 *     Underscore (_)
-		 *     Dollar sign ($)
-		 *
-		 *
-		 * Restrictions:
-		 *
-		 *     Cannot start with a number
-		 *     Can be a reserved word (unlike variable declarations)
-		 *
-		 * Invalid characters requiring bracket notation (obj['property']):
-		 *
-		 *     Special characters: ., -, (space), and others not in the allowed list
-		 *     Names starting with digits
-		 *
-		 * Should escape double quotes (") with a backslash (\")
-		 */
-
 		// Empty strings need bracket notation
 		if (segment.length === 0) {
 			return true;
@@ -1572,7 +1532,11 @@ export class Pathist {
 		while (i < input.length) {
 			const char = input[i];
 
-			if (char === '[') {
+			if (char === '\\' && i + 1 < input.length && input[i + 1] === '.') {
+				// Escaped dot - add literal dot to current segment
+				current += '.';
+				i += 2; // Skip both backslash and dot
+			} else if (char === '[') {
 				// Save any accumulated dot-notation segment
 				if (current) {
 					Pathist.#validatePropertySegment(current, segmentStart);
@@ -1670,8 +1634,15 @@ export class Pathist {
 	}
 
 	private toDotNotation(): string {
-		// TODO: Throw an error if any segments require bracket notation?
-		return this.segments.join('.');
+		return this.segments
+			.map((segment) => {
+				if (typeof segment === 'number') {
+					return String(segment);
+				}
+				// Escape dots within segment names so they don't get parsed as separators
+				return segment.replaceAll('.', '\\.');
+			})
+			.join('.');
 	}
 }
 
