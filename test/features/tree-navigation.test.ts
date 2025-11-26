@@ -335,11 +335,10 @@ test('nodePaths yields root and nodes for path starting with index', (t) => {
 	const p = new Pathist('[0].children[1].children[2]');
 	const paths = [...p.nodePaths()];
 
-	t.is(paths.length, 4);
-	t.is(paths[0].string, '');
-	t.is(paths[1].string, '[0]');
-	t.is(paths[2].string, '[0].children[1]');
-	t.is(paths[3].string, '[0].children[1].children[2]');
+	t.is(paths.length, 3);
+	t.is(paths[0].string, '[0]');
+	t.is(paths[1].string, '[0].children[1]');
+	t.is(paths[2].string, '[0].children[1].children[2]');
 });
 
 test('nodePaths yields only root for path with no indices', (t) => {

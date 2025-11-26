@@ -35,9 +35,19 @@ function extractMethods(content) {
 		) {
 			const methodName = line.substring(4).trim();
 
-			// Skip forward to find description (skip the signature line)
+			// Skip forward to find description
 			let description = '';
 			let j = i + 1;
+
+			// For accessors, skip to "#### Get Signature" section first
+			if (currentSection === 'Accessors') {
+				while (j < lines.length && !lines[j].startsWith('#### Get Signature')) {
+					j++;
+				}
+				if (j < lines.length) {
+					j++; // Move past the "#### Get Signature" line
+				}
+			}
 
 			// Skip signature lines (starting with >)
 			while (j < lines.length && (lines[j].startsWith('>') || lines[j].trim() === '')) {
