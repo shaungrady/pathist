@@ -25,5 +25,6 @@
 	"enumMembersFormat": "table",
 	"typeDeclarationFormat": "table",
 	"indexFormat": "table",
-	"remarkPlugins": ["remark-toc"]
+	"remarkPlugins": ["remark-toc"],
+	"gitRevision": "main"
 }

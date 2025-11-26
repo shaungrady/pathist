@@ -589,13 +589,14 @@ export class Pathist {
 	 *
 	 * @returns A new array containing all path segments
 	 *
+	 * @see {@link array} - Getter alias for this method
+	 * @see {@link toString} - Convert to string representation
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = Pathist.from('foo.bar[0].baz');
 	 * console.log(path.toArray()); // ['foo', 'bar', 0, 'baz']
 	 * ```
-	 *
-	 * @see {@link array} - Getter alias for this method
 	 */
 	toArray(): PathSegment[] {
 		// Return a copy to maintain immutability
@@ -605,7 +606,7 @@ export class Pathist {
 	/**
 	 * Gets the path as an array of segments.
 	 *
-	 * Alias for {@link toArray}.
+	 * @see {@link toArray} - Method form of this getter
 	 */
 	get array(): PathSegment[] {
 		return this.toArray();
@@ -620,6 +621,10 @@ export class Pathist {
 	 * @param notation - Optional notation style to use (overrides instance default)
 	 * @returns The path as a string
 	 * @throws {TypeError} If the notation value is invalid
+	 *
+	 * @see {@link string} - Getter alias for this method (uses instance default notation)
+	 * @see {@link toArray} - Convert to array representation
+	 * @see {@link toJSONPath} - Convert to JSONPath format
 	 *
 	 * @example
 	 * Default notation (Mixed)
@@ -639,8 +644,6 @@ export class Pathist {
 	 * ```typescript
 	 * console.log(path.toString(Pathist.Notation.Dot)); // 'foo.bar.0.baz'
 	 * ```
-	 *
-	 * @see {@link string} - Getter alias for this method (uses instance default notation)
 	 */
 	toString(notation?: Notation): string {
 		const resolved = notation ?? this.notation;
@@ -677,7 +680,7 @@ export class Pathist {
 	/**
 	 * Gets the path as a string using the instance's default notation.
 	 *
-	 * Alias for {@link toString} with no arguments.
+	 * @see {@link toString} - Method form of this getter
 	 */
 	get string(): string {
 		return this.toString();
@@ -690,6 +693,10 @@ export class Pathist {
 	 * the path to a JSONPath selector string starting with `$` (the root).
 	 *
 	 * @returns The path as a JSONPath string
+	 *
+	 * @see {@link jsonPath} - Getter alias for this method
+	 * @see {@link toString} - Convert to standard notation
+	 * @see {@link toArray} - Convert to array representation
 	 *
 	 * @example
 	 * Basic usage
@@ -711,8 +718,6 @@ export class Pathist {
 	 * const path = Pathist.from('items[*].name');
 	 * console.log(path.toJSONPath()); // '$.items[*].name'
 	 * ```
-	 *
-	 * @see {@link jsonPath} - Getter alias for this method
 	 */
 	toJSONPath(): string {
 		// Empty path returns root
@@ -750,7 +755,7 @@ export class Pathist {
 	/**
 	 * Gets the path as a JSONPath string.
 	 *
-	 * Alias for {@link toJSONPath}.
+	 * @see {@link toJSONPath} - Method form of this getter
 	 */
 	get jsonPath(): string {
 		return this.toJSONPath();
@@ -764,6 +769,9 @@ export class Pathist {
 	 * Makes the Pathist instance iterable, allowing use in for...of loops and spread operators.
 	 *
 	 * @returns An iterator over the path segments
+	 *
+	 * @see {@link toArray} - Get all segments as an array
+	 * @see {@link nodePaths} - Iterate over tree node paths
 	 *
 	 * @example
 	 * Using for...of
@@ -1133,6 +1141,10 @@ export class Pathist {
 	 * @param end - Zero-based index before which to end extraction (default: path length)
 	 * @returns A new Pathist instance containing the extracted segments
 	 *
+	 * @see {@link concat} - Combine paths sequentially
+	 * @see {@link merge} - Intelligently merge paths with overlap detection
+	 * @see {@link pathTo} - Extract path up to a match
+	 *
 	 * @example
 	 * ```typescript
 	 * const path = Pathist.from('foo.bar.baz.qux');
@@ -1154,6 +1166,9 @@ export class Pathist {
 	 * @param paths - One or more paths to concatenate
 	 * @returns A new Pathist instance containing all concatenated segments
 	 * @throws {TypeError} If any path input is invalid
+	 *
+	 * @see {@link merge} - Intelligently merge paths with overlap detection
+	 * @see {@link slice} - Extract subset of segments
 	 *
 	 * @example
 	 * ```typescript
@@ -1181,6 +1196,105 @@ export class Pathist {
 		}
 
 		return Pathist.from(allSegments, this.cloneConfig());
+	}
+
+	/**
+	 * Intelligently merges another path with this path by detecting overlapping segments.
+	 *
+	 * Finds the longest suffix of this path that matches a prefix of the other path,
+	 * then combines them by merging at the overlap point. When overlapping segments
+	 * include wildcards, concrete values take precedence.
+	 *
+	 * @param path - The path to merge with this path
+	 * @returns A new Pathist instance containing the merged path
+	 * @throws {TypeError} If the path input is invalid
+	 *
+	 * @see {@link concat} - Simple concatenation without overlap detection
+	 * @see {@link slice} - Extract subset of segments
+	 * @see {@link positionOf} - Find position of subsequence
+	 *
+	 * @example
+	 * Basic merge with overlap
+	 * ```typescript
+	 * const left = Pathist.from('foo.bar.baz');
+	 * const right = Pathist.from('baz.qux');
+	 * console.log(left.merge(right).toString()); // 'foo.bar.baz.qux'
+	 * ```
+	 *
+	 * @example
+	 * Merge with wildcard replacement
+	 * ```typescript
+	 * const left = Pathist.from('foo[*].bar');
+	 * const right = Pathist.from('foo[5].bar.baz');
+	 * console.log(left.merge(right).toString()); // 'foo[5].bar.baz'
+	 * // The wildcard is replaced with the concrete index
+	 * ```
+	 *
+	 * @example
+	 * No overlap - simple concatenation
+	 * ```typescript
+	 * const left = Pathist.from('foo.bar');
+	 * const right = Pathist.from('qux.quux');
+	 * console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
+	 * ```
+	 */
+	merge(path: Pathist | PathistInput): Pathist {
+		const rightSegments = Pathist.#toSegments(path);
+		if (rightSegments === null) {
+			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
+		}
+
+		// If either path is empty, just concatenate
+		if (this.segments.length === 0) {
+			return Pathist.from([...rightSegments], this.cloneConfig());
+		}
+		if (rightSegments.length === 0) {
+			return Pathist.from([...this.segments], this.cloneConfig());
+		}
+
+		// Find the longest overlap: suffix of left path matches prefix of right path
+		let overlapLength = 0;
+		const maxOverlap = Math.min(this.segments.length, rightSegments.length);
+
+		for (let len = maxOverlap; len > 0; len--) {
+			const prefix = rightSegments.slice(0, len);
+			const pos = this.lastPositionOf(prefix);
+
+			// Check if the prefix appears at the end of the left path
+			if (pos !== -1 && pos === this.segments.length - len) {
+				overlapLength = len;
+				break;
+			}
+		}
+
+		// Build the merged segments
+		const mergedSegments: PathSegment[] = [...this.segments];
+
+		if (overlapLength > 0) {
+			// Replace overlapping wildcards with concrete values
+			for (let i = 0; i < overlapLength; i++) {
+				const leftSegment = this.segments[this.segments.length - overlapLength + i];
+				const rightSegment = rightSegments[i];
+
+				const leftIsWildcard = Pathist.#isWildcard(leftSegment);
+				const rightIsWildcard = Pathist.#isWildcard(rightSegment);
+
+				// If right has a concrete value and left has wildcard, use concrete
+				if (leftIsWildcard && !rightIsWildcard) {
+					mergedSegments[this.segments.length - overlapLength + i] = rightSegment;
+				}
+			}
+
+			// Add non-overlapping segments from right path
+			for (let i = overlapLength; i < rightSegments.length; i++) {
+				mergedSegments.push(rightSegments[i]);
+			}
+		} else {
+			// No overlap - just concatenate
+			mergedSegments.push(...rightSegments);
+		}
+
+		return Pathist.from(mergedSegments, this.cloneConfig());
 	}
 
 	// ============================================================================
@@ -1259,108 +1373,6 @@ export class Pathist {
 		}
 
 		return lastIdx;
-	}
-
-	/**
-	 * Returns the numeric index values from the contiguous tree structure.
-	 *
-	 * Extracts all numeric indices from the tree path, representing the tree path coordinates.
-	 *
-	 * @returns An array of numeric indices, or an empty array if no tree structure exists
-	 *
-	 * @example
-	 * ```typescript
-	 * const path = Pathist.from('items[5].children[1].children[3].name');
-	 * console.log(path.nodeIndices()); // [5, 1, 3]
-	 *
-	 * const path2 = Pathist.from('foo.bar.baz');
-	 * console.log(path2.nodeIndices()); // []
-	 * ```
-	 */
-	nodeIndices(): number[] {
-		const firstIdx = this.#findFirstNumericIndex();
-		if (firstIdx === -1) {
-			return [];
-		}
-
-		const lastIdx = this.#findLastNodeIndex(firstIdx);
-		const values: number[] = [];
-
-		// Collect all numeric values from firstIdx to lastIdx
-		for (let i = firstIdx; i <= lastIdx; i++) {
-			const segment = this.segments[i];
-			if (typeof segment === 'number') {
-				values.push(segment);
-			}
-		}
-
-		return values;
-	}
-
-	/**
-	 * Generates paths to each successive node in the tree structure.
-	 *
-	 * Yields the path to each node level, starting with the root (empty path) and
-	 * progressively building up through each node in the tree.
-	 *
-	 * @returns A generator that yields Pathist instances for each node level
-	 *
-	 * @example
-	 * Full tree structure
-	 * ```typescript
-	 * const path = new Pathist('children[0].children[1].foo');
-	 * for (const nodePath of path.nodePaths()) {
-	 *   console.log(nodePath.string);
-	 * }
-	 * // Output:
-	 * // ''                            (root)
-	 * // 'children[0]'                 (first node)
-	 * // 'children[0].children[1]'     (second node)
-	 * ```
-	 *
-	 * @example
-	 * Path starting with index
-	 * ```typescript
-	 * const path = new Pathist('[0].children[1].children[2]');
-	 * const paths = [...path.nodePaths()];
-	 * // paths = [
-	 * //   Pathist('[0]'),
-	 * //   Pathist('[0].children[1]'),
-	 * //   Pathist('[0].children[1].children[2]')
-	 * // ]
-	 * ```
-	 *
-	 * @example
-	 * No tree structure - just root
-	 * ```typescript
-	 * const path = new Pathist('foo.bar');
-	 * const paths = [...path.nodePaths()];
-	 * // paths = [Pathist('')]
-	 * ```
-	 */
-	*nodePaths(): Generator<Pathist, void, undefined> {
-		const firstIdx = this.#findFirstNumericIndex();
-
-		// If no numeric indices, only yield root
-		if (firstIdx === -1) {
-			yield Pathist.from('', this.cloneConfig());
-			return;
-		}
-
-		// If path doesn't start with an index, yield root first (following firstNodePath logic)
-		if (firstIdx > 0) {
-			yield Pathist.from('', this.cloneConfig());
-		}
-
-		const lastIdx = this.#findLastNodeIndex(firstIdx);
-
-		// Yield path at each node index
-		for (let i = firstIdx; i <= lastIdx; i++) {
-			const segment = this.segments[i];
-			if (typeof segment === 'number') {
-				yield this.slice(0, i + 1);
-			}
-		}
 	}
 
 	/**
@@ -1477,98 +1489,115 @@ export class Pathist {
 	}
 
 	/**
-	 * Intelligently merges another path with this path by detecting overlapping segments.
+	 * Returns the numeric index values from the contiguous tree structure.
 	 *
-	 * Finds the longest suffix of this path that matches a prefix of the other path,
-	 * then combines them by merging at the overlap point. When overlapping segments
-	 * include wildcards, concrete values take precedence.
+	 * Extracts all numeric indices from the tree path, representing the tree path coordinates.
 	 *
-	 * @param path - The path to merge with this path
-	 * @returns A new Pathist instance containing the merged path
-	 * @throws {TypeError} If the path input is invalid
+	 * @returns An array of numeric indices, or an empty array if no tree structure exists
 	 *
-	 * @example
-	 * Basic merge with overlap
-	 * ```typescript
-	 * const left = Pathist.from('foo.bar.baz');
-	 * const right = Pathist.from('baz.qux');
-	 * console.log(left.merge(right).toString()); // 'foo.bar.baz.qux'
-	 * ```
+	 * @see {@link nodePaths} - Generate paths to each node
+	 * @see {@link firstNodePath} - Get path to first node
+	 * @see {@link lastNodePath} - Get path to last node
+	 * @see {@link afterNodePath} - Get path after tree structure
 	 *
 	 * @example
-	 * Merge with wildcard replacement
 	 * ```typescript
-	 * const left = Pathist.from('foo[*].bar');
-	 * const right = Pathist.from('foo[5].bar.baz');
-	 * console.log(left.merge(right).toString()); // 'foo[5].bar.baz'
-	 * // The wildcard is replaced with the concrete index
-	 * ```
+	 * const path = Pathist.from('items[5].children[1].children[3].name');
+	 * console.log(path.nodeIndices()); // [5, 1, 3]
 	 *
-	 * @example
-	 * No overlap - simple concatenation
-	 * ```typescript
-	 * const left = Pathist.from('foo.bar');
-	 * const right = Pathist.from('qux.quux');
-	 * console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
+	 * const path2 = Pathist.from('foo.bar.baz');
+	 * console.log(path2.nodeIndices()); // []
 	 * ```
 	 */
-	merge(path: Pathist | PathistInput): Pathist {
-		const rightSegments = Pathist.#toSegments(path);
-		if (rightSegments === null) {
-			throw new TypeError('Invalid path input: path must be string, array, or Pathist instance');
+	nodeIndices(): number[] {
+		const firstIdx = this.#findFirstNumericIndex();
+		if (firstIdx === -1) {
+			return [];
 		}
 
-		// If either path is empty, just concatenate
-		if (this.segments.length === 0) {
-			return Pathist.from([...rightSegments], this.cloneConfig());
-		}
-		if (rightSegments.length === 0) {
-			return Pathist.from([...this.segments], this.cloneConfig());
-		}
+		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		const values: number[] = [];
 
-		// Find the longest overlap: suffix of left path matches prefix of right path
-		let overlapLength = 0;
-		const maxOverlap = Math.min(this.segments.length, rightSegments.length);
-
-		for (let len = maxOverlap; len > 0; len--) {
-			const prefix = rightSegments.slice(0, len);
-			const pos = this.lastPositionOf(prefix);
-
-			// Check if the prefix appears at the end of the left path
-			if (pos !== -1 && pos === this.segments.length - len) {
-				overlapLength = len;
-				break;
+		// Collect all numeric values from firstIdx to lastIdx
+		for (let i = firstIdx; i <= lastIdx; i++) {
+			const segment = this.segments[i];
+			if (typeof segment === 'number') {
+				values.push(segment);
 			}
 		}
 
-		// Build the merged segments
-		const mergedSegments: PathSegment[] = [...this.segments];
+		return values;
+	}
 
-		if (overlapLength > 0) {
-			// Replace overlapping wildcards with concrete values
-			for (let i = 0; i < overlapLength; i++) {
-				const leftSegment = this.segments[this.segments.length - overlapLength + i];
-				const rightSegment = rightSegments[i];
+	/**
+	 * Generates paths to each successive node in the tree structure.
+	 *
+	 * Yields the path to each node level, starting with the root (empty path) and
+	 * progressively building up through each node in the tree.
+	 *
+	 * @returns A generator that yields Pathist instances for each node level
+	 *
+	 * @see {@link nodeIndices} - Get numeric indices as array
+	 * @see {@link firstNodePath} - Get path to first node
+	 * @see {@link lastNodePath} - Get path to last node
+	 * @see {@link Symbol.iterator} - Iterate over segments
+	 *
+	 * @example
+	 * Full tree structure
+	 * ```typescript
+	 * const path = new Pathist('children[0].children[1].foo');
+	 * for (const nodePath of path.nodePaths()) {
+	 *   console.log(nodePath.string);
+	 * }
+	 * // Output:
+	 * // ''                            (root)
+	 * // 'children[0]'                 (first node)
+	 * // 'children[0].children[1]'     (second node)
+	 * ```
+	 *
+	 * @example
+	 * Path starting with index
+	 * ```typescript
+	 * const path = new Pathist('[0].children[1].children[2]');
+	 * const paths = [...path.nodePaths()];
+	 * // paths = [
+	 * //   Pathist('[0]'),
+	 * //   Pathist('[0].children[1]'),
+	 * //   Pathist('[0].children[1].children[2]')
+	 * // ]
+	 * ```
+	 *
+	 * @example
+	 * No tree structure - just root
+	 * ```typescript
+	 * const path = new Pathist('foo.bar');
+	 * const paths = [...path.nodePaths()];
+	 * // paths = [Pathist('')]
+	 * ```
+	 */
+	*nodePaths(): Generator<Pathist, void, undefined> {
+		const firstIdx = this.#findFirstNumericIndex();
 
-				const leftIsWildcard = Pathist.#isWildcard(leftSegment);
-				const rightIsWildcard = Pathist.#isWildcard(rightSegment);
-
-				// If right has a concrete value and left has wildcard, use concrete
-				if (leftIsWildcard && !rightIsWildcard) {
-					mergedSegments[this.segments.length - overlapLength + i] = rightSegment;
-				}
-			}
-
-			// Add non-overlapping segments from right path
-			for (let i = overlapLength; i < rightSegments.length; i++) {
-				mergedSegments.push(rightSegments[i]);
-			}
-		} else {
-			// No overlap - just concatenate
-			mergedSegments.push(...rightSegments);
+		// If no numeric indices, only yield root
+		if (firstIdx === -1) {
+			yield Pathist.from('', this.cloneConfig());
+			return;
 		}
 
-		return Pathist.from(mergedSegments, this.cloneConfig());
+		// If path doesn't start with an index, yield root first (following firstNodePath logic)
+		if (firstIdx > 0) {
+			yield Pathist.from('', this.cloneConfig());
+		}
+
+		const lastIdx = this.#findLastNodeIndex(firstIdx);
+
+		// Yield path at each node index
+		for (let i = firstIdx; i <= lastIdx; i++) {
+			const segment = this.segments[i];
+			if (typeof segment === 'number') {
+				yield this.slice(0, i + 1);
+			}
+		}
 	}
 
 	// ============================================================================
