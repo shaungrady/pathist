@@ -7,7 +7,7 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"build": "tsc",
-		"build:docs": "typedoc",
+		"build:docs": "typedoc && node scripts/add-method-toc.js",
 		"test": "ava",
 		"test:watch": "ava --watch",
 		"lint": "biome lint .",
