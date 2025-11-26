@@ -6,7 +6,7 @@
 
 # Type Alias: Notation
 
-> **Notation** = *typeof* [`Notation`](../classes/Pathist.md#notation)\[keyof *typeof* [`Notation`](../classes/Pathist.md#notation)\]
+> **Notation** = *typeof* [`Notation`](../classes/Pathist.md#notation)\[keyof *typeof* [`Notation`](../classes/Pathist.md#notation)]
 
 Defined in: pathist.ts:1704
 

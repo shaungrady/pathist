@@ -17,6 +17,7 @@ and offers powerful comparison and manipulation methods.
 ## Examples
 
 Basic usage
+
 ```typescript
 const path = Pathist.from('foo.bar.baz');
 console.log(path.length); // 3
@@ -24,6 +25,7 @@ console.log(path.toArray()); // ['foo', 'bar', 'baz']
 ```
 
 Path comparison
+
 ```typescript
 const path1 = Pathist.from('foo.bar');
 const path2 = Pathist.from('foo.bar.baz');
@@ -42,17 +44,10 @@ Creates a new Pathist instance from a string, array, or existing Pathist.
 
 #### Parameters
 
-##### input
-
-[`PathistInput`](../type-aliases/PathistInput.md)
-
-The path input (string like "foo.bar", array like ['foo', 'bar'], or Pathist instance)
-
-##### config?
-
-[`PathistConfig`](../interfaces/PathistConfig.md)
-
-Optional configuration for notation, indices mode, and node children properties
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `input` | [`PathistInput`](../type-aliases/PathistInput.md) | The path input (string like "foo.bar", array like \['foo', 'bar'], or Pathist instance) |
+| `config?` | [`PathistConfig`](../interfaces/PathistConfig.md) | Optional configuration for notation, indices mode, and node children properties |
 
 #### Returns
 
@@ -69,16 +64,19 @@ If array segments contain invalid types (must be string or number)
 #### Examples
 
 From string
+
 ```typescript
 const path = Pathist.from('foo.bar.baz');
 ```
 
 From array
+
 ```typescript
 const path = Pathist.from(['foo', 'bar', 0, 'baz']);
 ```
 
 With custom configuration
+
 ```typescript
 const path = Pathist.from('foo.bar', {
   notation: Pathist.Notation.Bracket,
@@ -88,67 +86,16 @@ const path = Pathist.from('foo.bar', {
 
 ## Properties
 
-### Notation
-
-> `readonly` `static` **Notation**: `object`
-
-Defined in: pathist.ts:86
-
-Notation styles for converting paths to strings.
-
-- `Mixed`: Combines dot notation for properties and bracket notation for indices (e.g., `foo.bar[0].baz`)
-- `Dot`: Uses dot notation exclusively (e.g., `foo.bar.0.baz`)
-- `Bracket`: Uses bracket notation exclusively (e.g., `["foo"]["bar"][0]["baz"]`)
-
-#### Mixed
-
-> `readonly` **Mixed**: `"Mixed"` = `'Mixed'`
-
-#### Dot
-
-> `readonly` **Dot**: `"Dot"` = `'Dot'`
-
-#### Bracket
-
-> `readonly` **Bracket**: `"Bracket"` = `'Bracket'`
-
-***
-
-### Indices
-
-> `readonly` `static` **Indices**: `object`
-
-Defined in: pathist.ts:98
-
-Modes for handling numeric indices during path comparisons.
-
-- `Preserve`: Numeric indices must match exactly for paths to be considered equal
-- `Ignore`: Any numeric index matches any other numeric index (useful for comparing paths across different array positions)
-
-#### Preserve
-
-> `readonly` **Preserve**: `"Preserve"` = `'Preserve'`
-
-#### Ignore
-
-> `readonly` **Ignore**: `"Ignore"` = `'Ignore'`
-
-***
-
-### length
-
-> `readonly` **length**: `number`
-
-Defined in: pathist.ts:492
-
-The number of segments in this path.
-
-#### Example
-
-```typescript
-const path = Pathist.from('foo.bar.baz');
-console.log(path.length); // 3
-```
+| Property | Modifier | Type | Description | Defined in |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="notation"></a> `Notation` | `readonly` | `object` | Notation styles for converting paths to strings. - `Mixed`: Combines dot notation for properties and bracket notation for indices (e.g., `foo.bar[0].baz`) - `Dot`: Uses dot notation exclusively (e.g., `foo.bar.0.baz`) - `Bracket`: Uses bracket notation exclusively (e.g., `["foo"]["bar"][0]["baz"]`) | pathist.ts:86 |
+| `Notation.Mixed` | `readonly` | `"Mixed"` | - | pathist.ts:87 |
+| `Notation.Dot` | `readonly` | `"Dot"` | - | pathist.ts:88 |
+| `Notation.Bracket` | `readonly` | `"Bracket"` | - | pathist.ts:89 |
+| <a id="indices"></a> `Indices` | `readonly` | `object` | Modes for handling numeric indices during path comparisons. - `Preserve`: Numeric indices must match exactly for paths to be considered equal - `Ignore`: Any numeric index matches any other numeric index (useful for comparing paths across different array positions) | pathist.ts:98 |
+| `Indices.Preserve` | `readonly` | `"Preserve"` | - | pathist.ts:99 |
+| `Indices.Ignore` | `readonly` | `"Ignore"` | - | pathist.ts:100 |
+| <a id="length"></a> `length` | `readonly` | `number` | The number of segments in this path. **Example** `const path = Pathist.from('foo.bar.baz'); console.log(path.length); // 3` | pathist.ts:492 |
 
 ## Accessors
 
@@ -184,9 +131,9 @@ Defined in: pathist.ts:125
 
 ##### Parameters
 
-###### notation
-
-[`Notation`](../type-aliases/Notation.md)
+| Parameter | Type |
+| ------ | ------ |
+| `notation` | [`Notation`](../type-aliases/Notation.md) |
 
 ##### Returns
 
@@ -226,9 +173,9 @@ Defined in: pathist.ts:143
 
 ##### Parameters
 
-###### mode
-
-[`Indices`](../type-aliases/Indices.md)
+| Parameter | Type |
+| ------ | ------ |
+| `mode` | [`Indices`](../type-aliases/Indices.md) |
 
 ##### Returns
 
@@ -240,7 +187,7 @@ Defined in: pathist.ts:143
 
 #### Get Signature
 
-> **get** `static` **indexWildcards**(): `ReadonlySet`\<`string` \| `number`\>
+> **get** `static` **indexWildcards**(): `ReadonlySet`<`string` | `number`>
 
 Defined in: pathist.ts:161
 
@@ -249,8 +196,9 @@ Gets or sets the values that are treated as index wildcards.
 Wildcard values match any numeric index during comparisons.
 
 When setting, wildcard values can be:
-- Negative numbers or non-finite numbers (Infinity, -Infinity, NaN)
-- Strings that don't match the pattern `/^[0-9]+$/`
+
+* Negative numbers or non-finite numbers (Infinity, -Infinity, NaN)
+* Strings that don't match the pattern `/^[0-9]+$/`
 
 ##### Throws
 
@@ -262,7 +210,7 @@ When setting: If any wildcard value is invalid (e.g., positive finite number or 
 
 ##### Returns
 
-`ReadonlySet`\<`string` \| `number`\>
+`ReadonlySet`<`string` | `number`>
 
 #### Set Signature
 
@@ -272,9 +220,9 @@ Defined in: pathist.ts:165
 
 ##### Parameters
 
-###### value
-
-`string` | `number` | `ReadonlySet`\<`string` \| `number`\> | (`string` \| `number`)[]
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `string` | `number` | `ReadonlySet`<`string` | `number`> | (`string` | `number`)\[] |
 
 ##### Returns
 
@@ -286,13 +234,13 @@ Defined in: pathist.ts:165
 
 #### Get Signature
 
-> **get** `static` **defaultNodeChildrenProperties**(): `ReadonlySet`\<`string`\>
+> **get** `static` **defaultNodeChildrenProperties**(): `ReadonlySet`<`string`>
 
 Defined in: pathist.ts:200
 
 ##### Returns
 
-`ReadonlySet`\<`string`\>
+`ReadonlySet`<`string`>
 
 #### Set Signature
 
@@ -305,7 +253,7 @@ These properties are used by node-related methods to identify and traverse tree 
 
 ##### Throws
 
-- When setting: If the value is not a Set, Array, or string, or if any value is not a string
+* When setting: If the value is not a Set, Array, or string, or if any value is not a string
 
 ##### Default Value
 
@@ -313,11 +261,9 @@ These properties are used by node-related methods to identify and traverse tree 
 
 ##### Parameters
 
-###### value
-
-When setting: A Set, Array, or single string value representing property names
-
-`string` | `ReadonlySet`\<`string`\> | `string`[]
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `value` | `string` | `ReadonlySet`<`string`> | `string`\[] | When setting: A Set, Array, or single string value representing property names |
 
 ##### Returns
 
@@ -365,7 +311,7 @@ Returns the instance-specific mode if set, otherwise returns the global default.
 
 #### Get Signature
 
-> **get** **nodeChildrenProperties**(): `ReadonlySet`\<`string`\>
+> **get** **nodeChildrenProperties**(): `ReadonlySet`<`string`>
 
 Defined in: pathist.ts:517
 
@@ -375,7 +321,7 @@ Returns the instance-specific properties if set, otherwise returns the global de
 
 ##### Returns
 
-`ReadonlySet`\<`string`\>
+`ReadonlySet`<`string`>
 
 ***
 
@@ -383,7 +329,7 @@ Returns the instance-specific properties if set, otherwise returns the global de
 
 #### Get Signature
 
-> **get** **array**(): [`PathSegment`](../type-aliases/PathSegment.md)[]
+> **get** **array**(): [`PathSegment`](../type-aliases/PathSegment.md)\[]
 
 Defined in: pathist.ts:608
 
@@ -393,7 +339,7 @@ Alias for [toArray](#toarray).
 
 ##### Returns
 
-[`PathSegment`](../type-aliases/PathSegment.md)[]
+[`PathSegment`](../type-aliases/PathSegment.md)\[]
 
 ***
 
@@ -426,17 +372,10 @@ This is the Temporal-style factory method alternative to using `Pathist.from()`.
 
 #### Parameters
 
-##### input
-
-[`PathistInput`](../type-aliases/PathistInput.md)
-
-Path string, array of segments, or existing Pathist instance
-
-##### config?
-
-[`PathistConfig`](../interfaces/PathistConfig.md)
-
-Optional configuration for notation, indices mode, etc.
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `input` | [`PathistInput`](../type-aliases/PathistInput.md) | Path string, array of segments, or existing Pathist instance |
+| `config?` | [`PathistConfig`](../interfaces/PathistConfig.md) | Optional configuration for notation, indices mode, etc. |
 
 #### Returns
 
@@ -456,7 +395,7 @@ Pathist.from('foo.bar', { notation: 'bracket' })
 
 ### toArray()
 
-> **toArray**(): [`PathSegment`](../type-aliases/PathSegment.md)[]
+> **toArray**(): [`PathSegment`](../type-aliases/PathSegment.md)\[]
 
 Defined in: pathist.ts:598
 
@@ -466,7 +405,7 @@ Returns a copy of the internal segments array to maintain immutability.
 
 #### Returns
 
-[`PathSegment`](../type-aliases/PathSegment.md)[]
+[`PathSegment`](../type-aliases/PathSegment.md)\[]
 
 A new array containing all path segments
 
@@ -492,11 +431,9 @@ the instance's default notation on a per-call basis.
 
 #### Parameters
 
-##### notation?
-
-[`Notation`](../type-aliases/Notation.md)
-
-Optional notation style to use (overrides instance default)
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `notation?` | [`Notation`](../type-aliases/Notation.md) | Optional notation style to use (overrides instance default) |
 
 #### Returns
 
@@ -511,17 +448,20 @@ If the notation value is invalid
 #### Examples
 
 Default notation (Mixed)
+
 ```typescript
 const path = Pathist.from(['foo', 'bar', 0, 'baz']);
 console.log(path.toString()); // 'foo.bar[0].baz'
 ```
 
 Bracket notation
+
 ```typescript
 console.log(path.toString(Pathist.Notation.Bracket)); // '["foo"]["bar"][0]["baz"]'
 ```
 
 Dot notation
+
 ```typescript
 console.log(path.toString(Pathist.Notation.Dot)); // 'foo.bar.0.baz'
 ```
@@ -548,18 +488,21 @@ The path as a JSONPath string
 #### Examples
 
 Basic usage
+
 ```typescript
 const path = Pathist.from('foo.bar.baz');
 console.log(path.toJSONPath()); // '$.foo.bar.baz'
 ```
 
 With numeric indices
+
 ```typescript
 const path = Pathist.from('items[0].name');
 console.log(path.toJSONPath()); // '$.items[0].name'
 ```
 
 With wildcards
+
 ```typescript
 const path = Pathist.from('items[*].name');
 console.log(path.toJSONPath()); // '$.items[*].name'
@@ -567,9 +510,9 @@ console.log(path.toJSONPath()); // '$.items[*].name'
 
 ***
 
-### \[iterator\]()
+### \[iterator]\()
 
-> **\[iterator\]**(): `Iterator`\<[`PathSegment`](../type-aliases/PathSegment.md)\>
+> **\[iterator]**(): `Iterator`<[`PathSegment`](../type-aliases/PathSegment.md)>
 
 Defined in: pathist.ts:768
 
@@ -577,13 +520,14 @@ Makes the Pathist instance iterable, allowing use in for...of loops and spread o
 
 #### Returns
 
-`Iterator`\<[`PathSegment`](../type-aliases/PathSegment.md)\>
+`Iterator`<[`PathSegment`](../type-aliases/PathSegment.md)>
 
 An iterator over the path segments
 
 #### Examples
 
 Using for...of
+
 ```typescript
 const path = Pathist.from('foo.bar.baz');
 for (const segment of path) {
@@ -592,6 +536,7 @@ for (const segment of path) {
 ```
 
 Using spread operator
+
 ```typescript
 const segments = [...path]; // ['foo', 'bar', 'baz']
 ```
@@ -611,17 +556,10 @@ The indices option controls how numeric indices are compared.
 
 #### Parameters
 
-##### other
-
-The path to compare against
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path to compare against |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options |
 
 #### Returns
 
@@ -631,13 +569,14 @@ Optional comparison options
 
 #### See
 
- - [startsWith](#startswith) for checking if this path starts with another
- - [endsWith](#endswith) for checking if this path ends with another
- - [includes](#includes) for checking if this path contains another
+* [startsWith](#startswith) for checking if this path starts with another
+* [endsWith](#endswith) for checking if this path ends with another
+* [includes](#includes) for checking if this path contains another
 
 #### Examples
 
 Exact comparison (default)
+
 ```typescript
 const path1 = Pathist.from('foo[0].bar');
 const path2 = Pathist.from('foo[0].bar');
@@ -645,6 +584,7 @@ console.log(path1.equals(path2)); // true
 ```
 
 Ignoring indices
+
 ```typescript
 const path1 = Pathist.from('foo[0].bar');
 const path2 = Pathist.from('foo[5].bar');
@@ -663,17 +603,10 @@ Checks if this path starts with the specified path segment sequence.
 
 #### Parameters
 
-##### other
-
-The path segment sequence to check
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to check |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options |
 
 #### Returns
 
@@ -683,9 +616,9 @@ Optional comparison options
 
 #### See
 
- - [endsWith](#endswith) for checking if this path ends with a sequence
- - [equals](#equals) for exact path comparison
- - [positionOf](#positionof) for finding the position of a sequence
+* [endsWith](#endswith) for checking if this path ends with a sequence
+* [equals](#equals) for exact path comparison
+* [positionOf](#positionof) for finding the position of a sequence
 
 #### Example
 
@@ -707,17 +640,10 @@ Checks if this path ends with the specified path segment sequence.
 
 #### Parameters
 
-##### other
-
-The path segment sequence to check
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to check |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options |
 
 #### Returns
 
@@ -727,9 +653,9 @@ Optional comparison options
 
 #### See
 
- - [startsWith](#startswith) for checking if this path starts with a sequence
- - [equals](#equals) for exact path comparison
- - [lastPositionOf](#lastpositionof) for finding the last position of a sequence
+* [startsWith](#startswith) for checking if this path starts with a sequence
+* [equals](#equals) for exact path comparison
+* [lastPositionOf](#lastpositionof) for finding the last position of a sequence
 
 #### Example
 
@@ -751,17 +677,10 @@ Checks if this path contains the specified path segment sequence anywhere within
 
 #### Parameters
 
-##### other
-
-The path segment sequence to search for
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to search for |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options |
 
 #### Returns
 
@@ -771,9 +690,9 @@ Optional comparison options
 
 #### See
 
- - [positionOf](#positionof) for finding the exact position of the sequence
- - [startsWith](#startswith) for checking if the sequence is at the start
- - [endsWith](#endswith) for checking if the sequence is at the end
+* [positionOf](#positionof) for finding the exact position of the sequence
+* [startsWith](#startswith) for checking if the sequence is at the start
+* [endsWith](#endswith) for checking if the sequence is at the end
 
 #### Example
 
@@ -797,17 +716,10 @@ Returns the index of the first segment where the match begins, or -1 if not foun
 
 #### Parameters
 
-##### other
-
-The path segment sequence to search for
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to search for |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options |
 
 #### Returns
 
@@ -817,9 +729,9 @@ The zero-based position of the first match, or -1 if not found
 
 #### See
 
- - [lastPositionOf](#lastpositionof) for finding the last occurrence
- - [includes](#includes) for checking if a sequence exists without needing the position
- - [pathTo](#pathto) for extracting the path up to the first occurrence
+* [lastPositionOf](#lastpositionof) for finding the last occurrence
+* [includes](#includes) for checking if a sequence exists without needing the position
+* [pathTo](#pathto) for extracting the path up to the first occurrence
 
 #### Example
 
@@ -843,17 +755,10 @@ Returns the index of the first segment where the last match begins, or -1 if not
 
 #### Parameters
 
-##### other
-
-The path segment sequence to search for
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to search for |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options |
 
 #### Returns
 
@@ -863,8 +768,8 @@ The zero-based position of the last match, or -1 if not found
 
 #### See
 
- - [positionOf](#positionof) for finding the first occurrence
- - [pathToLast](#pathtolast) for extracting the path up to the last occurrence
+* [positionOf](#positionof) for finding the first occurrence
+* [pathToLast](#pathtolast) for extracting the path up to the last occurrence
 
 #### Example
 
@@ -889,30 +794,23 @@ a new Pathist instance containing all segments from the start up to and includin
 
 #### Parameters
 
-##### other
-
-The path segment sequence to search for (can be a Pathist instance, string, or array)
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options (e.g., indices mode)
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to search for (can be a Pathist instance, string, or array) |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options (e.g., indices mode) |
 
 #### Returns
 
 `Pathist`
 
 A new Pathist instance containing the path up to and including the first match,
-         or an empty path if no match is found
+or an empty path if no match is found
 
 #### See
 
- - [pathToLast](#pathtolast) for extracting up to the last occurrence
- - [positionOf](#positionof) for getting just the position without extraction
- - [slice](#slice) for general segment extraction
+* [pathToLast](#pathtolast) for extracting up to the last occurrence
+* [positionOf](#positionof) for getting just the position without extraction
+* [slice](#slice) for general segment extraction
 
 #### Example
 
@@ -938,29 +836,22 @@ a new Pathist instance containing all segments from the start up to and includin
 
 #### Parameters
 
-##### other
-
-The path segment sequence to search for (can be a Pathist instance, string, or array)
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
-
-##### options?
-
-[`ComparisonOptions`](../interfaces/ComparisonOptions.md)
-
-Optional comparison options (e.g., indices mode)
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `other` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to search for (can be a Pathist instance, string, or array) |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options (e.g., indices mode) |
 
 #### Returns
 
 `Pathist`
 
 A new Pathist instance containing the path up to and including the last match,
-         or an empty path if no match is found
+or an empty path if no match is found
 
 #### See
 
- - [pathTo](#pathto) for extracting up to the first occurrence
- - [lastPositionOf](#lastpositionof) for getting just the position without extraction
+* [pathTo](#pathto) for extracting up to the first occurrence
+* [lastPositionOf](#lastpositionof) for getting just the position without extraction
 
 #### Example
 
@@ -986,17 +877,10 @@ The new path preserves this path's configuration.
 
 #### Parameters
 
-##### start?
-
-`number`
-
-Zero-based index at which to start extraction (default: 0)
-
-##### end?
-
-`number`
-
-Zero-based index before which to end extraction (default: path length)
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `start?` | `number` | Zero-based index at which to start extraction (default: 0) |
+| `end?` | `number` | Zero-based index before which to end extraction (default: path length) |
 
 #### Returns
 
@@ -1027,11 +911,9 @@ preserves this path's configuration.
 
 #### Parameters
 
-##### paths
-
-...([`PathistInput`](../type-aliases/PathistInput.md) \| `Pathist`)[]
-
-One or more paths to concatenate
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| ...`paths` | ([`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`)\[] | One or more paths to concatenate |
 
 #### Returns
 
@@ -1052,6 +934,7 @@ console.log(path1.concat(path2).toString()); // 'foo.bar.baz.qux'
 ```
 
 Multiple paths
+
 ```typescript
 const result = path1.concat('baz', ['qux', 'quux']);
 console.log(result.toString()); // 'foo.bar.baz.qux.quux'
@@ -1061,7 +944,7 @@ console.log(result.toString()); // 'foo.bar.baz.qux.quux'
 
 ### nodeIndices()
 
-> **nodeIndices**(): `number`[]
+> **nodeIndices**(): `number`\[]
 
 Defined in: pathist.ts:1265
 
@@ -1071,7 +954,7 @@ Extracts all numeric indices from the tree path, representing the tree path coor
 
 #### Returns
 
-`number`[]
+`number`\[]
 
 An array of numeric indices, or an empty array if no tree structure exists
 
@@ -1089,7 +972,7 @@ console.log(path2.nodeIndices()); // []
 
 ### nodePaths()
 
-> **nodePaths**(): `Generator`\<`Pathist`, `void`, `undefined`\>
+> **nodePaths**(): `Generator`<`Pathist`, `void`, `undefined`>
 
 Defined in: pathist.ts:1327
 
@@ -1100,13 +983,14 @@ progressively building up through each node in the tree.
 
 #### Returns
 
-`Generator`\<`Pathist`, `void`, `undefined`\>
+`Generator`<`Pathist`, `void`, `undefined`>
 
 A generator that yields Pathist instances for each node level
 
 #### Examples
 
 Full tree structure
+
 ```typescript
 const path = new Pathist('children[0].children[1].foo');
 for (const nodePath of path.nodePaths()) {
@@ -1119,6 +1003,7 @@ for (const nodePath of path.nodePaths()) {
 ```
 
 Path starting with index
+
 ```typescript
 const path = new Pathist('[0].children[1].children[2]');
 const paths = [...path.nodePaths()];
@@ -1131,6 +1016,7 @@ const paths = [...path.nodePaths()];
 ```
 
 No tree structure - just root
+
 ```typescript
 const path = new Pathist('foo.bar');
 const paths = [...path.nodePaths()];
@@ -1147,8 +1033,8 @@ Defined in: pathist.ts:1380
 
 Returns the path to the first node.
 
-- If the path starts with a numeric index, returns the path up to and including that index
-- Otherwise, returns an empty path (representing the root node)
+* If the path starts with a numeric index, returns the path up to and including that index
+* Otherwise, returns an empty path (representing the root node)
 
 #### Returns
 
@@ -1158,24 +1044,27 @@ A new Pathist representing the path to the first node
 
 #### See
 
- - [lastNodePath](#lastnodepath) for extracting the full node path
- - [afterNodePath](#afternodepath) for extracting the path after all nodes
+* [lastNodePath](#lastnodepath) for extracting the full node path
+* [afterNodePath](#afternodepath) for extracting the path after all nodes
 
 #### Examples
 
 Path starting with index
+
 ```typescript
 const path = new Pathist('[0].children[1].foo');
 console.log(path.firstNodePath().toString()); // '[0]'
 ```
 
 Path starting with property
+
 ```typescript
 const path = new Pathist('children[0].children[1].foo');
 console.log(path.firstNodePath().toString()); // '' (root)
 ```
 
 Path with no indices
+
 ```typescript
 const path = new Pathist('foo.bar');
 console.log(path.firstNodePath().toString()); // '' (root)
@@ -1191,8 +1080,8 @@ Defined in: pathist.ts:1414
 
 Returns the full path to the last node in the contiguous tree structure.
 
-- If the path contains numeric indices, returns the path up to and including the last node
-- Otherwise, returns an empty path (representing the root node)
+* If the path contains numeric indices, returns the path up to and including the last node
+* Otherwise, returns an empty path (representing the root node)
 
 #### Returns
 
@@ -1202,18 +1091,20 @@ A new Pathist representing the full node path
 
 #### See
 
- - [firstNodePath](#firstnodepath) for extracting the path to the first node
- - [afterNodePath](#afternodepath) for extracting the path after all nodes
+* [firstNodePath](#firstnodepath) for extracting the path to the first node
+* [afterNodePath](#afternodepath) for extracting the path after all nodes
 
 #### Examples
 
 Tree structure
+
 ```typescript
 const path = new Pathist('children[0].children[1].foo');
 console.log(path.lastNodePath().toString()); // 'children[0].children[1]'
 ```
 
 Path with no indices
+
 ```typescript
 const path = new Pathist('foo.bar');
 console.log(path.lastNodePath().toString()); // '' (root)
@@ -1229,8 +1120,8 @@ Defined in: pathist.ts:1450
 
 Returns the path segments after the last node in the tree.
 
-- If the path contains numeric indices, returns the path after the last node
-- Otherwise, returns the full path (all segments are relative to the root node)
+* If the path contains numeric indices, returns the path after the last node
+* Otherwise, returns the full path (all segments are relative to the root node)
 
 #### Returns
 
@@ -1240,18 +1131,20 @@ A new Pathist containing the segments after the tree structure
 
 #### See
 
- - [lastNodePath](#lastnodepath) for extracting the full node path
- - [firstNodePath](#firstnodepath) for extracting the path to the first node
+* [lastNodePath](#lastnodepath) for extracting the full node path
+* [firstNodePath](#firstnodepath) for extracting the path to the first node
 
 #### Examples
 
 Tree with properties after
+
 ```typescript
 const path = new Pathist('children[0].children[1].foo');
 console.log(path.afterNodePath().toString()); // 'foo'
 ```
 
 No indices - all relative to root
+
 ```typescript
 const path = new Pathist('foo.bar');
 console.log(path.afterNodePath().toString()); // 'foo.bar'
@@ -1273,11 +1166,9 @@ include wildcards, concrete values take precedence.
 
 #### Parameters
 
-##### path
-
-The path to merge with this path
-
-[`PathistInput`](../type-aliases/PathistInput.md) | `Pathist`
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `path` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path to merge with this path |
 
 #### Returns
 
@@ -1292,6 +1183,7 @@ If the path input is invalid
 #### Examples
 
 Basic merge with overlap
+
 ```typescript
 const left = Pathist.from('foo.bar.baz');
 const right = Pathist.from('baz.qux');
@@ -1299,6 +1191,7 @@ console.log(left.merge(right).toString()); // 'foo.bar.baz.qux'
 ```
 
 Merge with wildcard replacement
+
 ```typescript
 const left = Pathist.from('foo[*].bar');
 const right = Pathist.from('foo[5].bar.baz');
@@ -1307,6 +1200,7 @@ console.log(left.merge(right).toString()); // 'foo[5].bar.baz'
 ```
 
 No overlap - simple concatenation
+
 ```typescript
 const left = Pathist.from('foo.bar');
 const right = Pathist.from('qux.quux');

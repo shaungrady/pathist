@@ -12,16 +12,6 @@ Options for comparing paths.
 
 ## Properties
 
-### indices?
-
-> `optional` **indices**: [`Indices`](../type-aliases/Indices.md)
-
-Defined in: pathist.ts:1723
-
-How to handle numeric indices during comparison.
-- `Pathist.Indices.Preserve`: Indices must match exactly
-- `Pathist.Indices.Ignore`: Any numeric index matches any other numeric index
-
-#### Default Value
-
-The path instance's `indices` setting
+| Property | Type | Default value | Description | Defined in |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="indices"></a> `indices?` | [`Indices`](../type-aliases/Indices.md) | The path instance's `indices` setting | How to handle numeric indices during comparison. - `Pathist.Indices.Preserve`: Indices must match exactly - `Pathist.Indices.Ignore`: Any numeric index matches any other numeric index | pathist.ts:1723 |
