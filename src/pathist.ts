@@ -72,6 +72,10 @@ export interface PathistConfig {
  * ```
  */
 export class Pathist {
+	// ============================================================================
+	// Static Constants
+	// ============================================================================
+
 	/**
 	 * Notation styles for converting paths to strings.
 	 *
@@ -95,6 +99,10 @@ export class Pathist {
 		Preserve: 'Preserve',
 		Ignore: 'Ignore',
 	} as const;
+
+	// ============================================================================
+	// Static Configuration
+	// ============================================================================
 
 	static #defaultNotation: Notation = Pathist.Notation.Mixed;
 	static #defaultIndices: Indices = Pathist.Indices.Preserve;
@@ -273,7 +281,7 @@ export class Pathist {
 	}
 
 	// ============================================================================
-	// Static Factory Method
+	// Static Factory & Helper Methods
 	// ============================================================================
 
 	/**
@@ -457,6 +465,10 @@ export class Pathist {
 		return -1;
 	}
 
+	// ============================================================================
+	// Instance Fields & Properties
+	// ============================================================================
+
 	// Instance-level config
 	#notation?: Notation;
 	#indices?: Indices;
@@ -503,14 +515,9 @@ export class Pathist {
 		return this.#nodeChildrenProperties ?? Pathist.defaultNodeChildrenProperties;
 	}
 
-	// Helper to propagate config when creating new instances
-	private cloneConfig(): PathistConfig {
-		return {
-			notation: this.#notation,
-			indices: this.#indices,
-			nodeChildrenProperties: this.#nodeChildrenProperties,
-		};
-	}
+	// ============================================================================
+	// Constructor
+	// ============================================================================
 
 	/**
 	 * Creates a new Pathist instance from a string, array, or existing Pathist.
@@ -567,6 +574,10 @@ export class Pathist {
 		}
 		this.length = this.segments.length;
 	}
+
+	// ============================================================================
+	// Conversion & Accessors
+	// ============================================================================
 
 	/**
 	 * Returns the path as an array of segments.
@@ -727,6 +738,10 @@ export class Pathist {
 		return result;
 	}
 
+	// ============================================================================
+	// Iteration
+	// ============================================================================
+
 	/**
 	 * Makes the Pathist instance iterable, allowing use in for...of loops and spread operators.
 	 *
@@ -750,6 +765,10 @@ export class Pathist {
 	*[Symbol.iterator](): Iterator<PathSegment> {
 		yield* this.segments;
 	}
+
+	// ============================================================================
+	// Comparison Methods
+	// ============================================================================
 
 	/**
 	 * Checks if this path is equal to another path.
@@ -880,6 +899,10 @@ export class Pathist {
 	includes(other: Pathist | PathistInput, options?: ComparisonOptions): boolean {
 		return this.positionOf(other, options) !== -1;
 	}
+
+	// ============================================================================
+	// Search Methods
+	// ============================================================================
 
 	/**
 	 * Finds the first position where the specified path segment sequence occurs within this path.
@@ -1078,6 +1101,10 @@ export class Pathist {
 		return this.slice(0, position + otherSegments.length);
 	}
 
+	// ============================================================================
+	// Manipulation Methods
+	// ============================================================================
+
 	/**
 	 * Returns a new path containing a subset of this path's segments.
 	 *
@@ -1137,6 +1164,10 @@ export class Pathist {
 
 		return Pathist.from(allSegments, this.cloneConfig());
 	}
+
+	// ============================================================================
+	// Tree/Node Navigation Methods
+	// ============================================================================
 
 	/**
 	 * Helper: Finds the position of the first numeric index that's part of a tree structure.
@@ -1517,6 +1548,22 @@ export class Pathist {
 		}
 
 		return Pathist.from(mergedSegments, this.cloneConfig());
+	}
+
+	// ============================================================================
+	// Private Helper Methods
+	// ============================================================================
+
+	/**
+	 * Helper to propagate config when creating new instances.
+	 * @private
+	 */
+	private cloneConfig(): PathistConfig {
+		return {
+			notation: this.#notation,
+			indices: this.#indices,
+			nodeChildrenProperties: this.#nodeChildrenProperties,
+		};
 	}
 
 	private parseString(input: string): PathSegment[] {
