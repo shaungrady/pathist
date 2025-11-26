@@ -24,9 +24,11 @@
 		"@types/node": "^24.10.1",
 		"ava": "^6.4.1",
 		"lefthook": "^2.0.4",
+		"remark-toc": "^9.0.0",
 		"tsx": "^4.20.6",
 		"typedoc": "^0.28.14",
 		"typedoc-plugin-markdown": "^4.9.0",
+		"typedoc-plugin-remark": "^2.0.1",
 		"typescript": "^5.9.3"
 	},
 	"ava": {

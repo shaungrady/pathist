@@ -6,7 +6,7 @@
 
 # Type Alias: PathistInput
 
-> **PathistInput** = `string` \| [`PathSegment`](PathSegment.md)[]
+> **PathistInput** = `string` | [`PathSegment`](PathSegment.md)\[]
 
 Defined in: pathist.ts:23
 

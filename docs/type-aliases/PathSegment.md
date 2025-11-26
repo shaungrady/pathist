@@ -6,7 +6,7 @@
 
 # Type Alias: PathSegment
 
-> **PathSegment** = `string` \| `number`
+> **PathSegment** = `string` | `number`
 
 Defined in: pathist.ts:10
 
