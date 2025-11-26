@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -29,7 +29,10 @@ function extractMethods(content) {
 		}
 
 		// Only process methods in Methods or Accessors sections
-		if ((currentSection === 'Methods' || currentSection === 'Accessors') && line.startsWith('### ')) {
+		if (
+			(currentSection === 'Methods' || currentSection === 'Accessors') &&
+			line.startsWith('### ')
+		) {
 			const methodName = line.substring(4).trim();
 
 			// Skip forward to find description (skip the signature line)
@@ -60,13 +63,16 @@ function extractMethods(content) {
 			}
 
 			// Create anchor-safe ID (GitHub style)
-			const anchorId = methodName.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+			const anchorId = methodName
+				.toLowerCase()
+				.replace(/[^\w\s-]/g, '')
+				.replace(/\s+/g, '-');
 
 			methods.push({
 				name: methodName,
 				description: description || 'No description',
 				anchor: anchorId,
-				section: currentSection
+				section: currentSection,
 			});
 		}
 
@@ -82,8 +88,8 @@ function extractMethods(content) {
 function createMethodTable(methods) {
 	if (methods.length === 0) return '';
 
-	const accessors = methods.filter(m => m.section === 'Accessors');
-	const regularMethods = methods.filter(m => m.section === 'Methods');
+	const accessors = methods.filter((m) => m.section === 'Accessors');
+	const regularMethods = methods.filter((m) => m.section === 'Methods');
 
 	let table = '## Quick Reference\n\n';
 
