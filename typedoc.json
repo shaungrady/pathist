@@ -2,15 +2,9 @@
 	"$schema": "https://typedoc.org/schema.json",
 	"entryPoints": ["src/pathist.ts"],
 	"out": "docs",
-	"plugin": [],
+	"plugin": ["typedoc-plugin-markdown"],
 	"name": "Pathist",
 	"includeVersion": true,
-	"navigationLinks": {
-		"GitHub": "https://github.com/shaungrady/pathist"
-	},
-	"sidebarLinks": {
-		"GitHub": "https://github.com/shaungrady/pathist"
-	},
 	"excludePrivate": true,
 	"excludeProtected": true,
 	"excludeInternal": true,
