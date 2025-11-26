@@ -402,10 +402,13 @@ export class Pathist {
 			return true;
 		}
 
-		// Check for characters that would break dot notation parsing
-		// - dots would be parsed as segment separators
-		// - brackets would be parsed as bracket notation
-		// - spaces for clarity (though technically parseable)
+		// Check for characters that would break path parsing in libraries like lodash.get
+		// Note: This is intentionally lenient to match lodash behavior, which accepts
+		// most special characters (-, @, #, %, etc.) in dot notation property names.
+		// Only characters that would be misinterpreted by the parser require brackets:
+		// - dots (.) would be parsed as path separators
+		// - brackets ([, ]) would be parsed as bracket notation
+		// - spaces for clarity and consistency (though many parsers handle them)
 		return (
 			segment.includes('.') ||
 			segment.includes('[') ||
