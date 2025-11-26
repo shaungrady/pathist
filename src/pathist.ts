@@ -594,6 +594,8 @@ export class Pathist {
 	 * const path = Pathist.from('foo.bar[0].baz');
 	 * console.log(path.toArray()); // ['foo', 'bar', 0, 'baz']
 	 * ```
+	 *
+	 * @see {@link array} - Getter alias for this method
 	 */
 	toArray(): PathSegment[] {
 		// Return a copy to maintain immutability
@@ -637,6 +639,8 @@ export class Pathist {
 	 * ```typescript
 	 * console.log(path.toString(Pathist.Notation.Dot)); // 'foo.bar.0.baz'
 	 * ```
+	 *
+	 * @see {@link string} - Getter alias for this method (uses instance default notation)
 	 */
 	toString(notation?: Notation): string {
 		const resolved = notation ?? this.notation;
@@ -707,6 +711,8 @@ export class Pathist {
 	 * const path = Pathist.from('items[*].name');
 	 * console.log(path.toJSONPath()); // '$.items[*].name'
 	 * ```
+	 *
+	 * @see {@link jsonPath} - Getter alias for this method
 	 */
 	toJSONPath(): string {
 		// Empty path returns root
@@ -739,6 +745,15 @@ export class Pathist {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Gets the path as a JSONPath string.
+	 *
+	 * Alias for {@link toJSONPath}.
+	 */
+	get jsonPath(): string {
+		return this.toJSONPath();
 	}
 
 	// ============================================================================
@@ -1309,7 +1324,6 @@ export class Pathist {
 	 * const path = new Pathist('[0].children[1].children[2]');
 	 * const paths = [...path.nodePaths()];
 	 * // paths = [
-	 * //   Pathist(''),
 	 * //   Pathist('[0]'),
 	 * //   Pathist('[0].children[1]'),
 	 * //   Pathist('[0].children[1].children[2]')
@@ -1325,13 +1339,17 @@ export class Pathist {
 	 * ```
 	 */
 	*nodePaths(): Generator<Pathist, void, undefined> {
-		// Always yield root first
-		yield Pathist.from('', this.cloneConfig());
-
 		const firstIdx = this.#findFirstNumericIndex();
+
+		// If no numeric indices, only yield root
 		if (firstIdx === -1) {
-			// No tree structure, only root was yielded
+			yield Pathist.from('', this.cloneConfig());
 			return;
+		}
+
+		// If path doesn't start with an index, yield root first (following firstNodePath logic)
+		if (firstIdx > 0) {
+			yield Pathist.from('', this.cloneConfig());
 		}
 
 		const lastIdx = this.#findLastNodeIndex(firstIdx);

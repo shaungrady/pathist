@@ -8,7 +8,7 @@
 
 > **Indices** = *typeof* [`Indices`](../classes/Pathist.md#indices)\[keyof *typeof* [`Indices`](../classes/Pathist.md#indices)]
 
-Defined in: pathist.ts:1711
+Defined in: pathist.ts:1729
 
 The mode for handling numeric indices during path comparisons.
 
