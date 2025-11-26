@@ -7,4 +7,6 @@ pre-commit:
       run: pnpm test --fail-fast
     - name: tsc
       run: pnpm exec tsc --noEmit
+    - name: docs
+      run: pnpm run build:docs && git add docs/
 

@@ -140,6 +140,3 @@ vite.config.ts.timestamp-*
 
 # npm lock file (project uses pnpm)
 package-lock.json
-
-# TypeDoc generated documentation
-docs/
