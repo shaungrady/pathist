@@ -55,10 +55,12 @@ export interface PathistConfig {
  * It supports multiple notation styles (dot, bracket, and mixed), handles numeric indices,
  * and offers powerful comparison and manipulation methods.
  *
+ * @todo Order methods in a logical way for TypeDoc generation.
+ *
  * @example
  * Basic usage
  * ```typescript
- * const path = new Pathist('foo.bar.baz');
+ * const path = Pathist.from('foo.bar.baz');
  * console.log(path.length); // 3
  * console.log(path.toArray()); // ['foo', 'bar', 'baz']
  * ```
@@ -66,8 +68,8 @@ export interface PathistConfig {
  * @example
  * Path comparison
  * ```typescript
- * const path1 = new Pathist('foo.bar');
- * const path2 = new Pathist('foo.bar.baz');
+ * const path1 = Pathist.from('foo.bar');
+ * const path2 = Pathist.from('foo.bar.baz');
  * console.log(path2.startsWith(path1)); // true
  * ```
  */
@@ -101,6 +103,7 @@ export class Pathist {
 	static #indexWildcards: ReadonlySet<string | number> = new Set([-1, '*']);
 	static #defaultNodeChildrenProperties: ReadonlySet<string> = new Set(['children']);
 
+	// TODO: Move/combine this with the setter since typedoc doesn't support individual docs for a getter and a setter
 	/**
 	 * Gets the default notation style used when converting paths to strings.
 	 *
@@ -121,6 +124,7 @@ export class Pathist {
 		Pathist.#defaultNotation = notation;
 	}
 
+	// TODO: Move/combine this with the setter since typedoc doesn't support individual docs for a getter and a setter
 	/**
 	 * Gets the default indices comparison mode.
 	 *
@@ -141,6 +145,7 @@ export class Pathist {
 		Pathist.#defaultIndices = mode;
 	}
 
+	// TODO: Move/combine this with the setter since typedoc doesn't support individual docs for a getter and a setter
 	/**
 	 * Gets the set of values that are treated as index wildcards.
 	 *
@@ -166,7 +171,7 @@ export class Pathist {
 		| ReadonlySet<string | number>
 		| Array<string | number>
 		| string
-		| number,) {
+		| number) {
 		// Handle empty values - unset wildcards
 		if (
 			value === '' ||
@@ -197,22 +202,18 @@ export class Pathist {
 		Pathist.#indexWildcards = validatedSet;
 	}
 
-	/**
-	 * Gets the default property names that contain child nodes in tree structures.
-	 *
-	 * These properties are used by node-related methods to identify and traverse tree relationships.
-	 *
-	 * @defaultValue `Set(['children'])`
-	 */
+
 	static get defaultNodeChildrenProperties(): ReadonlySet<string> {
 		return Pathist.#defaultNodeChildrenProperties;
 	}
 
 	/**
-	 * Sets the default property names that should be treated as node children properties.
+	 * Gets or sets the default property names that contain child nodes in tree structures.
+	 * These properties are used by node-related methods to identify and traverse tree relationships.
 	 *
-	 * @param value - A Set, Array, or single string value representing property names
-	 * @throws {TypeError} If the value is not a Set, Array, or string, or if any value is not a string
+	 * @param value - When setting: A Set, Array, or single string value representing property names
+	 * @throws {TypeError} - When setting: If the value is not a Set, Array, or string, or if any value is not a string
+	 * @defaultValue `Set(['children'])`
 	 */
 	static set defaultNodeChildrenProperties(value: ReadonlySet<string> | string[] | string) {
 		// Handle empty values - unset properties
@@ -291,7 +292,7 @@ export class Pathist {
 
 	/**
 	 * Creates a new Pathist instance from various input types.
-	 * This is the Temporal-style factory method alternative to using `new Pathist()`.
+	 * This is the Temporal-style factory method alternative to using `Pathist.from()`.
 	 *
 	 * @param input - Path string, array of segments, or existing Pathist instance
 	 * @param config - Optional configuration for notation, indices mode, etc.
@@ -402,6 +403,33 @@ export class Pathist {
 	}
 
 	static #requiresBracketNotation(segment: string): boolean {
+		/**
+		 * @TODO:
+		 *  This should check if any characters being used aren't in an allowed list.
+		 *
+		 *  For dot notation (obj.property), the property name must be a valid JavaScript identifier, which allows:
+		 *
+		 * Allowed characters:
+		 *
+		 *     Letters (a–z, A–Z)
+		 *     Numbers (0–9)
+		 *     Underscore (_)
+		 *     Dollar sign ($)
+		 *
+		 *
+		 * Restrictions:
+		 *
+		 *     Cannot start with a number
+		 *     Can be a reserved word (unlike variable declarations)
+		 *
+		 * Invalid characters requiring bracket notation (obj['property']):
+		 *
+		 *     Special characters: ., -, (space), and others not in the allowed list
+		 *     Names starting with digits
+		 *
+		 * Should escape double quotes (") with a backslash (\")
+		 */
+
 		// Empty strings need bracket notation
 		if (segment.length === 0) {
 			return true;
@@ -483,7 +511,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz');
+	 * const path = Pathist.from('foo.bar.baz');
 	 * console.log(path.length); // 3
 	 * ```
 	 */
@@ -537,19 +565,19 @@ export class Pathist {
 	 * @example
 	 * From string
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz');
+	 * const path = Pathist.from('foo.bar.baz');
 	 * ```
 	 *
 	 * @example
 	 * From array
 	 * ```typescript
-	 * const path = new Pathist(['foo', 'bar', 0, 'baz']);
+	 * const path = Pathist.from(['foo', 'bar', 0, 'baz']);
 	 * ```
 	 *
 	 * @example
 	 * With custom configuration
 	 * ```typescript
-	 * const path = new Pathist('foo.bar', {
+	 * const path = Pathist.from('foo.bar', {
 	 *   notation: Pathist.Notation.Bracket,
 	 *   indices: Pathist.Indices.Ignore
 	 * });
@@ -590,7 +618,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar[0].baz');
+	 * const path = Pathist.from('foo.bar[0].baz');
 	 * console.log(path.toArray()); // ['foo', 'bar', 0, 'baz']
 	 * ```
 	 */
@@ -621,7 +649,7 @@ export class Pathist {
 	 * @example
 	 * Default notation (Mixed)
 	 * ```typescript
-	 * const path = new Pathist(['foo', 'bar', 0, 'baz']);
+	 * const path = Pathist.from(['foo', 'bar', 0, 'baz']);
 	 * console.log(path.toString()); // 'foo.bar[0].baz'
 	 * ```
 	 *
@@ -689,21 +717,21 @@ export class Pathist {
 	 * @example
 	 * Basic usage
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz');
+	 * const path = Pathist.from('foo.bar.baz');
 	 * console.log(path.toJSONPath()); // '$.foo.bar.baz'
 	 * ```
 	 *
 	 * @example
 	 * With numeric indices
 	 * ```typescript
-	 * const path = new Pathist('items[0].name');
+	 * const path = Pathist.from('items[0].name');
 	 * console.log(path.toJSONPath()); // '$.items[0].name'
 	 * ```
 	 *
 	 * @example
 	 * With wildcards
 	 * ```typescript
-	 * const path = new Pathist('items[*].name');
+	 * const path = Pathist.from('items[*].name');
 	 * console.log(path.toJSONPath()); // '$.items[*].name'
 	 * ```
 	 */
@@ -748,7 +776,7 @@ export class Pathist {
 	 * @example
 	 * Using for...of
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz');
+	 * const path = Pathist.from('foo.bar.baz');
 	 * for (const segment of path) {
 	 *   console.log(segment); // 'foo', 'bar', 'baz'
 	 * }
@@ -781,16 +809,16 @@ export class Pathist {
 	 * @example
 	 * Exact comparison (default)
 	 * ```typescript
-	 * const path1 = new Pathist('foo[0].bar');
-	 * const path2 = new Pathist('foo[0].bar');
+	 * const path1 = Pathist.from('foo[0].bar');
+	 * const path2 = Pathist.from('foo[0].bar');
 	 * console.log(path1.equals(path2)); // true
 	 * ```
 	 *
 	 * @example
 	 * Ignoring indices
 	 * ```typescript
-	 * const path1 = new Pathist('foo[0].bar');
-	 * const path2 = new Pathist('foo[5].bar');
+	 * const path1 = Pathist.from('foo[0].bar');
+	 * const path2 = Pathist.from('foo[5].bar');
 	 * console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
 	 * ```
 	 */
@@ -831,7 +859,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz');
+	 * const path = Pathist.from('foo.bar.baz');
 	 * console.log(path.startsWith('foo.bar')); // true
 	 * console.log(path.startsWith('bar')); // false
 	 * ```
@@ -853,7 +881,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz');
+	 * const path = Pathist.from('foo.bar.baz');
 	 * console.log(path.endsWith('bar.baz')); // true
 	 * console.log(path.endsWith('bar')); // false
 	 * ```
@@ -885,7 +913,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz.qux');
+	 * const path = Pathist.from('foo.bar.baz.qux');
 	 * console.log(path.includes('bar.baz')); // true
 	 * console.log(path.includes('baz.foo')); // false
 	 * ```
@@ -909,7 +937,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz.bar');
+	 * const path = Pathist.from('foo.bar.baz.bar');
 	 * console.log(path.positionOf('bar')); // 1 (first occurrence)
 	 * console.log(path.positionOf('qux')); // -1 (not found)
 	 * ```
@@ -965,7 +993,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz.bar');
+	 * const path = Pathist.from('foo.bar.baz.bar');
 	 * console.log(path.lastPositionOf('bar')); // 3 (last occurrence)
 	 * console.log(path.lastPositionOf('qux')); // -1 (not found)
 	 * ```
@@ -1024,7 +1052,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const p = new Pathist('foo.bar.baz.bar.qux');
+	 * const p = Pathist.from('foo.bar.baz.bar.qux');
 	 * p.pathTo('bar').toString();        // 'foo.bar'
 	 * p.pathTo('bar.baz').toString();    // 'foo.bar.baz'
 	 * p.pathTo('notfound').toString();   // ''
@@ -1063,7 +1091,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const p = new Pathist('foo.bar.baz.bar.qux');
+	 * const p = Pathist.from('foo.bar.baz.bar.qux');
 	 * p.pathToLast('bar').toString();        // 'foo.bar.baz.bar'
 	 * p.pathToLast('bar.baz').toString();    // 'foo.bar.baz'
 	 * p.pathToLast('notfound').toString();   // ''
@@ -1103,7 +1131,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar.baz.qux');
+	 * const path = Pathist.from('foo.bar.baz.qux');
 	 * console.log(path.slice(1, 3).toString()); // 'bar.baz'
 	 * console.log(path.slice(2).toString()); // 'baz.qux'
 	 * ```
@@ -1125,8 +1153,8 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path1 = new Pathist('foo.bar');
-	 * const path2 = new Pathist('baz.qux');
+	 * const path1 = Pathist.from('foo.bar');
+	 * const path2 = Pathist.from('baz.qux');
 	 * console.log(path1.concat(path2).toString()); // 'foo.bar.baz.qux'
 	 * ```
 	 *
@@ -1170,16 +1198,16 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path1 = new Pathist('foo.bar[0].children[1].name');
+	 * const path1 = Pathist.from('foo.bar[0].children[1].name');
 	 * console.log(path1.firstNodePosition()); // 2 (position of [0])
 	 *
-	 * const path2 = new Pathist('[0].children[1]');
+	 * const path2 = Pathist.from('[0].children[1]');
 	 * console.log(path2.firstNodePosition()); // 0 (root-level index)
 	 *
-	 * const path3 = new Pathist('foo[0].bar');
+	 * const path3 = Pathist.from('foo[0].bar');
 	 * console.log(path3.firstNodePosition()); // -1 (not preceded or followed by children property)
 	 *
-	 * const path4 = new Pathist('foo.bar.baz');
+	 * const path4 = Pathist.from('foo.bar.baz');
 	 * console.log(path4.firstNodePosition()); // -1 (no indices)
 	 * ```
 	 */
@@ -1232,11 +1260,11 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('items[0].children[1].children[2].name');
+	 * const path = Pathist.from('items[0].children[1].children[2].name');
 	 * console.log(path.lastNodePosition()); // 6 (position of [2])
 	 * // The tree continues through "children" properties
 	 *
-	 * const path2 = new Pathist('items[0].data.value');
+	 * const path2 = Pathist.from('items[0].data.value');
 	 * console.log(path2.lastNodePosition()); // 2 (position of [0])
 	 * // The tree ends because "data" is not a children property
 	 * ```
@@ -1288,10 +1316,10 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('items[5].children[1].children[3].name');
+	 * const path = Pathist.from('items[5].children[1].children[3].name');
 	 * console.log(path.nodeIndices()); // [5, 1, 3]
 	 *
-	 * const path2 = new Pathist('foo.bar.baz');
+	 * const path2 = Pathist.from('foo.bar.baz');
 	 * console.log(path2.nodeIndices()); // []
 	 * ```
 	 */
@@ -1326,7 +1354,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * const path = Pathist.from('foo.bar[0].children[1].name');
 	 * console.log(path.firstNodePath().toString()); // 'foo.bar[0]'
 	 * ```
 	 */
@@ -1346,7 +1374,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * const path = Pathist.from('foo.bar[0].children[1].name');
 	 * console.log(path.lastNodePath().toString()); // 'foo.bar[0].children[1]'
 	 * ```
 	 */
@@ -1365,7 +1393,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * const path = Pathist.from('foo.bar[0].children[1].name');
 	 * console.log(path.beforeNodePath().toString()); // 'foo.bar'
 	 * ```
 	 */
@@ -1384,7 +1412,7 @@ export class Pathist {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = new Pathist('foo.bar[0].children[1].name');
+	 * const path = Pathist.from('foo.bar[0].children[1].name');
 	 * console.log(path.afterNodePath().toString()); // 'name'
 	 * ```
 	 */
@@ -1407,16 +1435,16 @@ export class Pathist {
 	 * @example
 	 * Basic merge with overlap
 	 * ```typescript
-	 * const left = new Pathist('foo.bar.baz');
-	 * const right = new Pathist('baz.qux');
+	 * const left = Pathist.from('foo.bar.baz');
+	 * const right = Pathist.from('baz.qux');
 	 * console.log(left.merge(right).toString()); // 'foo.bar.baz.qux'
 	 * ```
 	 *
 	 * @example
 	 * Merge with wildcard replacement
 	 * ```typescript
-	 * const left = new Pathist('foo[*].bar');
-	 * const right = new Pathist('foo[5].bar.baz');
+	 * const left = Pathist.from('foo[*].bar');
+	 * const right = Pathist.from('foo[5].bar.baz');
 	 * console.log(left.merge(right).toString()); // 'foo[5].bar.baz'
 	 * // The wildcard is replaced with the concrete index
 	 * ```
@@ -1424,8 +1452,8 @@ export class Pathist {
 	 * @example
 	 * No overlap - simple concatenation
 	 * ```typescript
-	 * const left = new Pathist('foo.bar');
-	 * const right = new Pathist('qux.quux');
+	 * const left = Pathist.from('foo.bar');
+	 * const right = Pathist.from('qux.quux');
 	 * console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
 	 * ```
 	 */
@@ -1572,7 +1600,7 @@ export class Pathist {
 				}
 				// Check if string requires bracket notation (dots, brackets, spaces, etc.)
 				if (Pathist.#requiresBracketNotation(segment)) {
-					return `["${segment}"]`;
+					return `["${segment.replaceAll(`"`, `\"`)}}"]`;
 				}
 				// Regular string segment - use dot notation
 				if (index === 0) {
@@ -1593,12 +1621,13 @@ export class Pathist {
 				if (Pathist.#isWildcard(segment)) {
 					return `[${segment}]`;
 				}
-				return `["${segment}"]`;
+				return `["${segment.replaceAll(`"`, `\"`)}"]`;
 			})
 			.join('');
 	}
 
 	private toDotNotation(): string {
+		// TODO: Throw an error if any segments require bracket notation?
 		return this.segments.join('.');
 	}
 }
@@ -1606,14 +1635,14 @@ export class Pathist {
 /**
  * The notation style for converting paths to strings.
  *
- * Valid values: `'Mixed'`, `'Dot'`, or `'Bracket'`
+ * Valid values: `Pathist.Notation.Mixed`, `Pathist.Notation.Dot`, or `Pathist.Notation.Bracket`
  */
 export type Notation = (typeof Pathist.Notation)[keyof typeof Pathist.Notation];
 
 /**
  * The mode for handling numeric indices during path comparisons.
  *
- * Valid values: `'Preserve'` or `'Ignore'`
+ * Valid values: `Pathist.Indices.Preserve'` or `Pathist.Indices.Ignore`
  */
 export type Indices = (typeof Pathist.Indices)[keyof typeof Pathist.Indices];
 
@@ -1623,8 +1652,8 @@ export type Indices = (typeof Pathist.Indices)[keyof typeof Pathist.Indices];
 export interface ComparisonOptions {
 	/**
 	 * How to handle numeric indices during comparison.
-	 * - `'Preserve'`: Indices must match exactly
-	 * - `'Ignore'`: Any numeric index matches any other numeric index
+	 * - `Pathist.Indices.Preserve`: Indices must match exactly
+	 * - `Pathist.Indices.Ignore`: Any numeric index matches any other numeric index
 	 * @defaultValue The path instance's `indices` setting
 	 */
 	indices?: Indices;

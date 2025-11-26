@@ -3,7 +3,7 @@ import { Pathist } from '../../src/pathist.ts';
 
 // Equals Method
 test('equals returns true for same Pathist instance', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.true(p.equals(p));
 });
 
@@ -43,37 +43,37 @@ const equalsCases = [
 
 for (const { p1, p2, expected, desc } of equalsCases) {
 	test(`equals: ${desc}`, (t) => {
-		const pathist = new Pathist(p1);
+		const pathist = Pathist.from(p1);
 		t.is(pathist.equals(p2), expected);
 		// Test symmetry for Pathist inputs
 		if (typeof p2 !== 'string' && !Array.isArray(p2)) {
-			t.is(new Pathist(p2).equals(p1), expected);
+			t.is(Pathist.from(p2).equals(p1), expected);
 		}
 	});
 }
 
 test('equals accepts string and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.true(p.equals('[0].foo[1]'));
 	t.false(p.equals('0.foo.1')); // Dot notation gives strings, not numbers
 	t.false(p.equals('[0].bar[1]'));
 
 	// Dot notation path
-	const p2 = new Pathist('0.foo.1');
+	const p2 = Pathist.from('0.foo.1');
 	t.true(p2.equals('0.foo.1'));
 	t.true(p2.equals(['0', 'foo', '1'])); // All strings
 });
 
 test('equals accepts array and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.true(p.equals([0, 'foo', 1]));
 	t.false(p.equals([0, 'bar', 1]));
 	t.false(p.equals([0, 'foo']));
 });
 
 test('equals returns true for empty paths', (t) => {
-	const p1 = new Pathist([]);
-	const p2 = new Pathist('');
+	const p1 = Pathist.from([]);
+	const p2 = Pathist.from('');
 	t.true(p1.equals(p2));
 	t.true(p1.equals([]));
 	t.true(p1.equals(''));
@@ -89,14 +89,14 @@ const invalidInputs = [
 
 for (const { value, desc } of invalidInputs) {
 	test(`equals returns false for ${desc} input`, (t) => {
-		const p = new Pathist([0, 'foo', 1]);
+		const p = Pathist.from([0, 'foo', 1]);
 		t.false(p.equals(value as any));
 	});
 }
 
 // StartsWith Method
 test('startsWith returns true for same Pathist instance', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.true(p.startsWith(p));
 });
 
@@ -148,27 +148,27 @@ const startsWithCases = [
 
 for (const { path, prefix, expected, desc } of startsWithCases) {
 	test(`startsWith: ${desc}`, (t) => {
-		const p = new Pathist(path);
-		t.is(p.startsWith(new Pathist(prefix)), expected);
+		const p = Pathist.from(path);
+		t.is(p.startsWith(Pathist.from(prefix)), expected);
 	});
 }
 
 test('startsWith returns true for empty path', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
-	t.true(p.startsWith(new Pathist([])));
+	const p = Pathist.from([0, 'foo', 1]);
+	t.true(p.startsWith(Pathist.from([])));
 	t.true(p.startsWith(''));
 	t.true(p.startsWith([]));
 });
 
 test('startsWith accepts string and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1, 'bar']);
+	const p = Pathist.from([0, 'foo', 1, 'bar']);
 	t.true(p.startsWith('[0].foo'));
 	t.true(p.startsWith('[0]'));
 	t.false(p.startsWith('[0].bar'));
 });
 
 test('startsWith accepts array and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1, 'bar']);
+	const p = Pathist.from([0, 'foo', 1, 'bar']);
 	t.true(p.startsWith([0, 'foo']));
 	t.true(p.startsWith([0]));
 	t.false(p.startsWith([0, 'bar']));
@@ -176,26 +176,26 @@ test('startsWith accepts array and compares correctly', (t) => {
 
 for (const { value, desc } of invalidInputs) {
 	test(`startsWith returns false for ${desc} input`, (t) => {
-		const p = new Pathist([0, 'foo', 1]);
+		const p = Pathist.from([0, 'foo', 1]);
 		t.false(p.startsWith(value as any));
 	});
 }
 
 test('empty path startsWith empty path', (t) => {
-	const p = new Pathist([]);
+	const p = Pathist.from([]);
 	t.true(p.startsWith([]));
 	t.true(p.startsWith(''));
 });
 
 test('empty path does not startWith non-empty path', (t) => {
-	const p = new Pathist([]);
+	const p = Pathist.from([]);
 	t.false(p.startsWith([0]));
 	t.false(p.startsWith('foo'));
 });
 
 // EndsWith Method
 test('endsWith returns true for same Pathist instance', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.true(p.endsWith(p));
 });
 
@@ -253,27 +253,27 @@ const endsWithCases = [
 
 for (const { path, suffix, expected, desc } of endsWithCases) {
 	test(`endsWith: ${desc}`, (t) => {
-		const p = new Pathist(path);
-		t.is(p.endsWith(new Pathist(suffix)), expected);
+		const p = Pathist.from(path);
+		t.is(p.endsWith(Pathist.from(suffix)), expected);
 	});
 }
 
 test('endsWith returns true for empty path', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
-	t.true(p.endsWith(new Pathist([])));
+	const p = Pathist.from([0, 'foo', 1]);
+	t.true(p.endsWith(Pathist.from([])));
 	t.true(p.endsWith(''));
 	t.true(p.endsWith([]));
 });
 
 test('endsWith accepts string and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1, 'bar']);
+	const p = Pathist.from([0, 'foo', 1, 'bar']);
 	t.true(p.endsWith('bar'));
 	t.true(p.endsWith('[1].bar'));
 	t.false(p.endsWith('[0].foo'));
 });
 
 test('endsWith accepts array and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1, 'bar']);
+	const p = Pathist.from([0, 'foo', 1, 'bar']);
 	t.true(p.endsWith(['bar']));
 	t.true(p.endsWith([1, 'bar']));
 	t.false(p.endsWith([0, 'foo']));
@@ -281,26 +281,26 @@ test('endsWith accepts array and compares correctly', (t) => {
 
 for (const { value, desc } of invalidInputs) {
 	test(`endsWith returns false for ${desc} input`, (t) => {
-		const p = new Pathist([0, 'foo', 1]);
+		const p = Pathist.from([0, 'foo', 1]);
 		t.false(p.endsWith(value as any));
 	});
 }
 
 test('empty path endsWith empty path', (t) => {
-	const p = new Pathist([]);
+	const p = Pathist.from([]);
 	t.true(p.endsWith([]));
 	t.true(p.endsWith(''));
 });
 
 test('empty path does not endWith non-empty path', (t) => {
-	const p = new Pathist([]);
+	const p = Pathist.from([]);
 	t.false(p.endsWith([0]));
 	t.false(p.endsWith('foo'));
 });
 
 // Includes Method
 test('includes returns true for same Pathist instance', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.true(p.includes(p));
 });
 
@@ -388,20 +388,20 @@ const includesCases = [
 
 for (const { path, subsequence, expected, desc } of includesCases) {
 	test(`includes: ${desc}`, (t) => {
-		const p = new Pathist(path);
-		t.is(p.includes(new Pathist(subsequence)), expected);
+		const p = Pathist.from(path);
+		t.is(p.includes(Pathist.from(subsequence)), expected);
 	});
 }
 
 test('includes returns true for empty path', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
-	t.true(p.includes(new Pathist([])));
+	const p = Pathist.from([0, 'foo', 1]);
+	t.true(p.includes(Pathist.from([])));
 	t.true(p.includes(''));
 	t.true(p.includes([]));
 });
 
 test('includes accepts string and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1, 'bar']);
+	const p = Pathist.from([0, 'foo', 1, 'bar']);
 	t.true(p.includes('foo'));
 	t.true(p.includes('[1].bar'));
 	t.true(p.includes('[0].foo'));
@@ -410,7 +410,7 @@ test('includes accepts string and compares correctly', (t) => {
 });
 
 test('includes accepts array and compares correctly', (t) => {
-	const p = new Pathist([0, 'foo', 1, 'bar']);
+	const p = Pathist.from([0, 'foo', 1, 'bar']);
 	t.true(p.includes(['foo']));
 	t.true(p.includes([1, 'bar']));
 	t.true(p.includes([0, 'foo']));
@@ -420,25 +420,25 @@ test('includes accepts array and compares correctly', (t) => {
 
 for (const { value, desc } of invalidInputs) {
 	test(`includes returns false for ${desc} input`, (t) => {
-		const p = new Pathist([0, 'foo', 1]);
+		const p = Pathist.from([0, 'foo', 1]);
 		t.false(p.includes(value as any));
 	});
 }
 
 test('empty path includes empty path', (t) => {
-	const p = new Pathist([]);
+	const p = Pathist.from([]);
 	t.true(p.includes([]));
 	t.true(p.includes(''));
 });
 
 test('empty path does not include non-empty path', (t) => {
-	const p = new Pathist([]);
+	const p = Pathist.from([]);
 	t.false(p.includes([0]));
 	t.false(p.includes('foo'));
 });
 
 test('includes handles single segment paths correctly', (t) => {
-	const p = new Pathist(['foo']);
+	const p = Pathist.from(['foo']);
 	t.true(p.includes(['foo']));
 	t.false(p.includes(['bar']));
 });

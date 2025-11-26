@@ -4,37 +4,37 @@ import { Pathist } from '../../src/pathist.ts';
 // Configuration tests
 test('nodeChildrenProperties config accepts Set', (t) => {
 	const config = { nodeChildrenProperties: new Set(['children', 'items']) };
-	const p = new Pathist('[0].items[1]', config);
+	const p = Pathist.from('[0].items[1]', config);
 	t.deepEqual(p.nodeChildrenProperties, new Set(['children', 'items']));
 });
 
 test('nodeChildrenProperties config accepts array', (t) => {
 	const config = { nodeChildrenProperties: ['children', 'items'] };
-	const p = new Pathist('[0].items[1]', config);
+	const p = Pathist.from('[0].items[1]', config);
 	t.deepEqual(p.nodeChildrenProperties, new Set(['children', 'items']));
 });
 
 test('nodeChildrenProperties config accepts string', (t) => {
 	const config = { nodeChildrenProperties: 'children' };
-	const p = new Pathist('[0].children[1]', config);
+	const p = Pathist.from('[0].children[1]', config);
 	t.deepEqual(p.nodeChildrenProperties, new Set(['children']));
 });
 
 test('nodeChildrenProperties uses default when not configured', (t) => {
-	const p = new Pathist('[0].children[1]');
+	const p = Pathist.from('[0].children[1]');
 	t.deepEqual(p.nodeChildrenProperties, new Set(['children']));
 });
 
 test('nodeChildrenProperties config propagates through slice', (t) => {
 	const config = { nodeChildrenProperties: new Set(['items']) };
-	const p = new Pathist('items[0].items[1]', config);
+	const p = Pathist.from('items[0].items[1]', config);
 	const sliced = p.slice(0, 2);
 	t.deepEqual(sliced.nodeChildrenProperties, new Set(['items']));
 });
 
 test('nodeChildrenProperties config propagates through concat', (t) => {
 	const config = { nodeChildrenProperties: new Set(['items']) };
-	const p = new Pathist('items[0]', config);
+	const p = Pathist.from('items[0]', config);
 	const result = p.concat('items[1]');
 	t.deepEqual(result.nodeChildrenProperties, new Set(['items']));
 });
@@ -102,7 +102,7 @@ const firstNodePositionCases = [
 
 for (const { input, expected, desc, config } of firstNodePositionCases) {
 	test(`firstNodePosition: ${desc}`, (t) => {
-		const p = new Pathist(input, config);
+		const p = Pathist.from(input, config);
 		t.is(p.firstNodePosition(), expected);
 	});
 }
@@ -165,7 +165,7 @@ const lastNodePositionCases = [
 
 for (const { input, expected, desc, config } of lastNodePositionCases) {
 	test(`lastNodePosition: ${desc}`, (t) => {
-		const p = new Pathist(input, config);
+		const p = Pathist.from(input, config);
 		t.is(p.lastNodePosition(), expected);
 	});
 }
@@ -228,14 +228,14 @@ const nodeIndicesCases = [
 
 for (const { input, expected, desc, config } of nodeIndicesCases) {
 	test(`nodeIndices: ${desc}`, (t) => {
-		const p = new Pathist(input, config);
+		const p = Pathist.from(input, config);
 		t.deepEqual(p.nodeIndices(), expected);
 	});
 }
 
 // Integration tests
 test('tree navigation works with ArkType-style error paths', (t) => {
-	const errorPath = new Pathist('children[2].children[3].foo.bar[0].baz', {
+	const errorPath = Pathist.from('children[2].children[3].foo.bar[0].baz', {
 		nodeChildrenProperties: ['children'],
 	});
 
@@ -260,7 +260,7 @@ test('tree navigation works with ArkType-style error paths', (t) => {
 });
 
 test('tree navigation works with AST-style paths', (t) => {
-	const astPath = new Pathist('body[0].declarations[2].arguments[1]', {
+	const astPath = Pathist.from('body[0].declarations[2].arguments[1]', {
 		nodeChildrenProperties: ['body', 'declarations', 'arguments'],
 	});
 
@@ -270,7 +270,7 @@ test('tree navigation works with AST-style paths', (t) => {
 });
 
 test('tree navigation with multiple child property names', (t) => {
-	const p = new Pathist('children[0].items[1].children[2]', {
+	const p = Pathist.from('children[0].items[1].children[2]', {
 		nodeChildrenProperties: ['children', 'items'],
 	});
 
@@ -280,7 +280,7 @@ test('tree navigation with multiple child property names', (t) => {
 });
 
 test('tree navigation stops at non-child property', (t) => {
-	const p = new Pathist('children[0].items[1].other[2]', {
+	const p = Pathist.from('children[0].items[1].other[2]', {
 		nodeChildrenProperties: ['children', 'items'],
 	});
 
@@ -291,52 +291,52 @@ test('tree navigation stops at non-child property', (t) => {
 
 // Path methods tests
 test('firstNodePath returns path up to first node', (t) => {
-	const p = new Pathist('foo.bar.content[0].children[1]');
+	const p = Pathist.from('foo.bar.content[0].children[1]');
 	t.is(p.firstNodePath().string, 'foo.bar.content[0]');
 });
 
 test('firstNodePath returns empty path when no tree found', (t) => {
-	const p = new Pathist('foo.bar.baz');
+	const p = Pathist.from('foo.bar.baz');
 	t.is(p.firstNodePath().string, '');
 });
 
 test('lastNodePath returns full tree path', (t) => {
-	const p = new Pathist('children[2].children[3].foo.bar');
+	const p = Pathist.from('children[2].children[3].foo.bar');
 	t.is(p.lastNodePath().string, 'children[2].children[3]');
 });
 
 test('lastNodePath returns empty path when no tree found', (t) => {
-	const p = new Pathist('foo.bar.baz');
+	const p = Pathist.from('foo.bar.baz');
 	t.is(p.lastNodePath().string, '');
 });
 
 test('beforeNodePath returns path before tree starts', (t) => {
-	const p = new Pathist('foo.bar.content[0].children[1]');
+	const p = Pathist.from('foo.bar.content[0].children[1]');
 	t.is(p.beforeNodePath().string, 'foo.bar.content');
 });
 
 test('beforeNodePath returns empty path when tree at root', (t) => {
-	const p = new Pathist('[5].children[1].children[3].foo');
+	const p = Pathist.from('[5].children[1].children[3].foo');
 	t.is(p.beforeNodePath().string, '');
 });
 
 test('beforeNodePath returns empty path when no tree found', (t) => {
-	const p = new Pathist('foo.bar.baz');
+	const p = Pathist.from('foo.bar.baz');
 	t.is(p.beforeNodePath().string, '');
 });
 
 test('afterNodePath returns path after tree ends', (t) => {
-	const p = new Pathist('[5].children[1].children[3].foo[7].bar');
+	const p = Pathist.from('[5].children[1].children[3].foo[7].bar');
 	t.is(p.afterNodePath().string, 'foo[7].bar');
 });
 
 test('afterNodePath returns empty path when path ends at tree', (t) => {
-	const p = new Pathist('foo.bar.content[0].children[1]');
+	const p = Pathist.from('foo.bar.content[0].children[1]');
 	t.is(p.afterNodePath().string, '');
 });
 
 test('afterNodePath returns copy of path when no tree found', (t) => {
-	const p = new Pathist('foo.bar.baz');
+	const p = Pathist.from('foo.bar.baz');
 	const after = p.afterNodePath();
 	t.is(after.string, 'foo.bar.baz');
 	t.not(after, p);
@@ -344,7 +344,7 @@ test('afterNodePath returns copy of path when no tree found', (t) => {
 
 test('Path methods propagate config', (t) => {
 	const config = { nodeChildrenProperties: ['items'] as const };
-	const p = new Pathist('items[0].items[1].foo', config);
+	const p = Pathist.from('items[0].items[1].foo', config);
 
 	t.deepEqual(p.firstNodePath().nodeChildrenProperties, new Set(['items']));
 	t.deepEqual(p.lastNodePath().nodeChildrenProperties, new Set(['items']));

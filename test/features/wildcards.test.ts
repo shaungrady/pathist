@@ -188,37 +188,37 @@ test.serial('indexWildcards validates values in collections', (t) => {
 // Wildcard Rendering in toString
 test.serial('toString renders numeric wildcards without quotes in mixed notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', -1, 'bar']);
+	const p = Pathist.from(['foo', -1, 'bar']);
 	t.is(p.toString(), 'foo[-1].bar');
 });
 
 test.serial('toString renders string wildcards without quotes in mixed notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', '*', 'bar']);
+	const p = Pathist.from(['foo', '*', 'bar']);
 	t.is(p.toString(), 'foo[*].bar');
 });
 
 test.serial('toString renders numeric wildcards without quotes in bracket notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', -1, 'bar']);
+	const p = Pathist.from(['foo', -1, 'bar']);
 	t.is(p.toString(Pathist.Notation.Bracket), '["foo"][-1]["bar"]');
 });
 
 test.serial('toString renders string wildcards without quotes in bracket notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', '*', 'bar']);
+	const p = Pathist.from(['foo', '*', 'bar']);
 	t.is(p.toString(Pathist.Notation.Bracket), '["foo"][*]["bar"]');
 });
 
 test.serial('toString renders wildcards in dot notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', -1, '*', 'bar']);
+	const p = Pathist.from(['foo', -1, '*', 'bar']);
 	t.is(p.toString(Pathist.Notation.Dot), 'foo.-1.*.bar');
 });
 
 test.serial('toString renders multiple wildcards correctly', (t) => {
 	Pathist.indexWildcards = [-1, '*', '**'];
-	const p = new Pathist([0, '*', -1, 'foo', '**']);
+	const p = Pathist.from([0, '*', -1, 'foo', '**']);
 	t.is(p.toString(), '[0][*][-1].foo[**]');
 	// Reset to default
 	Pathist.indexWildcards = [-1, '*'];
@@ -226,19 +226,19 @@ test.serial('toString renders multiple wildcards correctly', (t) => {
 
 test.serial('toString renders non-wildcard strings with quotes in bracket notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 'bar']);
+	const p = Pathist.from(['foo', 'bar']);
 	t.is(p.toString(Pathist.Notation.Bracket), '["foo"]["bar"]');
 });
 
 test.serial('toString renders non-finite number wildcards correctly', (t) => {
 	// Infinity
 	Pathist.indexWildcards = [Number.POSITIVE_INFINITY];
-	const p1 = new Pathist(['foo', Number.POSITIVE_INFINITY, 'bar']);
+	const p1 = Pathist.from(['foo', Number.POSITIVE_INFINITY, 'bar']);
 	t.is(p1.toString(), 'foo[Infinity].bar');
 
 	// NaN
 	Pathist.indexWildcards = [NaN];
-	const p2 = new Pathist(['foo', NaN, 'bar']);
+	const p2 = Pathist.from(['foo', NaN, 'bar']);
 	t.is(p2.toString(), 'foo[NaN].bar');
 
 	// Reset to default
@@ -248,9 +248,9 @@ test.serial('toString renders non-finite number wildcards correctly', (t) => {
 // Wildcard Matching in Comparison Methods
 test.serial('equals matches wildcard with numbers', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p1 = new Pathist(['foo', -1, 'bar']);
-	const p2 = new Pathist(['foo', 0, 'bar']);
-	const p3 = new Pathist(['foo', 999, 'bar']);
+	const p1 = Pathist.from(['foo', -1, 'bar']);
+	const p2 = Pathist.from(['foo', 0, 'bar']);
+	const p3 = Pathist.from(['foo', 999, 'bar']);
 
 	// Wildcard matches numbers
 	t.true(p1.equals(p2));
@@ -264,7 +264,7 @@ test.serial('equals matches wildcard with numbers', (t) => {
 
 test.serial('equals matches string wildcard with numbers and wildcards', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p1 = new Pathist(['foo', '*', 'bar']);
+	const p1 = Pathist.from(['foo', '*', 'bar']);
 
 	// String wildcard matches numbers
 	t.true(p1.equals(['foo', 0, 'bar']));
@@ -280,30 +280,30 @@ test.serial('equals matches string wildcard with numbers and wildcards', (t) => 
 
 test.serial('equals with wildcards still checks non-wildcard segments', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p1 = new Pathist(['foo', -1, 'bar']);
-	const p2 = new Pathist(['foo', 0, 'baz']);
-	const p3 = new Pathist(['qux', 0, 'bar']);
+	const p1 = Pathist.from(['foo', -1, 'bar']);
+	const p2 = Pathist.from(['foo', 0, 'baz']);
+	const p3 = Pathist.from(['qux', 0, 'bar']);
 	t.false(p1.equals(p2));
 	t.false(p1.equals(p3));
 });
 
 test.serial('equals with wildcards on both sides matches', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p1 = new Pathist(['foo', -1, 'bar']);
-	const p2 = new Pathist(['foo', '*', 'bar']);
+	const p1 = Pathist.from(['foo', -1, 'bar']);
+	const p2 = Pathist.from(['foo', '*', 'bar']);
 	t.true(p1.equals(p2));
 });
 
 test.serial('startsWith matches wildcard at any position', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1]);
+	const p = Pathist.from(['foo', 0, 'bar', 1]);
 	t.true(p.startsWith(['foo', -1]));
 	t.true(p.startsWith(['foo', '*', 'bar']));
 });
 
 test.serial('endsWith matches wildcard at any position', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1]);
+	const p = Pathist.from(['foo', 0, 'bar', 1]);
 
 	// Wildcard at end
 	t.true(p.endsWith(['bar', -1]));
@@ -320,7 +320,7 @@ test.serial('endsWith matches wildcard at any position', (t) => {
 
 test.serial('includes matches wildcard at any position', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
 	t.true(p.includes([-1, 'bar']));
 	t.true(p.includes(['bar', '*']));
 	t.true(p.includes(['foo', -1, 'bar', '*', 'baz']));
@@ -328,8 +328,8 @@ test.serial('includes matches wildcard at any position', (t) => {
 
 test.serial('wildcards work with indices: Ignore option', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p1 = new Pathist(['foo', 5, 'bar', 10]);
-	const p2 = new Pathist(['foo', -1, 'bar', '*']);
+	const p1 = Pathist.from(['foo', 5, 'bar', 10]);
+	const p2 = Pathist.from(['foo', -1, 'bar', '*']);
 
 	// With wildcards AND indices ignore, should match
 	t.true(p1.equals(p2, { indices: Pathist.Indices.Ignore }));
@@ -340,16 +340,16 @@ test.serial('wildcards work with indices: Ignore option', (t) => {
 	t.true(p1.endsWith(['bar', '*'], { indices: Pathist.Indices.Ignore }));
 
 	// Both wildcards and indices:Ignore work together
-	const p3 = new Pathist([0, 'x', 1]);
+	const p3 = Pathist.from([0, 'x', 1]);
 	t.true(p3.startsWith([-1, 'x'], { indices: Pathist.Indices.Ignore }));
 	t.true(p3.endsWith(['x', '*'], { indices: Pathist.Indices.Ignore }));
 });
 
 test.serial('wildcards disabled when set is empty', (t) => {
 	Pathist.indexWildcards = [];
-	const p1 = new Pathist(['foo', -1, 'bar']);
-	const p2 = new Pathist(['foo', 0, 'bar']);
-	const p3 = new Pathist(['foo', -1, 'bar']);
+	const p1 = Pathist.from(['foo', -1, 'bar']);
+	const p2 = Pathist.from(['foo', 0, 'bar']);
+	const p3 = Pathist.from(['foo', -1, 'bar']);
 	// -1 should not be wildcard anymore
 	t.false(p1.equals(p2));
 	t.true(p1.equals(p3));
@@ -360,7 +360,7 @@ test.serial('wildcards disabled when set is empty', (t) => {
 // IndexOf with Wildcards
 test.serial('positionOf matches wildcard with numbers', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
 
 	// Wildcard matches numbers
 	t.is(p.positionOf(['foo', -1]), 0);
@@ -376,7 +376,7 @@ test.serial('positionOf matches wildcard with numbers', (t) => {
 
 test.serial('positionOf matches string wildcard with numbers and wildcards', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
 
 	// String wildcard matches numbers
 	t.is(p.positionOf(['*', 'bar']), 1);
@@ -391,7 +391,7 @@ test.serial('positionOf matches string wildcard with numbers and wildcards', (t)
 
 test.serial('positionOf with wildcards checks non-wildcard segments', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
 
 	// Correct non-wildcard segments
 	t.is(p.positionOf(['foo', -1, 'bar']), 0);
@@ -403,7 +403,7 @@ test.serial('positionOf with wildcards checks non-wildcard segments', (t) => {
 
 test.serial('positionOf with wildcards on both sides matches', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', -1, 'bar', '*', 'baz']);
+	const p = Pathist.from(['foo', -1, 'bar', '*', 'baz']);
 	t.is(p.positionOf(['foo', -1]), 0);
 	t.is(p.positionOf(['foo', '*']), 0);
 	t.is(p.positionOf([0, 'bar']), 1);
@@ -412,7 +412,7 @@ test.serial('positionOf with wildcards on both sides matches', (t) => {
 
 test.serial('positionOf finds first match with wildcards', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'bar', 2, 'bar']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'bar', 2, 'bar']);
 
 	// First occurrence of wildcard + 'bar'
 	t.is(p.positionOf([-1, 'bar']), 1);
@@ -421,7 +421,7 @@ test.serial('positionOf finds first match with wildcards', (t) => {
 
 test.serial('positionOf with wildcards works with indices: Ignore option', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 5, 'bar', 10, 'baz']);
+	const p = Pathist.from(['foo', 5, 'bar', 10, 'baz']);
 
 	// With wildcards AND indices ignore, should match
 	t.is(p.positionOf([-1, 'bar'], { indices: Pathist.Indices.Ignore }), 1);
@@ -434,7 +434,7 @@ test.serial('positionOf with wildcards works with indices: Ignore option', (t) =
 
 test.serial('positionOf wildcards disabled returns -1 when not matching exactly', (t) => {
 	Pathist.indexWildcards = [];
-	const p = new Pathist(['foo', -1, 'bar']);
+	const p = Pathist.from(['foo', -1, 'bar']);
 
 	// -1 should not be wildcard anymore
 	t.is(p.positionOf(['foo', 0, 'bar']), -1);
@@ -447,7 +447,7 @@ test.serial('positionOf wildcards disabled returns -1 when not matching exactly'
 // LastIndexOf with Wildcards
 test.serial('lastPositionOf matches wildcard with numbers', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz', 2, 'bar']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz', 2, 'bar']);
 
 	// Wildcard matches numbers - should find last occurrence
 	t.is(p.lastPositionOf(['*', 'bar']), 5);
@@ -461,7 +461,7 @@ test.serial('lastPositionOf matches wildcard with numbers', (t) => {
 
 test.serial('lastPositionOf matches string wildcard with numbers and wildcards', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz', 2, 'bar']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz', 2, 'bar']);
 
 	// String wildcard matches numbers
 	t.is(p.lastPositionOf(['*', 'bar']), 5);
@@ -474,7 +474,7 @@ test.serial('lastPositionOf matches string wildcard with numbers and wildcards',
 
 test.serial('lastPositionOf with wildcards checks non-wildcard segments', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'baz']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
 
 	// Correct non-wildcard segments
 	t.is(p.lastPositionOf(['foo', -1, 'bar']), 0);
@@ -486,7 +486,7 @@ test.serial('lastPositionOf with wildcards checks non-wildcard segments', (t) =>
 
 test.serial('lastPositionOf with wildcards on both sides matches', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', -1, 'bar', '*', 'baz']);
+	const p = Pathist.from(['foo', -1, 'bar', '*', 'baz']);
 	t.is(p.lastPositionOf(['foo', -1]), 0);
 	t.is(p.lastPositionOf(['foo', '*']), 0);
 	t.is(p.lastPositionOf([0, 'bar']), 1);
@@ -495,7 +495,7 @@ test.serial('lastPositionOf with wildcards on both sides matches', (t) => {
 
 test.serial('lastPositionOf finds last match with wildcards', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 0, 'bar', 1, 'bar', 2, 'bar']);
+	const p = Pathist.from(['foo', 0, 'bar', 1, 'bar', 2, 'bar']);
 
 	// Last occurrence of wildcard + 'bar'
 	t.is(p.lastPositionOf([-1, 'bar']), 5);
@@ -507,7 +507,7 @@ test.serial('lastPositionOf finds last match with wildcards', (t) => {
 
 test.serial('lastPositionOf with wildcards works with indices: Ignore option', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
-	const p = new Pathist(['foo', 5, 'bar', 10, 'baz', 15, 'bar']);
+	const p = Pathist.from(['foo', 5, 'bar', 10, 'baz', 15, 'bar']);
 
 	// With wildcards AND indices ignore, should match
 	t.is(p.lastPositionOf([-1, 'bar'], { indices: Pathist.Indices.Ignore }), 5);
@@ -520,7 +520,7 @@ test.serial('lastPositionOf with wildcards works with indices: Ignore option', (
 
 test.serial('lastPositionOf wildcards disabled returns -1 when not matching exactly', (t) => {
 	Pathist.indexWildcards = [];
-	const p = new Pathist(['foo', -1, 'bar']);
+	const p = Pathist.from(['foo', -1, 'bar']);
 
 	// -1 should not be wildcard anymore
 	t.is(p.lastPositionOf(['foo', 0, 'bar']), -1);
@@ -535,17 +535,17 @@ test.serial('rejects index wildcard in dot notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 
 	// Single wildcard in dot notation
-	t.throws(() => new Pathist('foo.*.bar'), {
+	t.throws(() => Pathist.from('foo.*.bar'), {
 		message: /Index wildcard '\*' cannot appear in property position/,
 	});
 
 	// Wildcard at start
-	t.throws(() => new Pathist('*.foo.bar'), {
+	t.throws(() => Pathist.from('*.foo.bar'), {
 		message: /Index wildcard '\*' cannot appear in property position/,
 	});
 
 	// Wildcard at end
-	t.throws(() => new Pathist('foo.bar.*'), {
+	t.throws(() => Pathist.from('foo.bar.*'), {
 		message: /Index wildcard '\*' cannot appear in property position/,
 	});
 });
@@ -559,8 +559,8 @@ test.serial('rejects numeric index wildcard in dot notation', (t) => {
 	// This is expected behavior - numeric wildcards should only appear in bracket notation
 
 	// Verify that 'foo.-1.bar' is allowed (parsed as string, not numeric wildcard)
-	t.notThrows(() => new Pathist('foo.-1.bar'));
-	const p = new Pathist('foo.-1.bar');
+	t.notThrows(() => Pathist.from('foo.-1.bar'));
+	const p = Pathist.from('foo.-1.bar');
 	// The "-1" is treated as a string property, not the numeric wildcard
 	t.deepEqual(p.toArray(), ['foo', '-1', 'bar']);
 	t.is(typeof p.toArray()[1], 'string');
@@ -569,11 +569,11 @@ test.serial('rejects numeric index wildcard in dot notation', (t) => {
 test.serial('rejects custom string wildcard in dot notation', (t) => {
 	Pathist.indexWildcards = ['**', 'wild'];
 
-	t.throws(() => new Pathist('foo.**.bar'), {
+	t.throws(() => Pathist.from('foo.**.bar'), {
 		message: /Index wildcard '\*\*' cannot appear in property position/,
 	});
 
-	t.throws(() => new Pathist('foo.wild.bar'), {
+	t.throws(() => Pathist.from('foo.wild.bar'), {
 		message: /Index wildcard 'wild' cannot appear in property position/,
 	});
 
@@ -585,12 +585,12 @@ test.serial('allows index wildcard in bracket notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 
 	// These should all work fine
-	t.notThrows(() => new Pathist('foo[*].bar'));
-	t.notThrows(() => new Pathist('[*].foo.bar'));
-	t.notThrows(() => new Pathist('foo.bar[*]'));
-	t.notThrows(() => new Pathist('foo[*][*].bar'));
+	t.notThrows(() => Pathist.from('foo[*].bar'));
+	t.notThrows(() => Pathist.from('[*].foo.bar'));
+	t.notThrows(() => Pathist.from('foo.bar[*]'));
+	t.notThrows(() => Pathist.from('foo[*][*].bar'));
 
-	const p = new Pathist('foo[*].bar');
+	const p = Pathist.from('foo[*].bar');
 	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
 });
 
@@ -598,11 +598,11 @@ test.serial('allows index wildcard in array constructor', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 
 	// Array input bypasses string parsing - wildcards are allowed anywhere
-	t.notThrows(() => new Pathist(['foo', '*', 'bar']));
-	t.notThrows(() => new Pathist(['*', 'foo', 'bar']));
-	t.notThrows(() => new Pathist(['foo', 'bar', '*']));
+	t.notThrows(() => Pathist.from(['foo', '*', 'bar']));
+	t.notThrows(() => Pathist.from(['*', 'foo', 'bar']));
+	t.notThrows(() => Pathist.from(['foo', 'bar', '*']));
 
-	const p = new Pathist(['foo', '*', 'bar']);
+	const p = Pathist.from(['foo', '*', 'bar']);
 	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
 });
 
@@ -610,17 +610,17 @@ test.serial('rejects multiple wildcards in mixed notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 
 	// Mixed notation with wildcard in property position should fail
-	t.throws(() => new Pathist('foo.*.bar[0]'), {
+	t.throws(() => Pathist.from('foo.*.bar[0]'), {
 		message: /Index wildcard '\*' cannot appear in property position/,
 	});
 
-	t.throws(() => new Pathist('foo[0].*.bar'), {
+	t.throws(() => Pathist.from('foo[0].*.bar'), {
 		message: /Index wildcard '\*' cannot appear in property position/,
 	});
 
 	// But bracket notation wildcards are fine
-	t.notThrows(() => new Pathist('foo[*].bar[0]'));
-	t.notThrows(() => new Pathist('foo[0][*].bar'));
+	t.notThrows(() => Pathist.from('foo[*].bar[0]'));
+	t.notThrows(() => Pathist.from('foo[0][*].bar'));
 });
 
 test.serial('validation respects current wildcard configuration', (t) => {
@@ -628,13 +628,13 @@ test.serial('validation respects current wildcard configuration', (t) => {
 	Pathist.indexWildcards = ['custom'];
 
 	// 'custom' should be rejected in dot notation
-	t.throws(() => new Pathist('foo.custom.bar'), {
+	t.throws(() => Pathist.from('foo.custom.bar'), {
 		message: /Index wildcard 'custom' cannot appear in property position/,
 	});
 
 	// But '*' should be allowed (no longer a wildcard)
-	t.notThrows(() => new Pathist('foo.*.bar'));
-	const p = new Pathist('foo.*.bar');
+	t.notThrows(() => Pathist.from('foo.*.bar'));
+	const p = Pathist.from('foo.*.bar');
 	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
 
 	// Reset to default
@@ -646,8 +646,8 @@ test.serial('no validation when wildcards are disabled', (t) => {
 	Pathist.indexWildcards = [];
 
 	// Now '*' should be allowed in dot notation (it's just a regular property name)
-	t.notThrows(() => new Pathist('foo.*.bar'));
-	const p = new Pathist('foo.*.bar');
+	t.notThrows(() => Pathist.from('foo.*.bar'));
+	const p = Pathist.from('foo.*.bar');
 	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
 
 	// Reset to default

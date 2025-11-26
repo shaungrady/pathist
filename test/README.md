@@ -86,20 +86,20 @@ const equalsCases = [
 
 for (const { p1, p2, expected, desc } of equalsCases) {
   test(`equals: ${desc}`, (t) => {
-    t.is(new Pathist(p1).equals(p2), expected);
+    t.is(Pathist.from(p1).equals(p2), expected);
   });
 }
 
 // ❌ Avoid: Repetitive individual tests
 test('equals returns true for identical arrays', (t) => {
-  const p1 = new Pathist([0, 'foo']);
-  const p2 = new Pathist([0, 'foo']);
+  const p1 = Pathist.from([0, 'foo']);
+  const p2 = Pathist.from([0, 'foo']);
   t.true(p1.equals(p2));
 });
 
 test('equals returns false for different values', (t) => {
-  const p1 = new Pathist([0, 'foo']);
-  const p2 = new Pathist([0, 'bar']);
+  const p1 = Pathist.from([0, 'foo']);
+  const p2 = Pathist.from([0, 'bar']);
   t.false(p1.equals(p2));
 });
 ```

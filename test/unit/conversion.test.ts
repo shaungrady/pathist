@@ -3,19 +3,19 @@ import { Pathist } from '../../src/pathist.ts';
 
 // toArray() Method
 test('toArray returns correct array representation', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
 test('toArray returns a new array (not internal reference)', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	const arr1 = p.toArray();
 	const arr2 = p.toArray();
 	t.not(arr1, arr2);
 });
 
 test('modifying toArray result does not affect instance', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	const arr = p.toArray();
 	arr.push('baz');
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
@@ -47,7 +47,7 @@ const mixedNotationCases = [
 
 for (const { input, expected, desc } of mixedNotationCases) {
 	test(`toString with mixed notation - ${desc}`, (t) => {
-		const p = new Pathist(input);
+		const p = Pathist.from(input);
 		t.is(p.toString(), expected);
 	});
 }
@@ -78,7 +78,7 @@ const bracketNotationCases = [
 
 for (const { input, expected, desc } of bracketNotationCases) {
 	test(`toString with bracket notation - ${desc}`, (t) => {
-		const p = new Pathist(input);
+		const p = Pathist.from(input);
 		t.is(p.toString(Pathist.Notation.Bracket), expected);
 	});
 }
@@ -109,13 +109,13 @@ const dotNotationCases = [
 
 for (const { input, expected, desc } of dotNotationCases) {
 	test(`toString with dot notation - ${desc}`, (t) => {
-		const p = new Pathist(input);
+		const p = Pathist.from(input);
 		t.is(p.toString(Pathist.Notation.Dot), expected);
 	});
 }
 
 test('toString validates notation parameter', (t) => {
-	const p = new Pathist(['foo', 'bar']);
+	const p = Pathist.from(['foo', 'bar']);
 	const error = t.throws(
 		() => {
 			p.toString('invalid' as any);
@@ -127,14 +127,14 @@ test('toString validates notation parameter', (t) => {
 
 // Memoization
 test('toString returns same string reference when called multiple times with same notation', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	const str1 = p.toString();
 	const str2 = p.toString();
 	t.is(str1, str2); // Same reference
 });
 
 test('toString memoizes different notations separately', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	const mixed1 = p.toString(Pathist.Notation.Mixed);
 	const bracket1 = p.toString(Pathist.Notation.Bracket);
 	const mixed2 = p.toString(Pathist.Notation.Mixed);
@@ -147,27 +147,27 @@ test('toString memoizes different notations separately', (t) => {
 
 // Getter Aliases
 test('string getter returns same as toString()', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.is(p.string, p.toString());
 	t.is(p.string, '[0].foo[1]');
 });
 
 test('array getter returns same as toArray()', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.deepEqual(p.array, p.toArray());
 	t.deepEqual(p.array, [0, 'foo', 1]);
 });
 
 test('string getter uses default notation', (t) => {
 	Pathist.defaultNotation = Pathist.Notation.Bracket;
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	t.is(p.string, '[0]["foo"][1]');
 	// Reset to Mixed for other tests
 	Pathist.defaultNotation = Pathist.Notation.Mixed;
 });
 
 test('array getter returns a new array each time', (t) => {
-	const p = new Pathist([0, 'foo', 1]);
+	const p = Pathist.from([0, 'foo', 1]);
 	const arr1 = p.array;
 	const arr2 = p.array;
 	t.not(arr1, arr2);
@@ -310,7 +310,7 @@ const jsonPathCases = [
 
 for (const { input, expected, desc } of jsonPathCases) {
 	test(`toJSONPath: ${desc}`, (t) => {
-		const p = new Pathist(input);
+		const p = Pathist.from(input);
 		t.is(p.toJSONPath(), expected);
 	});
 }

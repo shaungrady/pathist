@@ -3,32 +3,32 @@ import { Pathist } from '../../src/pathist.ts';
 
 // slice() method tests
 test('slice returns entire path when called without arguments', (t) => {
-	const p = new Pathist('children[2].children[3].foo.bar');
+	const p = Pathist.from('children[2].children[3].foo.bar');
 	const sliced = p.slice();
 	t.is(sliced.string, 'children[2].children[3].foo.bar');
 	t.not(sliced, p); // Should be a new instance
 });
 
 test('slice extracts sub-path with start index', (t) => {
-	const p = new Pathist('children[2].children[3].foo.bar');
+	const p = Pathist.from('children[2].children[3].foo.bar');
 	const sliced = p.slice(4);
 	t.is(sliced.string, 'foo.bar');
 });
 
 test('slice extracts sub-path with start and end indices', (t) => {
-	const p = new Pathist('children[2].children[3].foo.bar');
+	const p = Pathist.from('children[2].children[3].foo.bar');
 	const sliced = p.slice(0, 4);
 	t.is(sliced.string, 'children[2].children[3]');
 });
 
 test('slice handles negative indices', (t) => {
-	const p = new Pathist('children[2].children[3].foo.bar');
+	const p = Pathist.from('children[2].children[3].foo.bar');
 	const sliced = p.slice(-2);
 	t.is(sliced.string, 'foo.bar');
 });
 
 test('slice propagates config to new instance', (t) => {
-	const p = new Pathist('foo.bar', {
+	const p = Pathist.from('foo.bar', {
 		notation: Pathist.Notation.Bracket,
 		indices: Pathist.Indices.Ignore,
 	});
@@ -38,14 +38,14 @@ test('slice propagates config to new instance', (t) => {
 });
 
 test('slice returns empty path when start equals end', (t) => {
-	const p = new Pathist('foo.bar.baz');
+	const p = Pathist.from('foo.bar.baz');
 	const sliced = p.slice(1, 1);
 	t.is(sliced.length, 0);
 	t.is(sliced.string, '');
 });
 
 test('slice handles out-of-bounds indices gracefully', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	const sliced = p.slice(10);
 	t.is(sliced.length, 0);
 	t.is(sliced.string, '');
@@ -53,38 +53,38 @@ test('slice handles out-of-bounds indices gracefully', (t) => {
 
 // concat() method tests
 test('concat combines two Pathist instances', (t) => {
-	const nodePath = new Pathist('children[2].children[3]');
-	const relativePath = new Pathist('foo.bar');
+	const nodePath = Pathist.from('children[2].children[3]');
+	const relativePath = Pathist.from('foo.bar');
 	const result = nodePath.concat(relativePath);
 	t.is(result.string, 'children[2].children[3].foo.bar');
 });
 
 test('concat accepts string input', (t) => {
-	const p = new Pathist('children[2].children[3]');
+	const p = Pathist.from('children[2].children[3]');
 	const result = p.concat('baz.qux');
 	t.is(result.string, 'children[2].children[3].baz.qux');
 });
 
 test('concat accepts array input', (t) => {
-	const p = new Pathist('a.b');
+	const p = Pathist.from('a.b');
 	const result = p.concat(['c', 0, 'd']);
 	t.is(result.string, 'a.b.c[0].d');
 });
 
 test('concat accepts multiple arguments', (t) => {
-	const p = new Pathist('a');
-	const result = p.concat('b', ['c'], new Pathist('d'));
+	const p = Pathist.from('a');
+	const result = p.concat('b', ['c'], Pathist.from('d'));
 	t.is(result.string, 'a.b.c.d');
 });
 
 test('concat with empty path', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	const result = p.concat('');
 	t.is(result.string, 'foo.bar');
 });
 
 test('concat throws on null input', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	t.throws(() => p.concat(null as any), {
 		instanceOf: TypeError,
 		message: /Invalid path input/,
@@ -92,7 +92,7 @@ test('concat throws on null input', (t) => {
 });
 
 test('concat throws on undefined input', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	t.throws(() => p.concat(undefined as any), {
 		instanceOf: TypeError,
 		message: /Invalid path input/,
@@ -100,7 +100,7 @@ test('concat throws on undefined input', (t) => {
 });
 
 test('concat propagates config to new instance', (t) => {
-	const p = new Pathist('foo', {
+	const p = Pathist.from('foo', {
 		notation: Pathist.Notation.Bracket,
 		indices: Pathist.Indices.Ignore,
 	});
@@ -111,79 +111,79 @@ test('concat propagates config to new instance', (t) => {
 
 // merge() method tests
 test('merge finds overlap and deduplicates', (t) => {
-	const p = new Pathist('a.b.c');
+	const p = Pathist.from('a.b.c');
 	const result = p.merge('b.c.d');
 	t.is(result.string, 'a.b.c.d');
 });
 
 test('merge finds single segment overlap', (t) => {
-	const p = new Pathist('a.b.c');
+	const p = Pathist.from('a.b.c');
 	const result = p.merge('c.d.e');
 	t.is(result.string, 'a.b.c.d.e');
 });
 
 test('merge acts like concat when no overlap', (t) => {
-	const p = new Pathist('a.b.c');
+	const p = Pathist.from('a.b.c');
 	const result = p.merge('d.e.f');
 	t.is(result.string, 'a.b.c.d.e.f');
 });
 
 test('merge works with indices', (t) => {
-	const p = new Pathist('items[0].items[1]');
+	const p = Pathist.from('items[0].items[1]');
 	const result = p.merge('items[1].name');
 	t.is(result.string, 'items[0].items[1].name');
 });
 
 test('merge requires exact segment match for overlap', (t) => {
-	const p = new Pathist('a.b.c');
+	const p = Pathist.from('a.b.c');
 	const result = p.merge('b.d.e');
 	t.is(result.string, 'a.b.c.b.d.e'); // b doesn't match b.c
 });
 
 test('merge prefers concrete value over wildcard', (t) => {
-	const p = new Pathist('items[-1].name');
+	const p = Pathist.from('items[-1].name');
 	const result = p.merge('items[5].name.value');
 	t.is(result.string, 'items[5].name.value');
 });
 
 test('merge prefers concrete value when first path has concrete', (t) => {
-	const p = new Pathist('items[5].name');
+	const p = Pathist.from('items[5].name');
 	const result = p.merge('items[-1].name.value');
 	t.is(result.string, 'items[5].name.value');
 });
 
 test('merge preserves wildcards when both are wildcards', (t) => {
-	const p = new Pathist('items[-1].name');
+	const p = Pathist.from('items[-1].name');
 	const result = p.merge('items[-1].name.value');
 	t.is(result.string, 'items[-1].name.value');
 });
 
 test('merge handles empty first path', (t) => {
-	const p = new Pathist('');
+	const p = Pathist.from('');
 	const result = p.merge('foo.bar');
 	t.is(result.string, 'foo.bar');
 });
 
 test('merge handles empty second path', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	const result = p.merge('');
 	t.is(result.string, 'foo.bar');
 });
 
 test('merge accepts string input', (t) => {
-	const p = new Pathist('a.b.c');
+	const p = Pathist.from('a.b.c');
 	const result = p.merge('b.c.d');
 	t.is(result.string, 'a.b.c.d');
 });
 
 test('merge accepts array input', (t) => {
-	const p = new Pathist('a.b');
+	const p = Pathist.from('a.b');
 	const result = p.merge(['b', 'c']);
 	t.is(result.string, 'a.b.c');
 });
 
 test('merge throws on null input', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	t.throws(() => p.merge(null as any), {
 		instanceOf: TypeError,
 		message: /Invalid path input/,
@@ -191,7 +191,7 @@ test('merge throws on null input', (t) => {
 });
 
 test('merge throws on undefined input', (t) => {
-	const p = new Pathist('foo.bar');
+	const p = Pathist.from('foo.bar');
 	t.throws(() => p.merge(undefined as any), {
 		instanceOf: TypeError,
 		message: /Invalid path input/,
@@ -199,7 +199,7 @@ test('merge throws on undefined input', (t) => {
 });
 
 test('merge propagates config to new instance', (t) => {
-	const p = new Pathist('foo.bar', {
+	const p = Pathist.from('foo.bar', {
 		notation: Pathist.Notation.Bracket,
 		indices: Pathist.Indices.Ignore,
 	});
@@ -209,53 +209,53 @@ test('merge propagates config to new instance', (t) => {
 });
 
 test('merge handles complete overlap', (t) => {
-	const p = new Pathist('a.b.c');
+	const p = Pathist.from('a.b.c');
 	const result = p.merge('a.b.c');
 	t.is(result.string, 'a.b.c');
 });
 
 test('merge finds longest overlap', (t) => {
-	const p = new Pathist('a.b.c.d');
+	const p = Pathist.from('a.b.c.d');
 	const result = p.merge('b.c.d.e');
 	t.is(result.string, 'a.b.c.d.e');
 });
 
 test('merge with wildcards does not match string segments', (t) => {
-	const p = new Pathist('items[-1].name');
+	const p = Pathist.from('items[-1].name');
 	const result = p.merge('name.value');
 	t.is(result.string, 'items[-1].name.value');
 });
 
 test('merge replaces wildcard with concrete in overlapping region', (t) => {
-	const p = new Pathist(['items', -1, 'items', -1]);
+	const p = Pathist.from(['items', -1, 'items', -1]);
 	const result = p.merge(['items', 3, 'name']);
 	t.is(result.string, 'items[-1].items[3].name');
 });
 
 // Use case examples from feature_plans.md
 test('slice use case: extract node-relative path', (t) => {
-	const errorPath = new Pathist('children[2].children[3].foo.bar[0].baz');
+	const errorPath = Pathist.from('children[2].children[3].foo.bar[0].baz');
 	const nodeIdx = 3; // Mock lastNodeIndex result
 	const relativePath = errorPath.slice(nodeIdx + 1);
 	t.is(relativePath.string, 'foo.bar[0].baz');
 });
 
 test('slice use case: extract node path', (t) => {
-	const errorPath = new Pathist('children[2].children[3].foo.bar[0].baz');
+	const errorPath = Pathist.from('children[2].children[3].foo.bar[0].baz');
 	const nodeIdx = 3; // Mock lastNodeIndex result
 	const nodePath = errorPath.slice(0, nodeIdx + 1);
 	t.is(nodePath.string, 'children[2].children[3]');
 });
 
 test('concat use case: reconstruct path', (t) => {
-	const nodePath = new Pathist('children[2].children[3]');
-	const relativePath = new Pathist('foo.bar[0].baz');
+	const nodePath = Pathist.from('children[2].children[3]');
+	const relativePath = Pathist.from('foo.bar[0].baz');
 	const reconstructed = nodePath.concat(relativePath);
 	t.is(reconstructed.string, 'children[2].children[3].foo.bar[0].baz');
 });
 
 test('concat use case: path building', (t) => {
-	const base = new Pathist('api.users[0]');
+	const base = Pathist.from('api.users[0]');
 	const detail = base.concat('profile.settings');
 	t.is(detail.string, 'api.users[0].profile.settings');
 });

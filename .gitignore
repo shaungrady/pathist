@@ -142,4 +142,4 @@ vite.config.ts.timestamp-*
 package-lock.json
 
 # TypeDoc generated documentation
-api-docs/
+docs/

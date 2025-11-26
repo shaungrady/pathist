@@ -19,7 +19,7 @@ test('from() accepts config parameter', (t) => {
 
 test('from() is equivalent to constructor', (t) => {
 	const p1 = Pathist.from('foo.bar.baz');
-	const p2 = new Pathist('foo.bar.baz');
+	const p2 = Pathist.from('foo.bar.baz');
 	t.deepEqual(p1.toArray(), p2.toArray());
 });
 

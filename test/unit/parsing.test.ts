@@ -3,45 +3,45 @@ import { Pathist } from '../../src/pathist.ts';
 
 // String Parsing Tests
 test('parses bracket notation with negative indices', (t) => {
-	const p = new Pathist('foo[-1].bar');
+	const p = Pathist.from('foo[-1].bar');
 	t.deepEqual(p.toArray(), ['foo', -1, 'bar']);
 });
 
 test('parses bracket notation with string wildcards', (t) => {
-	const p = new Pathist('foo[*].bar');
+	const p = Pathist.from('foo[*].bar');
 	t.deepEqual(p.toArray(), ['foo', '*', 'bar']);
 });
 
 test('parses bracket notation with quoted strings', (t) => {
-	const p = new Pathist('["foo"]["bar"]');
+	const p = Pathist.from('["foo"]["bar"]');
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
 test('parses bracket notation with single-quoted strings', (t) => {
-	const p = new Pathist("['foo']['bar']");
+	const p = Pathist.from("['foo']['bar']");
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
 test('parses bracket notation with unquoted strings', (t) => {
-	const p = new Pathist('[foo][bar]');
+	const p = Pathist.from('[foo][bar]');
 	t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
 test('round-trip: bracket notation strings simplify to dot notation', (t) => {
 	const input = '["foo"]["bar"]';
-	const p = new Pathist(input);
+	const p = Pathist.from(input);
 	t.is(p.toString(), 'foo.bar');
 });
 
 test('round-trip: parse and render negative index', (t) => {
 	const input = 'foo[-1].bar';
-	const p = new Pathist(input);
+	const p = Pathist.from(input);
 	t.is(p.toString(), input);
 });
 
 test('round-trip: parse and render string wildcard', (t) => {
 	const input = 'foo[*].bar';
-	const p = new Pathist(input);
+	const p = Pathist.from(input);
 	t.is(p.toString(), input);
 });
 
@@ -57,7 +57,7 @@ const mismatchedQuoteCases = [
 
 for (const { input, desc } of mismatchedQuoteCases) {
 	test(`rejects mismatched quotes: ${desc}`, (t) => {
-		t.throws(() => new Pathist(input), { message: /mismatched quotes/i });
+		t.throws(() => Pathist.from(input), { message: /mismatched quotes/i });
 	});
 }
 
@@ -112,9 +112,9 @@ const roundTripCases = [
 
 for (const { array, expected, desc } of roundTripCases) {
 	test(`round-trip: ${desc}`, (t) => {
-		const p1 = new Pathist(array);
+		const p1 = Pathist.from(array);
 		const str = p1.toString();
-		const p2 = new Pathist(str);
+		const p2 = Pathist.from(str);
 
 		t.is(str, expected, 'serialization matches expected format');
 		t.deepEqual(p2.toArray(), array, 'round-trip preserves segments');
@@ -162,7 +162,7 @@ const parsingCases = [
 
 for (const { input, expected, desc } of parsingCases) {
 	test(`parses: ${desc}`, (t) => {
-		const p = new Pathist(input);
+		const p = Pathist.from(input);
 		t.deepEqual(p.toArray(), expected);
 	});
 }
@@ -203,7 +203,7 @@ const errorCases = [
 
 for (const { input, error, desc } of errorCases) {
 	test(`throws error: ${desc}`, (t) => {
-		t.throws(() => new Pathist(input), { message: error });
+		t.throws(() => Pathist.from(input), { message: error });
 	});
 }
 
@@ -228,7 +228,7 @@ const unusualButValidCases = [
 
 for (const { input, expected, desc } of unusualButValidCases) {
 	test(`parses unusual but valid: ${desc}`, (t) => {
-		const p = new Pathist(input);
+		const p = Pathist.from(input);
 		t.deepEqual(p.toArray(), expected);
 	});
 }

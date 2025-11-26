@@ -26,19 +26,19 @@ const cases = [
 
 for (const { input, expected, desc } of cases) {
   test(`parses: ${desc}`, (t) => {
-    const p = new Pathist(input);
+    const p = Pathist.from(input);
     t.deepEqual(p.toArray(), expected);
   });
 }
 
 // ❌ Avoid: Repetitive individual tests
 test('parses dot notation', (t) => {
-  const p = new Pathist('foo.bar');
+  const p = Pathist.from('foo.bar');
   t.deepEqual(p.toArray(), ['foo', 'bar']);
 });
 
 test('parses bracket notation', (t) => {
-  const p = new Pathist('foo[0]');
+  const p = Pathist.from('foo[0]');
   t.deepEqual(p.toArray(), ['foo', 0]);
 });
 ```
