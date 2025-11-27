@@ -104,8 +104,8 @@ export class Pathist {
 	// Static Configuration
 	// ============================================================================
 
-	static #defaultNotation: Notation = Pathist.Notation.Mixed;
-	static #defaultIndices: Indices = Pathist.Indices.Preserve;
+	static #defaultNotation: Notation = 'Mixed' as const;
+	static #defaultIndices: Indices = 'Preserve' as const;
 	static #indexWildcards: ReadonlySet<string | number> = new Set([-1, '*']);
 	static #defaultNodeChildrenProperties: ReadonlySet<string> = new Set(['children']);
 
@@ -390,13 +390,20 @@ export class Pathist {
 			return input.segments;
 		}
 
-		// If it's a string or array, parse it
-		if (typeof input === 'string' || Array.isArray(input)) {
+		// Parse directly without creating a Pathist instance
+		if (typeof input === 'string') {
 			try {
-				const temp = Pathist.from(input);
-				return temp.segments;
+				return Pathist.#parseString(input);
 			} catch {
-				// If construction fails (invalid input), return null
+				return null;
+			}
+		}
+
+		if (Array.isArray(input)) {
+			try {
+				Pathist.#validateArray(input);
+				return input;
+			} catch {
 				return null;
 			}
 		}
@@ -409,7 +416,27 @@ export class Pathist {
 		return Pathist.#indexWildcards.has(segment);
 	}
 
+	static #isNumericSegment(segment: PathSegment): segment is number {
+		return typeof segment === 'number';
+	}
+
+	static #isStringSegment(segment: PathSegment): segment is string {
+		return typeof segment === 'string';
+	}
+
 	static #segmentsMatch(segL: PathSegment, segR: PathSegment, indices: Indices): boolean {
+		// Fast path: exact match (most common case)
+		if (segL === segR) {
+			return true;
+		}
+
+		// If indices should be ignored and both segments are numbers, they match
+		if (indices === Pathist.Indices.Ignore) {
+			if (Pathist.#isNumericSegment(segL) && Pathist.#isNumericSegment(segR)) {
+				return true;
+			}
+		}
+
 		const isWildcardL = Pathist.#isWildcard(segL);
 		const isWildcardR = Pathist.#isWildcard(segR);
 
@@ -421,18 +448,11 @@ export class Pathist {
 			}
 			// One is wildcard - must match a number or another wildcard
 			const nonWildcard = isWildcardL ? segR : segL;
-			return typeof nonWildcard === 'number';
+			return Pathist.#isNumericSegment(nonWildcard);
 		}
 
-		// If indices should be ignored and both segments are numbers, they match
-		if (indices === Pathist.Indices.Ignore) {
-			if (typeof segL === 'number' && typeof segR === 'number') {
-				return true;
-			}
-		}
-
-		// Otherwise, require exact match
-		return segL === segR;
+		// No match
+		return false;
 	}
 
 	static #validatePropertySegment(segment: string, index: number): void {
@@ -461,8 +481,9 @@ export class Pathist {
 			if (content[0] !== content[content.length - 1]) {
 				throw new Error(`Mismatched quotes in bracket notation: [${content}]`);
 			}
-			// Remove matching quotes
-			return content.slice(1, -1);
+			// Remove matching quotes and unescape
+			const unquoted = content.slice(1, -1);
+			return Pathist.#unescapeString(unquoted);
 		} else if (startsWithQuote || endsWithQuote) {
 			// Only one side quoted - error
 			throw new Error(`Mismatched quotes in bracket notation: [${content}]`);
@@ -470,6 +491,22 @@ export class Pathist {
 
 		// No quotes - return as-is
 		return content;
+	}
+
+	static #unescapeString(str: string): string {
+		let result = '';
+		let i = 0;
+		while (i < str.length) {
+			if (str[i] === '\\' && i + 1 < str.length) {
+				// Escape sequence found - take the next character literally
+				result += str[i + 1];
+				i += 2;
+			} else {
+				result += str[i];
+				i++;
+			}
+		}
+		return result;
 	}
 
 	static #requiresBracketNotation(segment: string): boolean {
@@ -484,11 +521,13 @@ export class Pathist {
 		// Only characters that would be misinterpreted by the parser require brackets:
 		// - dots (.) would be parsed as path separators
 		// - brackets ([, ]) would be parsed as bracket notation
+		// - backslashes (\) are escape characters
 		// - spaces for clarity and consistency (though many parsers handle them)
 		return (
 			segment.includes('.') ||
 			segment.includes('[') ||
 			segment.includes(']') ||
+			segment.includes('\\') ||
 			segment.includes(' ')
 		);
 	}
@@ -645,9 +684,9 @@ export class Pathist {
 		}
 
 		if (typeof input === 'string') {
-			this.segments = this.parseString(input);
+			this.segments = Pathist.#parseString(input);
 		} else {
-			this.validateArray(input);
+			Pathist.#validateArray(input);
 			// Create a copy to ensure immutability
 			this.segments = [...input];
 		}
@@ -809,7 +848,7 @@ export class Pathist {
 			if (Pathist.#isWildcard(segment)) {
 				// Wildcard segments → [*] notation (RFC 9535)
 				result += '[*]';
-			} else if (typeof segment === 'number') {
+			} else if (Pathist.#isNumericSegment(segment)) {
 				// Numeric segments → [n] notation
 				result += `[${segment}]`;
 			} else {
@@ -1572,7 +1611,8 @@ export class Pathist {
 	 */
 	#findFirstNumericIndex(): number {
 		for (let i = 0; i < this.segments.length; i++) {
-			if (typeof this.segments[i] === 'number') {
+			const segment = this.segments[i];
+			if (Pathist.#isNumericSegment(segment)) {
 				// Root-level index - it's a node
 				if (i === 0) {
 					return i;
@@ -1581,7 +1621,7 @@ export class Pathist {
 				// Check if preceded by a children property
 				if (i > 0) {
 					const prevSegment = this.segments[i - 1];
-					if (typeof prevSegment === 'string' && this.nodeChildrenProperties.has(prevSegment)) {
+					if (Pathist.#isStringSegment(prevSegment) && this.nodeChildrenProperties.has(prevSegment)) {
 						return i;
 					}
 				}
@@ -1611,11 +1651,12 @@ export class Pathist {
 		while (i < this.segments.length) {
 			const segment = this.segments[i];
 
-			if (typeof segment === 'string') {
+			if (Pathist.#isStringSegment(segment)) {
 				// Check if it's a children property followed by numeric
+				const nextSegment = this.segments[i + 1];
 				if (
 					i + 1 < this.segments.length &&
-					typeof this.segments[i + 1] === 'number' &&
+					Pathist.#isNumericSegment(nextSegment) &&
 					this.nodeChildrenProperties.has(segment)
 				) {
 					// This is a children property followed by an index - continue the tree
@@ -1668,7 +1709,8 @@ export class Pathist {
 	 */
 	firstNodePath(): Pathist {
 		// If path starts with numeric index, return path up to it
-		if (this.segments.length > 0 && typeof this.segments[0] === 'number') {
+		const firstSegment = this.segments[0];
+		if (firstSegment !== undefined && Pathist.#isNumericSegment(firstSegment)) {
 			return this.slice(0, 1);
 		}
 		// Otherwise root is first node
@@ -1859,7 +1901,7 @@ export class Pathist {
 		// Collect all numeric values from firstIdx to lastIdx
 		for (let i = firstIdx; i <= lastIdx; i++) {
 			const segment = this.segments[i];
-			if (typeof segment === 'number') {
+			if (Pathist.#isNumericSegment(segment)) {
 				values.push(segment);
 			}
 		}
@@ -1932,7 +1974,7 @@ export class Pathist {
 		// Yield path at each node index
 		for (let i = firstIdx; i <= lastIdx; i++) {
 			const segment = this.segments[i];
-			if (typeof segment === 'number') {
+			if (Pathist.#isNumericSegment(segment)) {
 				yield this.slice(0, i + 1);
 			}
 		}
@@ -1954,7 +1996,7 @@ export class Pathist {
 		};
 	}
 
-	private parseString(input: string): PathSegment[] {
+	static #parseString(input: string): PathSegment[] {
 		if (input === '') {
 			return [];
 		}
@@ -1967,10 +2009,18 @@ export class Pathist {
 		while (i < input.length) {
 			const char = input[i];
 
-			if (char === '\\' && i + 1 < input.length && input[i + 1] === '.') {
-				// Escaped dot - add literal dot to current segment
-				current += '.';
-				i += 2; // Skip both backslash and dot
+			if (char === '\\' && i + 1 < input.length) {
+				// Handle escape sequences
+				const nextChar = input[i + 1];
+				if (nextChar === '\\' || nextChar === '.' || nextChar === '[' || nextChar === ']') {
+					// Valid escape sequences: \\, \., \[, \]
+					current += nextChar;
+					i += 2; // Skip both backslash and escaped character
+				} else {
+					// Invalid escape sequence - treat backslash literally
+					current += char;
+					i++;
+				}
 			} else if (char === '[') {
 				// Save any accumulated dot-notation segment
 				if (current) {
@@ -2018,7 +2068,7 @@ export class Pathist {
 		return segments;
 	}
 
-	private validateArray(input: PathSegment[]): void {
+	static #validateArray(input: PathSegment[]): void {
 		for (const segment of input) {
 			const type = typeof segment;
 			if (type !== 'string' && type !== 'number') {
@@ -2033,7 +2083,7 @@ export class Pathist {
 	private toMixedNotation(): string {
 		return this.segments
 			.map((segment, index) => {
-				if (typeof segment === 'number') {
+				if (Pathist.#isNumericSegment(segment)) {
 					return `[${segment}]`;
 				}
 				// String segment - check if wildcard
@@ -2042,7 +2092,9 @@ export class Pathist {
 				}
 				// Check if string requires bracket notation (dots, brackets, spaces, etc.)
 				if (Pathist.#requiresBracketNotation(segment)) {
-					return `["${segment.replaceAll(`"`, `\\"`)}"]`;
+					// Escape backslashes first, then quotes to avoid double-escaping
+					const escaped = segment.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+					return `["${escaped}"]`;
 				}
 				// Regular string segment - use dot notation
 				if (index === 0) {
@@ -2056,14 +2108,16 @@ export class Pathist {
 	private toBracketNotation(): string {
 		return this.segments
 			.map((segment) => {
-				if (typeof segment === 'number') {
+				if (Pathist.#isNumericSegment(segment)) {
 					return `[${segment}]`;
 				}
 				// String segment - check if wildcard (no quotes)
 				if (Pathist.#isWildcard(segment)) {
 					return `[${segment}]`;
 				}
-				return `["${segment.replaceAll(`"`, `\\"`)}"]`;
+				// Escape backslashes first, then quotes to avoid double-escaping
+				const escaped = segment.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+				return `["${escaped}"]`;
 			})
 			.join('');
 	}
@@ -2071,11 +2125,16 @@ export class Pathist {
 	private toDotNotation(): string {
 		return this.segments
 			.map((segment) => {
-				if (typeof segment === 'number') {
+				if (Pathist.#isNumericSegment(segment)) {
 					return String(segment);
 				}
-				// Escape dots within segment names so they don't get parsed as separators
-				return segment.replaceAll('.', '\\.');
+				// Escape special characters so they don't get parsed incorrectly
+				// Must escape backslash first to avoid double-escaping
+				return segment
+					.replaceAll('\\', '\\\\')
+					.replaceAll('.', '\\.')
+					.replaceAll('[', '\\[')
+					.replaceAll(']', '\\]');
 			})
 			.join('.');
 	}
