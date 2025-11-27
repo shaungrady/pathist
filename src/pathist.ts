@@ -792,6 +792,63 @@ export class Pathist {
 		yield* this.segments;
 	}
 
+	/**
+	 * Convenience wrapper for `Array.reduce()` on the path segments.
+	 *
+	 * This is equivalent to `path.toArray().reduce(...)` but more concise.
+	 * Allows you to define custom reduction logic for navigating objects.
+	 *
+	 * @param callbackfn - Function to execute on each segment
+	 * @param initialValue - Value to use as the first argument to the first call of the callback
+	 * @returns The accumulated result from the reduction
+	 *
+	 * @see {@link toArray} - Get the path segments as an array
+	 * @see {@link array} - Getter for path segments
+	 * @see {@link Symbol.iterator} - Iterate over segments
+	 *
+	 * @example
+	 * Navigate through an object
+	 * ```typescript
+	 * const data = {
+	 *   users: [
+	 *     { profile: { name: 'Alice' } },
+	 *     { profile: { name: 'Bob' } }
+	 *   ]
+	 * };
+	 *
+	 * const path = Pathist.from('users[0].profile.name');
+	 * const value = path.reduce((obj, segment) => obj?.[segment], data);
+	 * console.log(value); // 'Alice'
+	 * ```
+	 *
+	 * @example
+	 * Custom reduction with default fallback
+	 * ```typescript
+	 * const path = Pathist.from('users[5].profile.name');
+	 * const value = path.reduce((obj, seg) => obj?.[seg] ?? {}, data);
+	 * console.log(value); // {} (instead of undefined)
+	 * ```
+	 *
+	 * @example
+	 * Building a path string during reduction
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * const result = path.reduce((acc, seg) => acc + '/' + seg, '');
+	 * console.log(result); // '/foo/bar/baz'
+	 * ```
+	 */
+	reduce<T>(
+		callbackfn: (
+			previousValue: T,
+			currentValue: PathSegment,
+			currentIndex: number,
+			array: PathSegment[],
+		) => T,
+		initialValue: T,
+	): T {
+		return this.toArray().reduce(callbackfn, initialValue);
+	}
+
 	// ============================================================================
 	// Comparison Methods
 	// ============================================================================

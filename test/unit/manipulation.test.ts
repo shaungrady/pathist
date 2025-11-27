@@ -348,3 +348,136 @@ test('concat use case: path building', (t) => {
 	const detail = base.concat('profile.settings');
 	t.is(detail.string, 'api.users[0].profile.settings');
 });
+
+// reduce() method tests
+test('reduce is a convenience wrapper for toArray().reduce()', (t) => {
+	const path = Pathist.from('foo.bar.baz');
+	const result1 = path.reduce<string>((acc, seg) => `${acc}/${seg}`, '');
+	const result2 = path.toArray().reduce<string>((acc, seg) => `${acc}/${seg}`, '');
+	t.is(result1, result2);
+	t.is(result1, '/foo/bar/baz');
+});
+
+test('reduce navigates to a value in object', (t) => {
+	const data = { users: [{ profile: { name: 'Alice' } }] };
+	const path = Pathist.from('users[0].profile.name');
+	const value = path.reduce((obj: any, segment) => obj?.[segment], data);
+	t.is(value, 'Alice');
+});
+
+test('reduce handles array indices', (t) => {
+	const data = { items: ['a', 'b', 'c'] };
+	const path = Pathist.from('items[1]');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, 'b');
+});
+
+test('reduce returns undefined for missing paths', (t) => {
+	const data = { users: [{ profile: { name: 'Alice' } }] };
+	const path = Pathist.from('users[5].profile.name');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, undefined);
+});
+
+test('reduce returns undefined for null intermediate values', (t) => {
+	const data = { users: null };
+	const path = Pathist.from('users[0].name');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, undefined);
+});
+
+test('reduce returns undefined for undefined intermediate values', (t) => {
+	const data = { users: [{ profile: undefined }] };
+	const path = Pathist.from('users[0].profile.name');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, undefined);
+});
+
+test('reduce handles empty path', (t) => {
+	const data = { foo: 'bar' };
+	const path = Pathist.from('');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.deepEqual(value, data);
+});
+
+test('reduce works with nested objects', (t) => {
+	const data = {
+		level1: {
+			level2: {
+				level3: {
+					value: 'deep',
+				},
+			},
+		},
+	};
+	const path = Pathist.from('level1.level2.level3.value');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, 'deep');
+});
+
+test('reduce works with mixed arrays and objects', (t) => {
+	const data = {
+		users: [
+			{ profile: { settings: { theme: 'dark' } } },
+			{ profile: { settings: { theme: 'light' } } },
+		],
+	};
+	const path = Pathist.from('users[1].profile.settings.theme');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, 'light');
+});
+
+test('reduce handles zero as valid value', (t) => {
+	const data = { count: 0 };
+	const path = Pathist.from('count');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, 0);
+});
+
+test('reduce handles false as valid value', (t) => {
+	const data = { enabled: false };
+	const path = Pathist.from('enabled');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, false);
+});
+
+test('reduce handles empty string as valid value', (t) => {
+	const data = { name: '' };
+	const path = Pathist.from('name');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, '');
+});
+
+test('reduce handles null as valid value', (t) => {
+	const data = { value: null };
+	const path = Pathist.from('value');
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, null);
+});
+
+test('reduce works with properties containing special characters', (t) => {
+	const data = { 'foo.bar': { baz: 'value' } };
+	const path = Pathist.from(['foo.bar', 'baz']);
+	const value = path.reduce((obj: any, seg) => obj?.[seg], data);
+	t.is(value, 'value');
+});
+
+test('reduce supports custom reduction logic with fallbacks', (t) => {
+	const data = { users: [{ profile: { name: 'Alice' } }] };
+	const path = Pathist.from('users[5].profile.name');
+	// Provide empty object as fallback for missing paths
+	const value = path.reduce((obj: any, seg) => obj?.[seg] ?? {}, data);
+	t.deepEqual(value, {});
+});
+
+test('reduce can build strings from segments', (t) => {
+	const path = Pathist.from('users[0].profile.name');
+	const result = path.reduce((acc, seg) => `${acc}/${seg}`, '');
+	t.is(result, '/users/0/profile/name');
+});
+
+test('reduce can count segments', (t) => {
+	const path = Pathist.from('foo.bar.baz.qux');
+	const count = path.reduce((acc) => acc + 1, 0);
+	t.is(count, 4);
+});

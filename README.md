@@ -203,7 +203,7 @@ Pathist is designed to work seamlessly with popular path-based libraries and too
 
 ### Navigating Objects Without Dependencies
 
-Use `path.array` with JavaScript's native `Array.reduce()` to navigate objects without external libraries:
+Use the `reduce()` method (a thin wrapper around `Array.reduce()`) to navigate objects:
 
 ```typescript
 import { Pathist } from 'pathist';
@@ -215,20 +215,22 @@ const data = {
   ]
 };
 
-// Build your path
+// Navigate through an object
 const path = Pathist.from('users[0].profile.settings.theme');
-
-// Navigate the object using reduce
-const value = path.array.reduce((obj, segment) => obj?.[segment], data);
+const value = path.reduce((obj, segment) => obj?.[segment], data);
 console.log(value); // 'dark'
 
-// Works with any path
-const namePath = Pathist.from('users[1].profile.name');
-const name = namePath.array.reduce((obj, seg) => obj?.[seg], data);
-console.log(name); // 'Bob'
+// Handle missing paths gracefully
+const missing = Pathist.from('users[5].profile.name');
+const name = missing.reduce((obj, seg) => obj?.[seg], data);
+console.log(name); // undefined
+
+// Provide default fallback values
+const withDefault = missing.reduce((obj, seg) => obj?.[seg] ?? {}, data);
+console.log(withDefault); // {}
 ```
 
-This pattern is simple, zero-dependency, and leverages Pathist's core strength: path manipulation. For more advanced features like setting values or handling edge cases, consider using established libraries like lodash.
+This is equivalent to `path.toArray().reduce(...)` but more concise. You have full control over the reduction logic. For more advanced features like setting values or complex transformations, consider using established libraries like lodash.
 
 ### With [lodash][lodash] get/set
 
