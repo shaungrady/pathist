@@ -14,6 +14,7 @@ Pathist is a TypeScript library for parsing, manipulating, and comparing object 
 * **Path manipulation**: Slice, concat, and intelligently merge paths
 * **Tree traversal**: Navigate hierarchical structures with node-aware methods
 * **JSONPath conversion**: Export paths to RFC 9535 JSONPath format
+* **JSON Pointer support**: Parse and convert to/from RFC 6901 JSON Pointer format
 * **Wildcard support**: Use wildcards for flexible matching
 * **TypeScript-first**: Full type safety with comprehensive type definitions
 * **Composable design**: Works seamlessly with [lodash][lodash], [jsonpath-plus][jsonpath-plus], [type-fest][type-fest], [ArkType][arktype], and other path-based libraries
@@ -47,8 +48,15 @@ console.log(path.toString()); // 'user.profile.settings[0].name' (default: Mixed
 console.log(path.toString(Pathist.Notation.Dot)); // 'user.profile.settings.0.name'
 console.log(path.toString(Pathist.Notation.Bracket)); // '["user"]["profile"]["settings"][0]["name"]'
 
-// JSONPath export
+// JSONPath export (RFC 9535)
 console.log(path.toJSONPath()); // '$.user.profile.settings[0].name'
+
+// JSON Pointer export (RFC 6901)
+console.log(path.toJSONPointer()); // '/user/profile/settings/0/name'
+
+// Parse JSON Pointer
+const fromPointer = Pathist.fromJSONPointer('/user/profile/settings/0/name');
+console.log(fromPointer.toString()); // 'user.profile.settings[0].name'
 ```
 
 ## Common Use Cases
@@ -293,6 +301,45 @@ const wildcardPath = Pathist.from('store.books[*].price');
 const allPrices = JSONPath({ path: wildcardPath.toJSONPath(), json: data });
 console.log(allPrices); // [10, 15]
 ```
+
+### JSON Pointer (RFC 6901) Support
+
+Pathist supports both parsing and converting to [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) format, which is commonly used in JSON Patch (RFC 6902), JSON Schema, and various API specifications:
+
+```typescript
+import { Pathist } from 'pathist';
+
+// Parse JSON Pointer strings
+const path = Pathist.fromJSONPointer('/store/books/0/title');
+console.log(path.toArray()); // ['store', 'books', 0, 'title']
+console.log(path.toString()); // 'store.books[0].title'
+
+// Convert paths to JSON Pointer format
+const userPath = Pathist.from('user.profile.settings.theme');
+console.log(userPath.toJSONPointer()); // '/user/profile/settings/theme'
+
+// Handle special characters (~ and / are escaped per RFC 6901)
+const specialPath = Pathist.from(['foo~bar', 'baz/qux']);
+console.log(specialPath.toJSONPointer()); // '/foo~0bar/baz~1qux'
+
+// Round-trip conversion
+const original = Pathist.from('items[0].metadata.tags[2]');
+const pointer = original.toJSONPointer(); // '/items/0/metadata/tags/2'
+const parsed = Pathist.fromJSONPointer(pointer);
+console.log(parsed.equals(original)); // true
+
+// Root reference (empty path)
+const root = Pathist.fromJSONPointer('');
+console.log(root.length); // 0
+console.log(root.toJSONPointer()); // ''
+```
+
+**Key differences from JSONPath:**
+
+* JSON Pointer uses `/` as separator (vs. `.` in JSONPath)
+* JSON Pointer uses `/0` for array indices (vs. `[0]` in JSONPath)
+* JSON Pointer starts with `/` (vs. `$` in JSONPath)
+* JSON Pointer is simpler - no query expressions, just direct path references
 
 ### With [type-fest][type-fest] Paths Type
 
