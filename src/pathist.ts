@@ -303,6 +303,84 @@ export class Pathist {
 		return new Pathist(input, config);
 	}
 
+	/**
+	 * Creates a new Pathist instance from a JSON Pointer string (RFC 6901).
+	 *
+	 * Parses a JSON Pointer formatted string and converts it to a Pathist instance.
+	 * JSON Pointer uses `/` as segment separators and requires unescaping of special
+	 * characters (`~1` becomes `/`, `~0` becomes `~`).
+	 *
+	 * @param pointer - A JSON Pointer string (e.g., '/foo/bar/0')
+	 * @param config - Optional configuration for notation, indices mode, etc.
+	 * @returns A new Pathist instance
+	 * @throws {Error} If the pointer contains invalid escape sequences
+	 *
+	 * @see {@link toJSONPointer} - Convert path to JSON Pointer format
+	 * @see {@link from} - General factory method for creating paths
+	 *
+	 * @example
+	 * Basic usage
+	 * ```typescript
+	 * const path = Pathist.fromJSONPointer('/foo/bar/baz');
+	 * console.log(path.toArray()); // ['foo', 'bar', 'baz']
+	 * ```
+	 *
+	 * @example
+	 * With numeric indices
+	 * ```typescript
+	 * const path = Pathist.fromJSONPointer('/items/0/name');
+	 * console.log(path.toString()); // 'items[0].name'
+	 * ```
+	 *
+	 * @example
+	 * With escaped special characters
+	 * ```typescript
+	 * const path = Pathist.fromJSONPointer('/foo~0bar/baz~1qux');
+	 * console.log(path.toArray()); // ['foo~bar', 'baz/qux']
+	 * ```
+	 *
+	 * @example
+	 * Root reference (empty string)
+	 * ```typescript
+	 * const path = Pathist.fromJSONPointer('');
+	 * console.log(path.length); // 0
+	 * ```
+	 */
+	static fromJSONPointer(pointer: string, config?: PathistConfig): Pathist {
+		// Empty string represents the root (whole document)
+		if (pointer === '') {
+			return new Pathist([], config);
+		}
+
+		// JSON Pointer must start with '/' (except for empty string)
+		if (!pointer.startsWith('/')) {
+			throw new Error('JSON Pointer must start with "/" or be empty string');
+		}
+
+		// Split by '/' and remove the first empty element
+		const parts = pointer.split('/').slice(1);
+
+		// Unescape each segment according to RFC 6901
+		// Note: ~1 must be replaced before ~0 to avoid double-replacement
+		const segments: PathSegment[] = parts.map((part) => {
+			const unescaped = part
+				.replace(/~1/g, '/')
+				.replace(/~0/g, '~');
+
+			// Check if it's a valid numeric string (for array indices)
+			// Per RFC 6901, array indices are represented as strings but should be
+			// treated as numbers if they match /^(0|[1-9][0-9]*)$/
+			if (/^(0|[1-9][0-9]*)$/.test(unescaped)) {
+				return Number(unescaped);
+			}
+
+			// Return as string property
+			return unescaped;
+		});
+
+		return new Pathist(segments, config);
+	}
+
 	static #toSegments(input: Pathist | PathistInput): ReadonlyArray<PathSegment> | null {
 		// Handle null/undefined
 		if (input == null) {
@@ -759,6 +837,80 @@ export class Pathist {
 	 */
 	get jsonPath(): string {
 		return this.toJSONPath();
+	}
+
+	/**
+	 * Converts the path to JSON Pointer format (RFC 6901).
+	 *
+	 * JSON Pointer is a standardized string format for identifying a specific value
+	 * within a JSON document. Each segment is separated by `/`, and special characters
+	 * are escaped (`~` becomes `~0`, `/` becomes `~1`).
+	 *
+	 * @returns The path as a JSON Pointer string
+	 *
+	 * @see {@link jsonPointer} - Getter alias for this method
+	 * @see {@link toJSONPath} - Convert to JSONPath format (RFC 9535)
+	 * @see {@link toString} - Convert to standard notation
+	 * @see {@link toArray} - Convert to array representation
+	 *
+	 * @example
+	 * Basic usage
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * console.log(path.toJSONPointer()); // '/foo/bar/baz'
+	 * ```
+	 *
+	 * @example
+	 * With numeric indices
+	 * ```typescript
+	 * const path = Pathist.from('items[0].name');
+	 * console.log(path.toJSONPointer()); // '/items/0/name'
+	 * ```
+	 *
+	 * @example
+	 * With special characters requiring escaping
+	 * ```typescript
+	 * const path = Pathist.from(['foo~bar', 'baz/qux']);
+	 * console.log(path.toJSONPointer()); // '/foo~0bar/baz~1qux'
+	 * ```
+	 *
+	 * @example
+	 * Empty path (root)
+	 * ```typescript
+	 * const path = Pathist.from('');
+	 * console.log(path.toJSONPointer()); // ''
+	 * ```
+	 */
+	toJSONPointer(): string {
+		// Empty path returns empty string (root reference)
+		if (this.segments.length === 0) {
+			return '';
+		}
+
+		// Build the JSON Pointer string
+		let result = '';
+
+		for (const segment of this.segments) {
+			// Convert segment to string and escape special characters per RFC 6901:
+			// ~ must be encoded as ~0
+			// / must be encoded as ~1
+			const segmentStr = String(segment)
+				.replace(/~/g, '~0')
+				.replace(/\//g, '~1');
+
+			result += `/${segmentStr}`;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Gets the path as a JSON Pointer string.
+	 *
+	 * @see {@link toJSONPointer} - Method form of this getter
+	 */
+	get jsonPointer(): string {
+		return this.toJSONPointer();
 	}
 
 	// ============================================================================

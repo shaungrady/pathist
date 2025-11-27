@@ -38,7 +38,7 @@ console.log(path2.startsWith(path1)); // true
 
 > **new Pathist**(`input`, `config?`): `Pathist`
 
-Defined in: pathist.ts:555
+Defined in: pathist.ts:631
 
 Creates a new Pathist instance from a string, array, or existing Pathist.
 
@@ -95,7 +95,7 @@ const path = Pathist.from('foo.bar', {
 | <a id="indices"></a> `Indices` | `readonly` | `object` | Modes for handling numeric indices during path comparisons. - `Preserve`: Numeric indices must match exactly for paths to be considered equal - `Ignore`: Any numeric index matches any other numeric index (useful for comparing paths across different array positions) | pathist.ts:98 |
 | `Indices.Preserve` | `readonly` | `"Preserve"` | - | pathist.ts:99 |
 | `Indices.Ignore` | `readonly` | `"Ignore"` | - | pathist.ts:100 |
-| <a id="length"></a> `length` | `readonly` | `number` | The number of segments in this path. **Example** `const path = Pathist.from('foo.bar.baz'); console.log(path.length); // 3` | pathist.ts:492 |
+| <a id="length"></a> `length` | `readonly` | `number` | The number of segments in this path. **Example** `const path = Pathist.from('foo.bar.baz'); console.log(path.length); // 3` | pathist.ts:568 |
 
 ## Accessors
 
@@ -277,7 +277,7 @@ These properties are used by node-related methods to identify and traverse tree 
 
 > **get** **notation**(): [`Notation`](../type-aliases/Notation.md)
 
-Defined in: pathist.ts:499
+Defined in: pathist.ts:575
 
 Gets the notation style for this instance.
 
@@ -295,7 +295,7 @@ Returns the instance-specific notation if set, otherwise returns the global defa
 
 > **get** **indices**(): [`Indices`](../type-aliases/Indices.md)
 
-Defined in: pathist.ts:508
+Defined in: pathist.ts:584
 
 Gets the indices comparison mode for this instance.
 
@@ -313,7 +313,7 @@ Returns the instance-specific mode if set, otherwise returns the global default.
 
 > **get** **nodeChildrenProperties**(): `ReadonlySet`<`string`>
 
-Defined in: pathist.ts:517
+Defined in: pathist.ts:593
 
 Gets the node children properties for this instance.
 
@@ -331,7 +331,7 @@ Returns the instance-specific properties if set, otherwise returns the global de
 
 > **get** **array**(): [`PathSegment`](../type-aliases/PathSegment.md)\[]
 
-Defined in: pathist.ts:611
+Defined in: pathist.ts:687
 
 Gets the path as an array of segments.
 
@@ -351,7 +351,7 @@ Gets the path as an array of segments.
 
 > **get** **string**(): `string`
 
-Defined in: pathist.ts:685
+Defined in: pathist.ts:761
 
 Gets the path as a string using the instance's default notation.
 
@@ -371,13 +371,33 @@ Gets the path as a string using the instance's default notation.
 
 > **get** **jsonPath**(): `string`
 
-Defined in: pathist.ts:760
+Defined in: pathist.ts:836
 
 Gets the path as a JSONPath string.
 
 ##### See
 
 [toJSONPath](#tojsonpath) - Method form of this getter
+
+##### Returns
+
+`string`
+
+***
+
+### jsonPointer
+
+#### Get Signature
+
+> **get** **jsonPointer**(): `string`
+
+Defined in: pathist.ts:908
+
+Gets the path as a JSON Pointer string.
+
+##### See
+
+[toJSONPointer](#tojsonpointer) - Method form of this getter
 
 ##### Returns
 
@@ -417,11 +437,77 @@ Pathist.from('foo.bar', { notation: 'bracket' })
 
 ***
 
+### fromJSONPointer()
+
+> `static` **fromJSONPointer**(`pointer`, `config?`): `Pathist`
+
+Defined in: pathist.ts:349
+
+Creates a new Pathist instance from a JSON Pointer string (RFC 6901).
+
+Parses a JSON Pointer formatted string and converts it to a Pathist instance.
+JSON Pointer uses `/` as segment separators and requires unescaping of special
+characters (`~1` becomes `/`, `~0` becomes `~`).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `pointer` | `string` | A JSON Pointer string (e.g., '/foo/bar/0') |
+| `config?` | [`PathistConfig`](../interfaces/PathistConfig.md) | Optional configuration for notation, indices mode, etc. |
+
+#### Returns
+
+`Pathist`
+
+A new Pathist instance
+
+#### Throws
+
+If the pointer contains invalid escape sequences
+
+#### See
+
+* [toJSONPointer](#tojsonpointer) - Convert path to JSON Pointer format
+* [from](#from) - General factory method for creating paths
+
+#### Examples
+
+Basic usage
+
+```typescript
+const path = Pathist.fromJSONPointer('/foo/bar/baz');
+console.log(path.toArray()); // ['foo', 'bar', 'baz']
+```
+
+With numeric indices
+
+```typescript
+const path = Pathist.fromJSONPointer('/items/0/name');
+console.log(path.toString()); // 'items[0].name'
+```
+
+With escaped special characters
+
+```typescript
+const path = Pathist.fromJSONPointer('/foo~0bar/baz~1qux');
+console.log(path.toArray()); // ['foo~bar', 'baz/qux']
+```
+
+Root reference (empty string)
+
+```typescript
+const path = Pathist.fromJSONPointer('');
+console.log(path.length); // 0
+```
+
+***
+
 ### toArray()
 
 > **toArray**(): [`PathSegment`](../type-aliases/PathSegment.md)\[]
 
-Defined in: pathist.ts:601
+Defined in: pathist.ts:677
 
 Returns the path as an array of segments.
 
@@ -451,7 +537,7 @@ console.log(path.toArray()); // ['foo', 'bar', 0, 'baz']
 
 > **toString**(`notation?`): `string`
 
-Defined in: pathist.ts:648
+Defined in: pathist.ts:724
 
 Converts the path to a string representation using the specified notation.
 
@@ -507,7 +593,7 @@ console.log(path.toString(Pathist.Notation.Dot)); // 'foo.bar.0.baz'
 
 > **toJSONPath**(): `string`
 
-Defined in: pathist.ts:722
+Defined in: pathist.ts:798
 
 Converts the path to JSONPath format (RFC 9535).
 
@@ -551,11 +637,68 @@ console.log(path.toJSONPath()); // '$.items[*].name'
 
 ***
 
+### toJSONPointer()
+
+> **toJSONPointer**(): `string`
+
+Defined in: pathist.ts:882
+
+Converts the path to JSON Pointer format (RFC 6901).
+
+JSON Pointer is a standardized string format for identifying a specific value
+within a JSON document. Each segment is separated by `/`, and special characters
+are escaped (`~` becomes `~0`, `/` becomes `~1`).
+
+#### Returns
+
+`string`
+
+The path as a JSON Pointer string
+
+#### See
+
+* [jsonPointer](#jsonpointer) - Getter alias for this method
+* [toJSONPath](#tojsonpath) - Convert to JSONPath format (RFC 9535)
+* [toString](#tostring) - Convert to standard notation
+* [toArray](#toarray) - Convert to array representation
+
+#### Examples
+
+Basic usage
+
+```typescript
+const path = Pathist.from('foo.bar.baz');
+console.log(path.toJSONPointer()); // '/foo/bar/baz'
+```
+
+With numeric indices
+
+```typescript
+const path = Pathist.from('items[0].name');
+console.log(path.toJSONPointer()); // '/items/0/name'
+```
+
+With special characters requiring escaping
+
+```typescript
+const path = Pathist.from(['foo~bar', 'baz/qux']);
+console.log(path.toJSONPointer()); // '/foo~0bar/baz~1qux'
+```
+
+Empty path (root)
+
+```typescript
+const path = Pathist.from('');
+console.log(path.toJSONPointer()); // ''
+```
+
+***
+
 ### \[iterator]\()
 
 > **\[iterator]**(): `Iterator`<[`PathSegment`](../type-aliases/PathSegment.md)>
 
-Defined in: pathist.ts:791
+Defined in: pathist.ts:939
 
 Makes the Pathist instance iterable, allowing use in for...of loops and spread operators.
 
@@ -593,7 +736,7 @@ const segments = [...path]; // ['foo', 'bar', 'baz']
 
 > **reduce**<`T`>(`callbackfn`, `initialValue`): `T`
 
-Defined in: pathist.ts:840
+Defined in: pathist.ts:988
 
 Convenience wrapper for `Array.reduce()` on the path segments.
 
@@ -664,7 +807,7 @@ console.log(result); // '/foo/bar/baz'
 
 > **equals**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:886
+Defined in: pathist.ts:1034
 
 Checks if this path is equal to another path.
 
@@ -714,7 +857,7 @@ console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
 
 > **startsWith**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:928
+Defined in: pathist.ts:1076
 
 Checks if this path starts with the specified path segment sequence.
 
@@ -751,7 +894,7 @@ console.log(path.startsWith('bar')); // false
 
 > **endsWith**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:950
+Defined in: pathist.ts:1098
 
 Checks if this path ends with the specified path segment sequence.
 
@@ -788,7 +931,7 @@ console.log(path.endsWith('bar')); // false
 
 > **includes**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:982
+Defined in: pathist.ts:1130
 
 Checks if this path contains the specified path segment sequence anywhere within it.
 
@@ -825,7 +968,7 @@ console.log(path.includes('baz.foo')); // false
 
 > **positionOf**(`other`, `options?`): `number`
 
-Defined in: pathist.ts:1010
+Defined in: pathist.ts:1158
 
 Finds the first position where the specified path segment sequence occurs within this path.
 
@@ -864,7 +1007,7 @@ console.log(path.positionOf('qux')); // -1 (not found)
 
 > **lastPositionOf**(`other`, `options?`): `number`
 
-Defined in: pathist.ts:1066
+Defined in: pathist.ts:1214
 
 Finds the last position where the specified path segment sequence occurs within this path.
 
@@ -902,7 +1045,7 @@ console.log(path.lastPositionOf('qux')); // -1 (not found)
 
 > **pathTo**(`other`, `options?`): `Pathist`
 
-Defined in: pathist.ts:1126
+Defined in: pathist.ts:1274
 
 Returns the path up to and including the first occurrence of the specified path segment sequence.
 
@@ -944,7 +1087,7 @@ p.pathTo('notfound').toString();   // ''
 
 > **pathToLast**(`other`, `options?`): `Pathist`
 
-Defined in: pathist.ts:1165
+Defined in: pathist.ts:1313
 
 Returns the path up to and including the last occurrence of the specified path segment sequence.
 
@@ -985,7 +1128,7 @@ p.pathToLast('notfound').toString();   // ''
 
 > **slice**(`start?`, `end?`): `Pathist`
 
-Defined in: pathist.ts:1212
+Defined in: pathist.ts:1360
 
 Returns a new path containing a subset of this path's segments.
 
@@ -1025,7 +1168,7 @@ console.log(path.slice(2).toString()); // 'baz.qux'
 
 > **parent**(`depth`): `Pathist`
 
-Defined in: pathist.ts:1255
+Defined in: pathist.ts:1403
 
 Returns the parent path by removing segments from the end.
 
@@ -1086,7 +1229,7 @@ console.log(clone.toString()); // 'foo.bar.baz'
 
 > **concat**(...`paths`): `Pathist`
 
-Defined in: pathist.ts:1298
+Defined in: pathist.ts:1446
 
 Returns a new path that combines this path with one or more other paths.
 
@@ -1135,7 +1278,7 @@ console.log(result.toString()); // 'foo.bar.baz.qux.quux'
 
 > **merge**(`path`): `Pathist`
 
-Defined in: pathist.ts:1352
+Defined in: pathist.ts:1500
 
 Intelligently merges another path with this path by detecting overlapping segments.
 
@@ -1198,7 +1341,7 @@ console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
 
 > **firstNodePath**(): `Pathist`
 
-Defined in: pathist.ts:1521
+Defined in: pathist.ts:1669
 
 Returns the path to the first node.
 
@@ -1245,7 +1388,7 @@ console.log(path.firstNodePath().toString()); // '' (root)
 
 > **lastNodePath**(): `Pathist`
 
-Defined in: pathist.ts:1555
+Defined in: pathist.ts:1703
 
 Returns the full path to the last node in the contiguous tree structure.
 
@@ -1285,7 +1428,7 @@ console.log(path.lastNodePath().toString()); // '' (root)
 
 > **afterNodePath**(): `Pathist`
 
-Defined in: pathist.ts:1591
+Defined in: pathist.ts:1739
 
 Returns the path segments after the last node in the tree.
 
@@ -1325,7 +1468,7 @@ console.log(path.afterNodePath().toString()); // 'foo.bar'
 
 > **parentNode**(`depth`): `Pathist`
 
-Defined in: pathist.ts:1650
+Defined in: pathist.ts:1798
 
 Returns the parent node in the tree structure by removing nodes from the end.
 
@@ -1396,7 +1539,7 @@ console.log(path.parentNode().toString()); // '' (root, no nodes in path)
 
 > **nodeIndices**(): `number`\[]
 
-Defined in: pathist.ts:1702
+Defined in: pathist.ts:1850
 
 Returns the numeric index values from the contiguous tree structure.
 
@@ -1431,7 +1574,7 @@ console.log(path2.nodeIndices()); // []
 
 > **nodePaths**(): `Generator`<`Pathist`, `void`, `undefined`>
 
-Defined in: pathist.ts:1768
+Defined in: pathist.ts:1916
 
 Generates paths to each successive node in the tree structure.
 
