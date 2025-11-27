@@ -77,6 +77,34 @@ const rightSegment = otherSegments[i];
 - Clear differentiation when comparing paths
 - Reduces cognitive load (no mixing "this/other", "first/second", etc.)
 
+### Method Organization
+
+Instance methods in the `Pathist` class must follow a **logical order** for consistent API documentation. The sections are:
+
+1. **Static Constants** - `Notation`, `Indices`
+2. **Static Configuration** - `defaultNotation`, `defaultIndices`, `indexWildcards`, `defaultNodeChildrenProperties`
+3. **Static Factory & Helper Methods** - `from()`, internal helpers
+4. **Instance Fields & Properties** - Private fields, getters
+5. **Constructor** - `constructor()`
+6. **Conversion & Accessors** - `toArray()`, `toString()`, `toJSONPath()`, and their getter aliases
+7. **Iteration** - `Symbol.iterator`, `reduce()`
+8. **Comparison Methods** - `equals()`, `startsWith()`, `endsWith()`, `includes()`
+9. **Search Methods** - `positionOf()`, `lastPositionOf()`, `pathTo()`, `pathToLast()`
+10. **Manipulation Methods** - `slice()`, `parent()`, `concat()`, `merge()`
+11. **Tree/Node Navigation Methods** - `firstNodePath()`, `lastNodePath()`, `afterNodePath()`, `parentNode()`, `nodeIndices()`, `nodePaths()`
+12. **Private Helper Methods** - Internal implementation details
+
+**When adding new methods:**
+- Place them in the appropriate logical section
+- Group related functionality together
+- Consider discoverability: developers should find methods where they expect them
+- Methods that wrap or delegate to native JavaScript (like `reduce()`) go near related iteration methods
+
+**Why this matters:**
+- TypeDoc generates API documentation in source order
+- Logical grouping improves developer experience
+- Consistency makes the codebase easier to navigate
+
 ## Documentation
 
 Project documentation is located in `./docs`:

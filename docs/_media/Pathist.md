@@ -589,11 +589,82 @@ const segments = [...path]; // ['foo', 'bar', 'baz']
 
 ***
 
+### reduce()
+
+> **reduce**<`T`>(`callbackfn`, `initialValue`): `T`
+
+Defined in: pathist.ts:840
+
+Convenience wrapper for `Array.reduce()` on the path segments.
+
+This is equivalent to `path.toArray().reduce(...)` but more concise.
+Allows you to define custom reduction logic for navigating objects.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `callbackfn` | (`previousValue`, `currentValue`, `currentIndex`, `array`) => `T` | Function to execute on each segment |
+| `initialValue` | `T` | Value to use as the first argument to the first call of the callback |
+
+#### Returns
+
+`T`
+
+The accumulated result from the reduction
+
+#### See
+
+* [toArray](#toarray) - Get the path segments as an array
+* [array](#array) - Getter for path segments
+* Symbol.iterator - Iterate over segments
+
+#### Examples
+
+Navigate through an object
+
+```typescript
+const data = {
+  users: [
+    { profile: { name: 'Alice' } },
+    { profile: { name: 'Bob' } }
+  ]
+};
+
+const path = Pathist.from('users[0].profile.name');
+const value = path.reduce((obj, segment) => obj?.[segment], data);
+console.log(value); // 'Alice'
+```
+
+Custom reduction with default fallback
+
+```typescript
+const path = Pathist.from('users[5].profile.name');
+const value = path.reduce((obj, seg) => obj?.[seg] ?? {}, data);
+console.log(value); // {} (instead of undefined)
+```
+
+Building a path string during reduction
+
+```typescript
+const path = Pathist.from('foo.bar.baz');
+const result = path.reduce((acc, seg) => acc + '/' + seg, '');
+console.log(result); // '/foo/bar/baz'
+```
+
+***
+
 ### equals()
 
 > **equals**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:829
+Defined in: pathist.ts:886
 
 Checks if this path is equal to another path.
 
@@ -643,7 +714,7 @@ console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
 
 > **startsWith**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:871
+Defined in: pathist.ts:928
 
 Checks if this path starts with the specified path segment sequence.
 
@@ -680,7 +751,7 @@ console.log(path.startsWith('bar')); // false
 
 > **endsWith**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:893
+Defined in: pathist.ts:950
 
 Checks if this path ends with the specified path segment sequence.
 
@@ -717,7 +788,7 @@ console.log(path.endsWith('bar')); // false
 
 > **includes**(`other`, `options?`): `boolean`
 
-Defined in: pathist.ts:925
+Defined in: pathist.ts:982
 
 Checks if this path contains the specified path segment sequence anywhere within it.
 
@@ -754,7 +825,7 @@ console.log(path.includes('baz.foo')); // false
 
 > **positionOf**(`other`, `options?`): `number`
 
-Defined in: pathist.ts:953
+Defined in: pathist.ts:1010
 
 Finds the first position where the specified path segment sequence occurs within this path.
 
@@ -793,7 +864,7 @@ console.log(path.positionOf('qux')); // -1 (not found)
 
 > **lastPositionOf**(`other`, `options?`): `number`
 
-Defined in: pathist.ts:1009
+Defined in: pathist.ts:1066
 
 Finds the last position where the specified path segment sequence occurs within this path.
 
@@ -831,7 +902,7 @@ console.log(path.lastPositionOf('qux')); // -1 (not found)
 
 > **pathTo**(`other`, `options?`): `Pathist`
 
-Defined in: pathist.ts:1069
+Defined in: pathist.ts:1126
 
 Returns the path up to and including the first occurrence of the specified path segment sequence.
 
@@ -873,7 +944,7 @@ p.pathTo('notfound').toString();   // ''
 
 > **pathToLast**(`other`, `options?`): `Pathist`
 
-Defined in: pathist.ts:1108
+Defined in: pathist.ts:1165
 
 Returns the path up to and including the last occurrence of the specified path segment sequence.
 
@@ -914,7 +985,7 @@ p.pathToLast('notfound').toString();   // ''
 
 > **slice**(`start?`, `end?`): `Pathist`
 
-Defined in: pathist.ts:1155
+Defined in: pathist.ts:1212
 
 Returns a new path containing a subset of this path's segments.
 
@@ -954,7 +1025,7 @@ console.log(path.slice(2).toString()); // 'baz.qux'
 
 > **parent**(`depth`): `Pathist`
 
-Defined in: pathist.ts:1198
+Defined in: pathist.ts:1255
 
 Returns the parent path by removing segments from the end.
 
@@ -1015,7 +1086,7 @@ console.log(clone.toString()); // 'foo.bar.baz'
 
 > **concat**(...`paths`): `Pathist`
 
-Defined in: pathist.ts:1241
+Defined in: pathist.ts:1298
 
 Returns a new path that combines this path with one or more other paths.
 
@@ -1064,7 +1135,7 @@ console.log(result.toString()); // 'foo.bar.baz.qux.quux'
 
 > **merge**(`path`): `Pathist`
 
-Defined in: pathist.ts:1295
+Defined in: pathist.ts:1352
 
 Intelligently merges another path with this path by detecting overlapping segments.
 
@@ -1127,7 +1198,7 @@ console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
 
 > **firstNodePath**(): `Pathist`
 
-Defined in: pathist.ts:1464
+Defined in: pathist.ts:1521
 
 Returns the path to the first node.
 
@@ -1174,7 +1245,7 @@ console.log(path.firstNodePath().toString()); // '' (root)
 
 > **lastNodePath**(): `Pathist`
 
-Defined in: pathist.ts:1498
+Defined in: pathist.ts:1555
 
 Returns the full path to the last node in the contiguous tree structure.
 
@@ -1214,7 +1285,7 @@ console.log(path.lastNodePath().toString()); // '' (root)
 
 > **afterNodePath**(): `Pathist`
 
-Defined in: pathist.ts:1534
+Defined in: pathist.ts:1591
 
 Returns the path segments after the last node in the tree.
 
@@ -1254,7 +1325,7 @@ console.log(path.afterNodePath().toString()); // 'foo.bar'
 
 > **parentNode**(`depth`): `Pathist`
 
-Defined in: pathist.ts:1593
+Defined in: pathist.ts:1650
 
 Returns the parent node in the tree structure by removing nodes from the end.
 
@@ -1325,7 +1396,7 @@ console.log(path.parentNode().toString()); // '' (root, no nodes in path)
 
 > **nodeIndices**(): `number`\[]
 
-Defined in: pathist.ts:1645
+Defined in: pathist.ts:1702
 
 Returns the numeric index values from the contiguous tree structure.
 
@@ -1360,7 +1431,7 @@ console.log(path2.nodeIndices()); // []
 
 > **nodePaths**(): `Generator`<`Pathist`, `void`, `undefined`>
 
-Defined in: pathist.ts:1711
+Defined in: pathist.ts:1768
 
 Generates paths to each successive node in the tree structure.
 
