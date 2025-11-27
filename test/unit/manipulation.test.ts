@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // slice() method tests
 test('slice returns entire path when called without arguments', (t) => {

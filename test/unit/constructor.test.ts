@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // Constructor - String Input
 test('parses dot notation string', (t) => {

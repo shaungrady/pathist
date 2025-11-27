@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // String Parsing Tests
 test('parses bracket notation with negative indices', (t) => {

@@ -6,7 +6,7 @@
 
 # Class: Pathist
 
-Defined in: [pathist.ts:74](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L74)
+Defined in: pathist.ts:74
 
 A path utility class for parsing, manipulating, and comparing object property paths.
 
@@ -84,7 +84,7 @@ console.log(path2.startsWith(path1)); // true
 
 > **new Pathist**(`input`, `config?`): `Pathist`
 
-Defined in: [pathist.ts:555](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L555)
+Defined in: pathist.ts:555
 
 Creates a new Pathist instance from a string, array, or existing Pathist.
 
@@ -134,14 +134,14 @@ const path = Pathist.from('foo.bar', {
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="notation"></a> `Notation` | `readonly` | `object` | Notation styles for converting paths to strings. - `Mixed`: Combines dot notation for properties and bracket notation for indices (e.g., `foo.bar[0].baz`) - `Dot`: Uses dot notation exclusively (e.g., `foo.bar.0.baz`) - `Bracket`: Uses bracket notation exclusively (e.g., `["foo"]["bar"][0]["baz"]`) | [pathist.ts:86](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L86) |
-| `Notation.Mixed` | `readonly` | `"Mixed"` | - | [pathist.ts:87](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L87) |
-| `Notation.Dot` | `readonly` | `"Dot"` | - | [pathist.ts:88](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L88) |
-| `Notation.Bracket` | `readonly` | `"Bracket"` | - | [pathist.ts:89](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L89) |
-| <a id="indices"></a> `Indices` | `readonly` | `object` | Modes for handling numeric indices during path comparisons. - `Preserve`: Numeric indices must match exactly for paths to be considered equal - `Ignore`: Any numeric index matches any other numeric index (useful for comparing paths across different array positions) | [pathist.ts:98](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L98) |
-| `Indices.Preserve` | `readonly` | `"Preserve"` | - | [pathist.ts:99](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L99) |
-| `Indices.Ignore` | `readonly` | `"Ignore"` | - | [pathist.ts:100](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L100) |
-| <a id="length"></a> `length` | `readonly` | `number` | The number of segments in this path. **Example** `const path = Pathist.from('foo.bar.baz'); console.log(path.length); // 3` | [pathist.ts:492](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L492) |
+| <a id="notation"></a> `Notation` | `readonly` | `object` | Notation styles for converting paths to strings. - `Mixed`: Combines dot notation for properties and bracket notation for indices (e.g., `foo.bar[0].baz`) - `Dot`: Uses dot notation exclusively (e.g., `foo.bar.0.baz`) - `Bracket`: Uses bracket notation exclusively (e.g., `["foo"]["bar"][0]["baz"]`) | pathist.ts:86 |
+| `Notation.Mixed` | `readonly` | `"Mixed"` | - | pathist.ts:87 |
+| `Notation.Dot` | `readonly` | `"Dot"` | - | pathist.ts:88 |
+| `Notation.Bracket` | `readonly` | `"Bracket"` | - | pathist.ts:89 |
+| <a id="indices"></a> `Indices` | `readonly` | `object` | Modes for handling numeric indices during path comparisons. - `Preserve`: Numeric indices must match exactly for paths to be considered equal - `Ignore`: Any numeric index matches any other numeric index (useful for comparing paths across different array positions) | pathist.ts:98 |
+| `Indices.Preserve` | `readonly` | `"Preserve"` | - | pathist.ts:99 |
+| `Indices.Ignore` | `readonly` | `"Ignore"` | - | pathist.ts:100 |
+| <a id="length"></a> `length` | `readonly` | `number` | The number of segments in this path. **Example** `const path = Pathist.from('foo.bar.baz'); console.log(path.length); // 3` | pathist.ts:492 |
 
 ## Accessors
 
@@ -151,7 +151,7 @@ const path = Pathist.from('foo.bar', {
 
 > **get** `static` **defaultNotation**(): [`Notation`](../type-aliases/Notation.md)
 
-Defined in: [pathist.ts:121](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L121)
+Defined in: pathist.ts:121
 
 Gets or sets the default notation style used when converting paths to strings.
 
@@ -173,7 +173,7 @@ When setting: If the notation value is invalid
 
 > **set** `static` **defaultNotation**(`notation`): `void`
 
-Defined in: [pathist.ts:125](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L125)
+Defined in: pathist.ts:125
 
 ##### Parameters
 
@@ -193,7 +193,7 @@ Defined in: [pathist.ts:125](https://github.com/shaungrady/pathist/blob/main/src
 
 > **get** `static` **defaultIndices**(): [`Indices`](../type-aliases/Indices.md)
 
-Defined in: [pathist.ts:139](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L139)
+Defined in: pathist.ts:139
 
 Gets or sets the default indices comparison mode.
 
@@ -215,7 +215,7 @@ When setting: If the indices mode is invalid
 
 > **set** `static` **defaultIndices**(`mode`): `void`
 
-Defined in: [pathist.ts:143](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L143)
+Defined in: pathist.ts:143
 
 ##### Parameters
 
@@ -235,7 +235,7 @@ Defined in: [pathist.ts:143](https://github.com/shaungrady/pathist/blob/main/src
 
 > **get** `static` **indexWildcards**(): `ReadonlySet`<`string` | `number`>
 
-Defined in: [pathist.ts:161](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L161)
+Defined in: pathist.ts:161
 
 Gets or sets the values that are treated as index wildcards.
 
@@ -262,7 +262,7 @@ When setting: If any wildcard value is invalid (e.g., positive finite number or 
 
 > **set** `static` **indexWildcards**(`value`): `void`
 
-Defined in: [pathist.ts:165](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L165)
+Defined in: pathist.ts:165
 
 ##### Parameters
 
@@ -282,7 +282,7 @@ Defined in: [pathist.ts:165](https://github.com/shaungrady/pathist/blob/main/src
 
 > **get** `static` **defaultNodeChildrenProperties**(): `ReadonlySet`<`string`>
 
-Defined in: [pathist.ts:200](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L200)
+Defined in: pathist.ts:200
 
 ##### Returns
 
@@ -292,7 +292,7 @@ Defined in: [pathist.ts:200](https://github.com/shaungrady/pathist/blob/main/src
 
 > **set** `static` **defaultNodeChildrenProperties**(`value`): `void`
 
-Defined in: [pathist.ts:212](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L212)
+Defined in: pathist.ts:212
 
 Gets or sets the default property names that contain child nodes in tree structures.
 These properties are used by node-related methods to identify and traverse tree relationships.
@@ -323,7 +323,7 @@ These properties are used by node-related methods to identify and traverse tree 
 
 > **get** **notation**(): [`Notation`](../type-aliases/Notation.md)
 
-Defined in: [pathist.ts:499](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L499)
+Defined in: pathist.ts:499
 
 Gets the notation style for this instance.
 
@@ -341,7 +341,7 @@ Returns the instance-specific notation if set, otherwise returns the global defa
 
 > **get** **indices**(): [`Indices`](../type-aliases/Indices.md)
 
-Defined in: [pathist.ts:508](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L508)
+Defined in: pathist.ts:508
 
 Gets the indices comparison mode for this instance.
 
@@ -359,7 +359,7 @@ Returns the instance-specific mode if set, otherwise returns the global default.
 
 > **get** **nodeChildrenProperties**(): `ReadonlySet`<`string`>
 
-Defined in: [pathist.ts:517](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L517)
+Defined in: pathist.ts:517
 
 Gets the node children properties for this instance.
 
@@ -377,7 +377,7 @@ Returns the instance-specific properties if set, otherwise returns the global de
 
 > **get** **array**(): [`PathSegment`](../type-aliases/PathSegment.md)\[]
 
-Defined in: [pathist.ts:611](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L611)
+Defined in: pathist.ts:611
 
 Gets the path as an array of segments.
 
@@ -397,7 +397,7 @@ Gets the path as an array of segments.
 
 > **get** **string**(): `string`
 
-Defined in: [pathist.ts:685](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L685)
+Defined in: pathist.ts:685
 
 Gets the path as a string using the instance's default notation.
 
@@ -417,7 +417,7 @@ Gets the path as a string using the instance's default notation.
 
 > **get** **jsonPath**(): `string`
 
-Defined in: [pathist.ts:760](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L760)
+Defined in: pathist.ts:760
 
 Gets the path as a JSONPath string.
 
@@ -435,7 +435,7 @@ Gets the path as a JSONPath string.
 
 > `static` **from**(`input`, `config?`): `Pathist`
 
-Defined in: [pathist.ts:302](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L302)
+Defined in: pathist.ts:302
 
 Creates a new Pathist instance from various input types.
 This is the Temporal-style factory method alternative to using `Pathist.from()`.
@@ -467,7 +467,7 @@ Pathist.from('foo.bar', { notation: 'bracket' })
 
 > **toArray**(): [`PathSegment`](../type-aliases/PathSegment.md)\[]
 
-Defined in: [pathist.ts:601](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L601)
+Defined in: pathist.ts:601
 
 Returns the path as an array of segments.
 
@@ -497,7 +497,7 @@ console.log(path.toArray()); // ['foo', 'bar', 0, 'baz']
 
 > **toString**(`notation?`): `string`
 
-Defined in: [pathist.ts:648](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L648)
+Defined in: pathist.ts:648
 
 Converts the path to a string representation using the specified notation.
 
@@ -553,7 +553,7 @@ console.log(path.toString(Pathist.Notation.Dot)); // 'foo.bar.0.baz'
 
 > **toJSONPath**(): `string`
 
-Defined in: [pathist.ts:722](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L722)
+Defined in: pathist.ts:722
 
 Converts the path to JSONPath format (RFC 9535).
 
@@ -601,7 +601,7 @@ console.log(path.toJSONPath()); // '$.items[*].name'
 
 > **\[iterator]**(): `Iterator`<[`PathSegment`](../type-aliases/PathSegment.md)>
 
-Defined in: [pathist.ts:791](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L791)
+Defined in: pathist.ts:791
 
 Makes the Pathist instance iterable, allowing use in for...of loops and spread operators.
 
@@ -639,7 +639,7 @@ const segments = [...path]; // ['foo', 'bar', 'baz']
 
 > **equals**(`other`, `options?`): `boolean`
 
-Defined in: [pathist.ts:829](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L829)
+Defined in: pathist.ts:829
 
 Checks if this path is equal to another path.
 
@@ -689,7 +689,7 @@ console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
 
 > **startsWith**(`other`, `options?`): `boolean`
 
-Defined in: [pathist.ts:871](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L871)
+Defined in: pathist.ts:871
 
 Checks if this path starts with the specified path segment sequence.
 
@@ -726,7 +726,7 @@ console.log(path.startsWith('bar')); // false
 
 > **endsWith**(`other`, `options?`): `boolean`
 
-Defined in: [pathist.ts:893](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L893)
+Defined in: pathist.ts:893
 
 Checks if this path ends with the specified path segment sequence.
 
@@ -763,7 +763,7 @@ console.log(path.endsWith('bar')); // false
 
 > **includes**(`other`, `options?`): `boolean`
 
-Defined in: [pathist.ts:925](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L925)
+Defined in: pathist.ts:925
 
 Checks if this path contains the specified path segment sequence anywhere within it.
 
@@ -800,7 +800,7 @@ console.log(path.includes('baz.foo')); // false
 
 > **positionOf**(`other`, `options?`): `number`
 
-Defined in: [pathist.ts:953](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L953)
+Defined in: pathist.ts:953
 
 Finds the first position where the specified path segment sequence occurs within this path.
 
@@ -839,7 +839,7 @@ console.log(path.positionOf('qux')); // -1 (not found)
 
 > **lastPositionOf**(`other`, `options?`): `number`
 
-Defined in: [pathist.ts:1009](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1009)
+Defined in: pathist.ts:1009
 
 Finds the last position where the specified path segment sequence occurs within this path.
 
@@ -877,7 +877,7 @@ console.log(path.lastPositionOf('qux')); // -1 (not found)
 
 > **pathTo**(`other`, `options?`): `Pathist`
 
-Defined in: [pathist.ts:1069](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1069)
+Defined in: pathist.ts:1069
 
 Returns the path up to and including the first occurrence of the specified path segment sequence.
 
@@ -919,7 +919,7 @@ p.pathTo('notfound').toString();   // ''
 
 > **pathToLast**(`other`, `options?`): `Pathist`
 
-Defined in: [pathist.ts:1108](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1108)
+Defined in: pathist.ts:1108
 
 Returns the path up to and including the last occurrence of the specified path segment sequence.
 
@@ -960,7 +960,7 @@ p.pathToLast('notfound').toString();   // ''
 
 > **slice**(`start?`, `end?`): `Pathist`
 
-Defined in: [pathist.ts:1155](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1155)
+Defined in: pathist.ts:1155
 
 Returns a new path containing a subset of this path's segments.
 
@@ -1000,7 +1000,7 @@ console.log(path.slice(2).toString()); // 'baz.qux'
 
 > **parent**(`depth`): `Pathist`
 
-Defined in: [pathist.ts:1198](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1198)
+Defined in: pathist.ts:1198
 
 Returns the parent path by removing segments from the end.
 
@@ -1061,7 +1061,7 @@ console.log(clone.toString()); // 'foo.bar.baz'
 
 > **concat**(...`paths`): `Pathist`
 
-Defined in: [pathist.ts:1241](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1241)
+Defined in: pathist.ts:1241
 
 Returns a new path that combines this path with one or more other paths.
 
@@ -1110,7 +1110,7 @@ console.log(result.toString()); // 'foo.bar.baz.qux.quux'
 
 > **merge**(`path`): `Pathist`
 
-Defined in: [pathist.ts:1295](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1295)
+Defined in: pathist.ts:1295
 
 Intelligently merges another path with this path by detecting overlapping segments.
 
@@ -1173,7 +1173,7 @@ console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
 
 > **firstNodePath**(): `Pathist`
 
-Defined in: [pathist.ts:1464](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1464)
+Defined in: pathist.ts:1464
 
 Returns the path to the first node.
 
@@ -1220,7 +1220,7 @@ console.log(path.firstNodePath().toString()); // '' (root)
 
 > **lastNodePath**(): `Pathist`
 
-Defined in: [pathist.ts:1498](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1498)
+Defined in: pathist.ts:1498
 
 Returns the full path to the last node in the contiguous tree structure.
 
@@ -1260,7 +1260,7 @@ console.log(path.lastNodePath().toString()); // '' (root)
 
 > **afterNodePath**(): `Pathist`
 
-Defined in: [pathist.ts:1534](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1534)
+Defined in: pathist.ts:1534
 
 Returns the path segments after the last node in the tree.
 
@@ -1300,7 +1300,7 @@ console.log(path.afterNodePath().toString()); // 'foo.bar'
 
 > **parentNode**(`depth`): `Pathist`
 
-Defined in: [pathist.ts:1593](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1593)
+Defined in: pathist.ts:1593
 
 Returns the parent node in the tree structure by removing nodes from the end.
 
@@ -1371,7 +1371,7 @@ console.log(path.parentNode().toString()); // '' (root, no nodes in path)
 
 > **nodeIndices**(): `number`\[]
 
-Defined in: [pathist.ts:1645](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1645)
+Defined in: pathist.ts:1645
 
 Returns the numeric index values from the contiguous tree structure.
 
@@ -1406,7 +1406,7 @@ console.log(path2.nodeIndices()); // []
 
 > **nodePaths**(): `Generator`<`Pathist`, `void`, `undefined`>
 
-Defined in: [pathist.ts:1711](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1711)
+Defined in: pathist.ts:1711
 
 Generates paths to each successive node in the tree structure.
 

@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // Index Wildcards Configuration
 test.serial('indexWildcards default is Set([-1, "*"])', (t) => {
