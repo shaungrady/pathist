@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // IndexOf Method
 test('positionOf returns correct position for same Pathist instance', (t) => {

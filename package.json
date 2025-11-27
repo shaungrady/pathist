@@ -25,6 +25,7 @@
 		"ava": "^6.4.1",
 		"lefthook": "^2.0.4",
 		"remark-toc": "^9.0.0",
+		"tsimp": "^2.0.12",
 		"tsx": "^4.20.6",
 		"typedoc": "^0.28.14",
 		"typedoc-plugin-markdown": "^4.9.0",
@@ -39,7 +40,12 @@
 			"ts": "module"
 		},
 		"nodeArguments": [
-			"--import=tsx"
-		]
+			"--import=tsimp",
+			"--no-warnings"
+		],
+		"environmentVariables": {
+			"TSIMP_PROJECT": "tsconfig.tsimp.json",
+			"TSIMP_DIAG": "ignore"
+		}
 	}
 }

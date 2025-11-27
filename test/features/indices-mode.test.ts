@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // Equals with Indices Options
 test('equals with indices: Preserve (default) - different indices do not match', (t) => {

@@ -2,7 +2,7 @@
  * Common test fixtures and utilities for Pathist tests
  */
 
-import type { Pathist } from '../../src/pathist.ts';
+import type { Pathist } from '../../src/pathist.js';
 
 /**
  * Common path segments used in tests

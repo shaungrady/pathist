@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // Configuration tests
 test('nodeChildrenProperties config accepts Set', (t) => {

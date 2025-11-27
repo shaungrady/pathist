@@ -46,6 +46,13 @@ web_modules/
 
 # TypeScript cache
 *.tsbuildinfo
+.tsimp/
+
+# Compiled test files
+test/**/*.js
+test/**/*.d.ts
+test/**/*.js.map
+test/**/*.d.ts.map
 
 # Optional npm cache directory
 .npm

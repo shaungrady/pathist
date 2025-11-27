@@ -1,5 +1,5 @@
 import test from 'ava';
-import { Pathist } from '../../src/pathist.ts';
+import { Pathist } from '../../src/pathist.js';
 
 // defaultNotation Getter/Setter
 test('default notation is Mixed', (t) => {
