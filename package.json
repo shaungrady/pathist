@@ -5,7 +5,7 @@
 	"type": "module",
 	"files": [
 		"dist",
-		"docs"
+		"README.md"
 	],
 	"tshy": {
 		"exports": {
