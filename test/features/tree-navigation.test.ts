@@ -428,7 +428,7 @@ for (const { path, depth, expected, desc } of parentNodeDepthCases) {
 }
 
 test('Path methods propagate config', (t) => {
-	const config = { nodeChildrenProperties: ['items'] as const };
+	const config = { nodeChildrenProperties: ['items'] };
 	const p = new Pathist('items[0].items[1].foo', config);
 
 	t.deepEqual(p.firstNodePath().nodeChildrenProperties, new Set(['items']));
@@ -496,7 +496,7 @@ test('nodePaths works with for...of loop', (t) => {
 });
 
 test('nodePaths propagates config to yielded paths', (t) => {
-	const config = { nodeChildrenProperties: ['items'] as const };
+	const config = { nodeChildrenProperties: ['items'] };
 	const p = new Pathist('items[0].items[1]', config);
 	const paths = [...p.nodePaths()];
 
