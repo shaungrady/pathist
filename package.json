@@ -1,6 +1,6 @@
 {
 	"name": "pathist",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"description": "",
 	"type": "module",
 	"files": [
@@ -21,7 +21,10 @@
 		"lint": "biome lint .",
 		"format": "biome format --write .",
 		"check": "biome check --write .",
-		"ci": "biome ci . && tsc --noEmit && ava"
+		"ci": "biome ci . && tsc --noEmit && ava",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"release": "pnpm run build && changeset publish"
 	},
 	"keywords": [],
 	"author": "",
@@ -29,6 +32,7 @@
 	"packageManager": "pnpm@10.23.0",
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.7",
+		"@changesets/cli": "^2.29.8",
 		"@types/node": "^24.10.1",
 		"ava": "^6.4.1",
 		"lefthook": "^2.0.4",
