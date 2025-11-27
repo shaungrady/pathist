@@ -363,9 +363,7 @@ export class Pathist {
 		// Unescape each segment according to RFC 6901
 		// Note: ~1 must be replaced before ~0 to avoid double-replacement
 		const segments: PathSegment[] = parts.map((part) => {
-			const unescaped = part
-				.replace(/~1/g, '/')
-				.replace(/~0/g, '~');
+			const unescaped = part.replace(/~1/g, '/').replace(/~0/g, '~');
 
 			// Check if it's a valid numeric string (for array indices)
 			// Per RFC 6901, array indices are represented as strings but should be
@@ -894,9 +892,7 @@ export class Pathist {
 			// Convert segment to string and escape special characters per RFC 6901:
 			// ~ must be encoded as ~0
 			// / must be encoded as ~1
-			const segmentStr = String(segment)
-				.replace(/~/g, '~0')
-				.replace(/\//g, '~1');
+			const segmentStr = String(segment).replace(/~/g, '~0').replace(/\//g, '~1');
 
 			result += `/${segmentStr}`;
 		}
