@@ -105,6 +105,36 @@ Instance methods in the `Pathist` class must follow a **logical order** for cons
 - Logical grouping improves developer experience
 - Consistency makes the codebase easier to navigate
 
+## Release Management
+
+This project uses [Changesets](https://github.com/changesets/changesets) for automated releases. See `RELEASE.md` for complete documentation.
+
+### Quick Reference
+
+**When making changes that affect users:**
+
+1. Create a changeset after making your changes:
+   ```bash
+   pnpm changeset
+   ```
+   - Select bump type: `patch` (fixes) | `minor` (features) | `major` (breaking)
+   - Write a user-facing summary
+   - Commit the generated `.changeset/*.md` file with your code
+
+2. **Important:** Always commit changeset files alongside code changes. Don't merge PRs without changesets if they contain user-facing changes.
+
+**To cut a release:**
+
+The simplest approach is to run `pnpm version-packages` locally, review the changes, commit, and push to `main`. GitHub Actions will automatically publish to npm.
+
+Alternatively, push changesets to `main` and GitHub Actions will create a "Version Packages" PR automatically. Merge that PR when ready to release.
+
+**Notes:**
+- GitHub Actions creates the "Version Packages" PR automatically - you don't create it manually
+- The Release PR shows what will be released before you merge it
+- Merging the Release PR triggers automatic publishing to npm
+- See `RELEASE.md` for troubleshooting and advanced workflows
+
 ## Documentation
 
 Project documentation is located in `./docs`:
