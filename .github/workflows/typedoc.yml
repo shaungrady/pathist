@@ -1,0 +1,56 @@
+name: Update TypeDoc Documentation
+
+on:
+  pull_request:
+    branches: ['*']
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate TypeDoc documentation
+        run: pnpm run build:docs
+
+      - name: Commit documentation changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            # Check if last commit was from bot
+            LAST_AUTHOR=$(git log -1 --pretty=format:'%an')
+            if [ "$LAST_AUTHOR" = "github-actions[bot]" ]; then
+              echo "Amending previous documentation commit"
+              git add docs/
+              git commit --amend --no-edit
+              git push --force-with-lease
+            else
+              echo "Creating new documentation commit"
+              git add docs/
+              git commit -m "docs: update TypeDoc documentation [skip ci]"
+              git push
+            fi
+          else
+            echo "No documentation changes detected"
+          fi

@@ -29,16 +29,3 @@ jobs:
 
       - name: Run build
         run: pnpm run build
-
-      - name: Run build:docs
-        run: pnpm run build:docs
-
-      - name: Check for uncommitted changes from build:docs
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Error: build:docs created uncommitted changes"
-            echo "Modified files:"
-            git status --porcelain
-            git diff
-            exit 1
-          fi
