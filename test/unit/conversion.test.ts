@@ -314,3 +314,351 @@ for (const { input, expected, desc } of jsonPathCases) {
 		t.is(p.toJSONPath(), expected);
 	});
 }
+
+test('jsonPath getter returns same as toJSONPath()', (t) => {
+	const p = Pathist.from('foo.bar[0].baz');
+	t.is(p.jsonPath, p.toJSONPath());
+	t.is(p.jsonPath, '$.foo.bar[0].baz');
+});
+
+// Parameterized toJSONPointer() tests
+const jsonPointerCases = [
+	{
+		input: '',
+		expected: '',
+		desc: 'empty path returns empty string',
+	},
+	{
+		input: 'foo.bar.baz',
+		expected: '/foo/bar/baz',
+		desc: 'basic dot notation',
+	},
+	{
+		input: 'users[0].name',
+		expected: '/users/0/name',
+		desc: 'path with array index',
+	},
+	{
+		input: 'data.results[5].items[2]',
+		expected: '/data/results/5/items/2',
+		desc: 'nested properties with indices',
+	},
+	{
+		input: ['foo~bar'],
+		expected: '/foo~0bar',
+		desc: 'tilde escaping',
+	},
+	{
+		input: ['foo/bar'],
+		expected: '/foo~1bar',
+		desc: 'slash escaping',
+	},
+	{
+		input: ['foo~bar', 'baz/qux'],
+		expected: '/foo~0bar/baz~1qux',
+		desc: 'multiple special characters',
+	},
+	{
+		input: ['a/b~c/d~e'],
+		expected: '/a~1b~0c~1d~0e',
+		desc: 'mixed special characters in single segment',
+	},
+	{
+		input: [''],
+		expected: '/',
+		desc: 'empty string property',
+	},
+	{
+		input: ['', ''],
+		expected: '//',
+		desc: 'multiple empty string properties',
+	},
+	{
+		input: ['my property'],
+		expected: '/my property',
+		desc: 'property with spaces',
+	},
+	{
+		input: ['prop.with.dots'],
+		expected: '/prop.with.dots',
+		desc: 'property containing dots (no escaping needed)',
+	},
+	{
+		input: ['prop[0]'],
+		expected: '/prop[0]',
+		desc: 'property containing brackets (no escaping needed)',
+	},
+	{
+		input: [0, 1, 2],
+		expected: '/0/1/2',
+		desc: 'only numeric indices',
+	},
+	{
+		input: ['foo', 0, 'bar', 1],
+		expected: '/foo/0/bar/1',
+		desc: 'mixed strings and numbers',
+	},
+	{
+		input: 'foo',
+		expected: '/foo',
+		desc: 'single property',
+	},
+	{
+		input: [0],
+		expected: '/0',
+		desc: 'single numeric index',
+	},
+	{
+		input: ['items', -1, 'value'],
+		expected: '/items/-1/value',
+		desc: 'wildcard -1 as literal (no special handling)',
+	},
+	{
+		input: ['items', '*', 'name'],
+		expected: '/items/*/name',
+		desc: 'wildcard * as literal (no special handling)',
+	},
+	{
+		input: ['api', 'users', 0, 'profile-data', 'settings'],
+		expected: '/api/users/0/profile-data/settings',
+		desc: 'complex mixed path',
+	},
+	{
+		input: ['~~/~'],
+		expected: '/~0~0~1~0',
+		desc: 'extreme escaping case',
+	},
+	{
+		input: ['123abc'],
+		expected: '/123abc',
+		desc: 'property starting with number',
+	},
+	{
+		input: '_private',
+		expected: '/_private',
+		desc: 'property with underscore',
+	},
+	{
+		input: '$special',
+		expected: '/$special',
+		desc: 'property with dollar sign',
+	},
+];
+
+for (const { input, expected, desc } of jsonPointerCases) {
+	test(`toJSONPointer: ${desc}`, (t) => {
+		const p = Pathist.from(input);
+		t.is(p.toJSONPointer(), expected);
+	});
+}
+
+test('jsonPointer getter returns same as toJSONPointer()', (t) => {
+	const p = Pathist.from('foo.bar[0].baz');
+	t.is(p.jsonPointer, p.toJSONPointer());
+	t.is(p.jsonPointer, '/foo/bar/0/baz');
+});
+
+// Parameterized fromJSONPointer() tests
+const fromJSONPointerCases = [
+	{
+		input: '',
+		expected: [],
+		desc: 'empty string returns root (empty path)',
+	},
+	{
+		input: '/foo/bar/baz',
+		expected: ['foo', 'bar', 'baz'],
+		desc: 'basic path parsing',
+	},
+	{
+		input: '/users/0/name',
+		expected: ['users', 0, 'name'],
+		desc: 'path with numeric index',
+	},
+	{
+		input: '/data/results/5/items/2',
+		expected: ['data', 'results', 5, 'items', 2],
+		desc: 'nested properties with numeric indices',
+	},
+	{
+		input: '/foo~0bar',
+		expected: ['foo~bar'],
+		desc: 'tilde unescaping',
+	},
+	{
+		input: '/foo~1bar',
+		expected: ['foo/bar'],
+		desc: 'slash unescaping',
+	},
+	{
+		input: '/foo~0bar/baz~1qux',
+		expected: ['foo~bar', 'baz/qux'],
+		desc: 'multiple special characters',
+	},
+	{
+		input: '/a~1b~0c~1d~0e',
+		expected: ['a/b~c/d~e'],
+		desc: 'mixed special characters in single segment',
+	},
+	{
+		input: '/',
+		expected: [''],
+		desc: 'single empty string property',
+	},
+	{
+		input: '//',
+		expected: ['', ''],
+		desc: 'multiple empty string properties',
+	},
+	{
+		input: '/my property',
+		expected: ['my property'],
+		desc: 'property with spaces',
+	},
+	{
+		input: '/prop.with.dots',
+		expected: ['prop.with.dots'],
+		desc: 'property containing dots',
+	},
+	{
+		input: '/prop[0]',
+		expected: ['prop[0]'],
+		desc: 'property containing brackets',
+	},
+	{
+		input: '/0/1/2',
+		expected: [0, 1, 2],
+		desc: 'only numeric indices',
+	},
+	{
+		input: '/foo/0/bar/1',
+		expected: ['foo', 0, 'bar', 1],
+		desc: 'mixed strings and numbers',
+	},
+	{
+		input: '/foo',
+		expected: ['foo'],
+		desc: 'single property',
+	},
+	{
+		input: '/0',
+		expected: [0],
+		desc: 'single numeric index',
+	},
+	{
+		input: '/items/-1/value',
+		expected: ['items', '-1', 'value'],
+		desc: 'negative number as string (not valid array index)',
+	},
+	{
+		input: '/items/*/name',
+		expected: ['items', '*', 'name'],
+		desc: 'asterisk as string property',
+	},
+	{
+		input: '/api/users/0/profile-data/settings',
+		expected: ['api', 'users', 0, 'profile-data', 'settings'],
+		desc: 'complex mixed path',
+	},
+	{
+		input: '/~0~0~1~0',
+		expected: ['~~/~'],
+		desc: 'extreme unescaping case',
+	},
+	{
+		input: '/123abc',
+		expected: ['123abc'],
+		desc: 'property starting with number (not valid numeric index)',
+	},
+	{
+		input: '/_private',
+		expected: ['_private'],
+		desc: 'property with underscore',
+	},
+	{
+		input: '/$special',
+		expected: ['$special'],
+		desc: 'property with dollar sign',
+	},
+	{
+		input: '/00',
+		expected: ['00'],
+		desc: 'leading zeros make it a string (not valid array index)',
+	},
+	{
+		input: '/01',
+		expected: ['01'],
+		desc: 'zero-prefixed number as string',
+	},
+	{
+		input: '/10',
+		expected: [10],
+		desc: 'valid numeric index without leading zeros',
+	},
+];
+
+for (const { input, expected, desc } of fromJSONPointerCases) {
+	test(`fromJSONPointer: ${desc}`, (t) => {
+		const p = Pathist.fromJSONPointer(input);
+		t.deepEqual(p.toArray(), expected);
+	});
+}
+
+// Round-trip tests for toJSONPointer/fromJSONPointer
+const roundTripCases = [
+	{
+		segments: ['foo', 'bar', 'baz'],
+		desc: 'simple properties',
+	},
+	{
+		segments: ['users', 0, 'name'],
+		desc: 'with numeric indices',
+	},
+	{
+		segments: ['foo~bar', 'baz/qux'],
+		desc: 'special characters',
+	},
+	{
+		segments: [''],
+		desc: 'empty string property',
+	},
+	{
+		segments: [],
+		desc: 'empty path (root)',
+	},
+	{
+		segments: [0, 1, 2],
+		desc: 'only numbers',
+	},
+	{
+		segments: ['a/b~c/d~e'],
+		desc: 'mixed special chars',
+	},
+];
+
+for (const { segments, desc } of roundTripCases) {
+	test(`round-trip: ${desc}`, (t) => {
+		const original = Pathist.from(segments);
+		const pointer = original.toJSONPointer();
+		const parsed = Pathist.fromJSONPointer(pointer);
+		t.deepEqual(parsed.toArray(), original.toArray());
+	});
+}
+
+// Error cases
+test('fromJSONPointer throws on invalid format (no leading slash)', (t) => {
+	const error = t.throws(
+		() => {
+			Pathist.fromJSONPointer('foo/bar');
+		},
+		{ instanceOf: Error },
+	);
+	t.regex(error.message, /must start with/i);
+});
+
+test('fromJSONPointer accepts config parameter', (t) => {
+	const p = Pathist.fromJSONPointer('/foo/bar', {
+		notation: Pathist.Notation.Bracket,
+	});
+	t.is(p.toString(), '["foo"]["bar"]');
+});
