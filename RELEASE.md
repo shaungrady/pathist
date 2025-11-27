@@ -96,32 +96,41 @@ git push
 
 #### Option B: Via Release PR (Automatic)
 
-The GitHub Actions workflow will automatically:
-1. Detect changesets in the `main` branch
-2. Create/update a "Release PR" with:
-   - Updated version in package.json
-   - Updated CHANGELOG.md
-   - Summary of all changes
+**You don't create this PR manually** - the GitHub Actions workflow creates it for you:
 
-**To release:**
-- Review the Release PR
-- Merge it when ready
-- GitHub Actions automatically publishes to npm
+1. When you push changesets to `main`, the workflow automatically:
+   - Creates/updates a PR titled **"Version Packages"** (or your configured title)
+   - Shows the version bump and changelog updates in the PR
+   - Keeps this PR updated as you add more changesets
+
+2. **To release:**
+   - Find the "Version Packages" PR in your repository
+   - Review the changes (version bump, CHANGELOG updates)
+   - Merge the PR when ready
+   - GitHub Actions automatically publishes to npm
+
+**Where to find it:** Go to your repository → Pull Requests → Look for "Version Packages" or "chore: version packages"
 
 ## What Happens Automatically
 
 ### On Every Push to `main`:
 
-The release workflow (`.github/workflows/release.yml`) runs and:
+The release workflow (`.github/workflows/release.yml`) runs and does one of two things:
 
-1. **If changesets exist:**
-   - Creates or updates a "Release PR"
-   - PR shows version bump and changelog updates
+1. **If changeset files exist in `.changeset/`:**
+   - Automatically creates or updates a PR titled "Version Packages"
+   - This PR contains:
+     - Version bump in `package.json`
+     - Updated `CHANGELOG.md` with all changeset summaries
+     - Deletion of consumed changeset files
+   - The PR stays open until you merge it
+   - Adding more changesets will update this same PR
 
-2. **If no changesets exist (e.g., after merging Release PR):**
+2. **If NO changeset files exist (this happens after merging the "Version Packages" PR):**
    - Builds the package
    - Publishes to npm with the new version
-   - Creates a GitHub release with notes
+   - Creates a GitHub release with changelog notes
+   - Tags the commit with the version number
 
 ### After Publishing:
 
