@@ -1621,7 +1621,10 @@ export class Pathist {
 				// Check if preceded by a children property
 				if (i > 0) {
 					const prevSegment = this.segments[i - 1];
-					if (Pathist.#isStringSegment(prevSegment) && this.nodeChildrenProperties.has(prevSegment)) {
+					if (
+						Pathist.#isStringSegment(prevSegment) &&
+						this.nodeChildrenProperties.has(prevSegment)
+					) {
 						return i;
 					}
 				}
