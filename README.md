@@ -201,6 +201,35 @@ console.log(path4.toArray()); // ['foo.bar', 'baz']
 
 Pathist is designed to work seamlessly with popular path-based libraries and tools.
 
+### Navigating Objects Without Dependencies
+
+Use `path.array` with JavaScript's native `Array.reduce()` to navigate objects without external libraries:
+
+```typescript
+import { Pathist } from 'pathist';
+
+const data = {
+  users: [
+    { profile: { name: 'Alice', settings: { theme: 'dark' } } },
+    { profile: { name: 'Bob', settings: { theme: 'light' } } }
+  ]
+};
+
+// Build your path
+const path = Pathist.from('users[0].profile.settings.theme');
+
+// Navigate the object using reduce
+const value = path.array.reduce((obj, segment) => obj?.[segment], data);
+console.log(value); // 'dark'
+
+// Works with any path
+const namePath = Pathist.from('users[1].profile.name');
+const name = namePath.array.reduce((obj, seg) => obj?.[seg], data);
+console.log(name); // 'Bob'
+```
+
+This pattern is simple, zero-dependency, and leverages Pathist's core strength: path manipulation. For more advanced features like setting values or handling edge cases, consider using established libraries like lodash.
+
 ### With [lodash][lodash] get/set
 
 Use Pathist to manipulate paths before passing them to lodash:
