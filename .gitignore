@@ -47,6 +47,7 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 .tsimp/
+.tshy/
 
 # Compiled test files
 test/**/*.js

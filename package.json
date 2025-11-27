@@ -3,10 +3,18 @@
 	"version": "1.0.0",
 	"description": "",
 	"type": "module",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
+	"files": [
+		"dist",
+		"docs"
+	],
+	"tshy": {
+		"exports": {
+			".": "./src/pathist.ts"
+		}
+	},
 	"scripts": {
-		"build": "tsc",
+		"prepare": "tshy",
+		"build": "tshy",
 		"build:docs": "typedoc && node scripts/add-method-toc.js",
 		"test": "ava",
 		"test:watch": "ava --watch",
@@ -25,6 +33,7 @@
 		"ava": "^6.4.1",
 		"lefthook": "^2.0.4",
 		"remark-toc": "^9.0.0",
+		"tshy": "^3.1.0",
 		"tsimp": "^2.0.12",
 		"tsx": "^4.20.6",
 		"typedoc": "^0.28.14",
@@ -47,5 +56,20 @@
 			"TSIMP_PROJECT": "tsconfig.tsimp.json",
 			"TSIMP_DIAG": "ignore"
 		}
-	}
+	},
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/esm/pathist.d.ts",
+				"default": "./dist/esm/pathist.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/pathist.d.ts",
+				"default": "./dist/commonjs/pathist.js"
+			}
+		}
+	},
+	"main": "./dist/commonjs/pathist.js",
+	"types": "./dist/commonjs/pathist.d.ts",
+	"module": "./dist/esm/pathist.js"
 }
