@@ -42,23 +42,23 @@ import { Pathist } from 'pathist';
 
 // Parse a path string
 const path = Pathist.from('user.profile.settings[0].name');
-console.log(path.length); // 5
-console.log(path.toArray()); // ['user', 'profile', 'settings', 0, 'name']
+path.length; // 5
+path.array; // ['user', 'profile', 'settings', 0, 'name']
 
 // Convert between notations
-console.log(path.toString()); // 'user.profile.settings[0].name' (default: Mixed)
-console.log(path.toString(Pathist.Notation.Dot)); // 'user.profile.settings.0.name'
-console.log(path.toString(Pathist.Notation.Bracket)); // '["user"]["profile"]["settings"][0]["name"]'
+path.string; // 'user.profile.settings[0].name' (default: Mixed)
+path.toString(Pathist.Notation.Dot); // 'user.profile.settings.0.name'
+path.toString(Pathist.Notation.Bracket); // '["user"]["profile"]["settings"][0]["name"]'
 
 // JSONPath export (RFC 9535)
-console.log(path.toJSONPath()); // '$.user.profile.settings[0].name'
+path.jsonPath; // '$.user.profile.settings[0].name'
 
 // JSON Pointer export (RFC 6901)
-console.log(path.toJSONPointer()); // '/user/profile/settings/0/name'
+path.jsonPointer; // '/user/profile/settings/0/name'
 
 // Parse JSON Pointer
 const fromPointer = Pathist.fromJSONPointer('/user/profile/settings/0/name');
-console.log(fromPointer.toString()); // 'user.profile.settings[0].name'
+fromPointer.string; // 'user.profile.settings[0].name'
 ```
 
 ## Common Use Cases
@@ -70,15 +70,15 @@ const basePath = Pathist.from('users.preferences');
 const fullPath = Pathist.from('users.preferences.theme.color');
 
 // Check relationships
-console.log(fullPath.startsWith(basePath)); // true
-console.log(fullPath.endsWith('color')); // true
-console.log(fullPath.includes('preferences.theme')); // true
+fullPath.startsWith(basePath); // true
+fullPath.endsWith('color'); // true
+fullPath.includes('preferences.theme'); // true
 
 // Exact equality
 const path1 = Pathist.from('items[0].name');
 const path2 = Pathist.from('items[5].name');
-console.log(path1.equals(path2)); // false
-console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
+path1.equals(path2); // false
+path1.equals(path2, { indices: Pathist.Indices.Ignore }); // true
 ```
 
 ### Path Manipulation
@@ -86,24 +86,24 @@ console.log(path1.equals(path2, { indices: Pathist.Indices.Ignore })); // true
 ```typescript
 // Slicing
 const path = Pathist.from('foo.bar.baz.qux');
-console.log(path.slice(1, 3).toString()); // 'bar.baz'
-console.log(path.slice(2).toString()); // 'baz.qux'
+path.slice(1, 3).string; // 'bar.baz'
+path.slice(2).string; // 'baz.qux'
 
 // Parent paths
 const errorPath = Pathist.from('users[0].profile.settings.theme');
-console.log(errorPath.parent().toString()); // 'users[0].profile.settings'
-console.log(errorPath.parent(2).toString()); // 'users[0].profile'
-console.log(errorPath.parent(10).toString()); // '' (returns empty path)
+errorPath.parent().string; // 'users[0].profile.settings'
+errorPath.parent(2).string; // 'users[0].profile'
+errorPath.parent(10).string; // '' (returns empty path)
 
 // Concatenation
 const base = Pathist.from('api.users');
 const extended = base.concat('profile', 'avatar');
-console.log(extended.toString()); // 'api.users.profile.avatar'
+extended.string; // 'api.users.profile.avatar'
 
 // Intelligent merging with overlap detection
 const left = Pathist.from('data.users[0].profile');
 const right = Pathist.from('profile.settings.theme');
-console.log(left.merge(right).toString()); // 'data.users[0].profile.settings.theme'
+left.merge(right).string; // 'data.users[0].profile.settings.theme'
 ```
 
 ### Wildcards and Index Matching
@@ -116,14 +116,18 @@ Pathist.indexWildcards = new Set(['*', -1]);
 const template = Pathist.from('items[*].metadata');
 const concrete = Pathist.from('items[5].metadata');
 
-// Wildcards match any index
-console.log(template.equals(concrete)); // false (exact match)
-console.log(Pathist.from('items[*]').equals(Pathist.from('items[5]'))); // false
+// Wildcards match any numeric index
+template.equals(concrete); // true (wildcard matches numbers)
+Pathist.from('items[*]').equals(Pathist.from('items[5]')); // true
 
-// But they work in comparisons
+// Wildcards do NOT match string properties
+Pathist.from('items[*]').equals(Pathist.from('items.foo')); // false
+
+// Wildcards work in all comparison methods
 const path1 = Pathist.from('users[*].name');
 const path2 = Pathist.from('users[0].name');
-console.log(path1.positionOf(path2)); // 0 (wildcards match numbers)
+path1.equals(path2); // true
+path1.positionOf(path2); // 0
 ```
 
 ### Tree/Node Navigation
@@ -137,21 +141,21 @@ const path = Pathist.from('children[0].children[1].children[2].value', {
 });
 
 // Extract node paths
-console.log(path.firstNodePath().toString()); // '' (root)
-console.log(path.lastNodePath().toString()); // 'children[0].children[1].children[2]'
-console.log(path.afterNodePath().toString()); // 'value'
+path.firstNodePath().string; // '' (root)
+path.lastNodePath().string; // 'children[0].children[1].children[2]'
+path.afterNodePath().string; // 'value'
 
 // Get node indices
-console.log(path.nodeIndices()); // [0, 1, 2]
+path.nodeIndices(); // [0, 1, 2]
 
 // Navigate to parent nodes
-console.log(path.parentNode().toString()); // 'children[0].children[1]' (parent of last node)
-console.log(path.parentNode(2).toString()); // 'children[0]' (grandparent)
-console.log(path.parentNode(3).toString()); // '' (root)
+path.parentNode().string; // 'children[0].children[1]' (parent of last node)
+path.parentNode(2).string; // 'children[0]' (grandparent)
+path.parentNode(3).string; // '' (root)
 
 // Iterate through each node level
 for (const nodePath of path.nodePaths()) {
-  console.log(nodePath.toString());
+  nodePath.string;
 }
 // Output:
 // '' (root)
@@ -166,12 +170,12 @@ for (const nodePath of path.nodePaths()) {
 const path = Pathist.from('foo.bar.baz.bar.qux');
 
 // Find positions
-console.log(path.positionOf('bar')); // 1 (first occurrence)
-console.log(path.lastPositionOf('bar')); // 3 (last occurrence)
+path.positionOf('bar'); // 1 (first occurrence)
+path.lastPositionOf('bar'); // 3 (last occurrence)
 
 // Extract up to a match
-console.log(path.pathTo('bar').toString()); // 'foo.bar'
-console.log(path.pathToLast('bar').toString()); // 'foo.bar.baz.bar'
+path.pathTo('bar').string; // 'foo.bar'
+path.pathToLast('bar').string; // 'foo.bar.baz.bar'
 ```
 
 ### Configuration
@@ -189,7 +193,7 @@ const path = Pathist.from('foo.bar', {
   nodeChildrenProperties: ['nodes']
 });
 
-console.log(path.toString()); // 'foo.bar' (uses Dot notation)
+path.string; // 'foo.bar' (uses Dot notation)
 ```
 
 ## Special Characters and Edge Cases
@@ -197,18 +201,18 @@ console.log(path.toString()); // 'foo.bar' (uses Dot notation)
 ```typescript
 // Properties with dots, brackets, or spaces
 const path1 = Pathist.from(['foo.bar', 'baz']);
-console.log(path1.toString()); // '["foo.bar"].baz'
+path1.string; // '["foo.bar"].baz'
 
 const path2 = Pathist.from(['foo[0]', 'qux']);
-console.log(path2.toString()); // '["foo[0]"].qux'
+path2.string; // '["foo[0]"].qux'
 
 // Empty string properties
 const path3 = Pathist.from(['', 'value']);
-console.log(path3.toString()); // '[""].value'
+path3.string; // '[""].value'
 
 // Escaped dots in string paths
 const path4 = Pathist.from('foo\\.bar.baz');
-console.log(path4.toArray()); // ['foo.bar', 'baz']
+path4.array; // ['foo.bar', 'baz']
 ```
 
 ## Integration with Other Libraries
@@ -232,16 +236,16 @@ const data = {
 // Navigate through an object
 const path = Pathist.from('users[0].profile.settings.theme');
 const value = path.reduce((obj, segment) => obj?.[segment], data);
-console.log(value); // 'dark'
+value; // 'dark'
 
 // Handle missing paths gracefully
 const missing = Pathist.from('users[5].profile.name');
 const name = missing.reduce((obj, seg) => obj?.[seg], data);
-console.log(name); // undefined
+name; // undefined
 
 // Provide default fallback values
 const withDefault = missing.reduce((obj, seg) => obj?.[seg] ?? {}, data);
-console.log(withDefault); // {}
+withDefault; // {}
 ```
 
 This is equivalent to `path.toArray().reduce(...)` but more concise. You have full control over the reduction logic. For more advanced features like setting values or complex transformations, consider using established libraries like lodash.
@@ -296,12 +300,12 @@ const path = Pathist.from('store.books[0].title');
 const jsonPath = path.toJSONPath(); // '$.store.books[0].title'
 
 const result = JSONPath({ path: jsonPath, json: data });
-console.log(result); // ['Book 1']
+result; // ['Book 1']
 
 // Use wildcards for multiple matches
 const wildcardPath = Pathist.from('store.books[*].price');
 const allPrices = JSONPath({ path: wildcardPath.toJSONPath(), json: data });
-console.log(allPrices); // [10, 15]
+allPrices; // [10, 15]
 ```
 
 ### JSON Pointer (RFC 6901) Support
@@ -313,27 +317,27 @@ import { Pathist } from 'pathist';
 
 // Parse JSON Pointer strings
 const path = Pathist.fromJSONPointer('/store/books/0/title');
-console.log(path.toArray()); // ['store', 'books', 0, 'title']
-console.log(path.toString()); // 'store.books[0].title'
+path.array; // ['store', 'books', 0, 'title']
+path.string; // 'store.books[0].title'
 
 // Convert paths to JSON Pointer format
 const userPath = Pathist.from('user.profile.settings.theme');
-console.log(userPath.toJSONPointer()); // '/user/profile/settings/theme'
+userPath.jsonPointer; // '/user/profile/settings/theme'
 
 // Handle special characters (~ and / are escaped per RFC 6901)
 const specialPath = Pathist.from(['foo~bar', 'baz/qux']);
-console.log(specialPath.toJSONPointer()); // '/foo~0bar/baz~1qux'
+specialPath.jsonPointer; // '/foo~0bar/baz~1qux'
 
 // Round-trip conversion
 const original = Pathist.from('items[0].metadata.tags[2]');
-const pointer = original.toJSONPointer(); // '/items/0/metadata/tags/2'
+const pointer = original.jsonPointer; // '/items/0/metadata/tags/2'
 const parsed = Pathist.fromJSONPointer(pointer);
-console.log(parsed.equals(original)); // true
+parsed.equals(original); // true
 
 // Root reference (empty path)
 const root = Pathist.fromJSONPointer('');
-console.log(root.length); // 0
-console.log(root.toJSONPointer()); // ''
+root.length; // 0
+root.jsonPointer; // ''
 ```
 
 **Key differences from JSONPath:**
@@ -412,12 +416,12 @@ if (result instanceof type.errors) {
     // ArkType provides path as array: ['profile', 'age']
     const path = Pathist.from(error.path);
 
-    console.log(path.toString()); // 'profile.age'
-    console.log(path.toJSONPath()); // '$.profile.age'
+    path.string; // 'profile.age'
+    path.jsonPath; // '$.profile.age'
 
     // Navigate to parent path for nested errors
     const parentPath = path.parent();
-    console.log(`Error in ${parentPath.toString()}: ${error.message}`);
+    console.log(`Error in ${parentPath.string}: ${error.message}`);
 
     // Compare error paths
     const settingsErrors = error.path.some(segment =>
@@ -450,7 +454,7 @@ const forJSONPath = normalized.toJSONPath(); // '$.users[0].profile.name'
 // Compare paths regardless of original format
 const path1 = Pathist.from('users[0].name');
 const path2 = Pathist.from('users.0.name');
-console.log(path1.equals(path2)); // true (same path, different notation)
+path1.equals(path2); // true (same path, different notation)
 ```
 
 ## API Documentation
@@ -488,7 +492,7 @@ const path = Pathist.from('foo.bar.baz');
 
 // for...of loop
 for (const segment of path) {
-  console.log(segment); // 'foo', 'bar', 'baz'
+  segment; // 'foo', 'bar', 'baz'
 }
 
 // Spread operator
