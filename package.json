@@ -1,7 +1,8 @@
 {
 	"name": "pathist",
 	"version": "0.1.1",
-	"description": "",
+	"repository": "https://github.com/shaungrady/pathist"
+	"description": "Parse, manipulate, and compare JS and JSON object property paths",
 	"type": "module",
 	"files": [
 		"dist",
