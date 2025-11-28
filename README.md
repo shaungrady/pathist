@@ -2,6 +2,9 @@
 
 Pathist is a TypeScript library for parsing, manipulating, and comparing object property paths with support for multiple notations, wildcards, and tree traversal.
 
+###### Package: [GitHub](https://github.com/shaungrady/pathist), [npm](https://www.npmjs.com/package/pathist)  |  Releases: [Changelog](https://github.com/shaungrady/pathist/releases)  |  Author: [Shaun Grady](https://shaungrady.com/)
+
+
 ## Features
 
 - **Multiple notation styles**: Mixed (`foo.bar[0]`), Dot (`foo.bar.0`), and Bracket (`["foo"]["bar"][0]`)
