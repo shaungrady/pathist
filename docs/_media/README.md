@@ -116,14 +116,18 @@ Pathist.indexWildcards = new Set(['*', -1]);
 const template = Pathist.from('items[*].metadata');
 const concrete = Pathist.from('items[5].metadata');
 
-// Wildcards match any index
-template.equals(concrete); // false (exact match)
-Pathist.from('items[*]').equals(Pathist.from('items[5]')); // false
+// Wildcards match any numeric index
+template.equals(concrete); // true (wildcard matches numbers)
+Pathist.from('items[*]').equals(Pathist.from('items[5]')); // true
 
-// But they work in comparisons
+// Wildcards do NOT match string properties
+Pathist.from('items[*]').equals(Pathist.from('items.foo')); // false
+
+// Wildcards work in all comparison methods
 const path1 = Pathist.from('users[*].name');
 const path2 = Pathist.from('users[0].name');
-path1.positionOf(path2); // 0 (wildcards match numbers)
+path1.equals(path2); // true
+path1.positionOf(path2); // 0
 ```
 
 ### Tree/Node Navigation
