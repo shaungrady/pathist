@@ -594,6 +594,10 @@ export class Pathist {
 
 	private readonly segments: ReadonlyArray<PathSegment>;
 	private readonly stringCache: Map<Notation, string> = new Map();
+	private jsonPointerCache?: string;
+	private jsonPathCache?: string;
+	private firstNodeIdxCache?: number;
+	private lastNodeIdxCache?: number;
 
 	/**
 	 * The number of segments in this path.
@@ -835,8 +839,14 @@ export class Pathist {
 	 * ```
 	 */
 	toJSONPath(): string {
+		// Check cache first
+		if (this.jsonPathCache !== undefined) {
+			return this.jsonPathCache;
+		}
+
 		// Empty path returns root
 		if (this.segments.length === 0) {
+			this.jsonPathCache = '$';
 			return '$';
 		}
 
@@ -864,6 +874,8 @@ export class Pathist {
 			}
 		}
 
+		// Cache and return
+		this.jsonPathCache = result;
 		return result;
 	}
 
@@ -919,8 +931,14 @@ export class Pathist {
 	 * ```
 	 */
 	toJSONPointer(): string {
+		// Check cache first
+		if (this.jsonPointerCache !== undefined) {
+			return this.jsonPointerCache;
+		}
+
 		// Empty path returns empty string (root reference)
 		if (this.segments.length === 0) {
+			this.jsonPointerCache = '';
 			return '';
 		}
 
@@ -936,6 +954,8 @@ export class Pathist {
 			result += `/${segmentStr}`;
 		}
 
+		// Cache and return
+		this.jsonPointerCache = result;
 		return result;
 	}
 
@@ -1600,6 +1620,83 @@ export class Pathist {
 	// ============================================================================
 
 	/**
+	 * Helper: Computes both first and last node index positions in a single scan.
+	 *
+	 * This method finds the first numeric index that's part of a tree structure,
+	 * then continues scanning to find the last node index in the contiguous tree.
+	 * Both values are cached together for efficiency.
+	 *
+	 * @private
+	 */
+	#computeNodeIndices(): void {
+		// Already computed
+		if (this.firstNodeIdxCache !== undefined) {
+			return;
+		}
+
+		let firstNodeIndex = -1;
+		let lastNodeIndex = -1;
+
+		// Find first node index
+		for (let i = 0; i < this.segments.length; i++) {
+			const segment = this.segments[i];
+			if (Pathist.#isNumericSegment(segment)) {
+				// Root-level index - it's a node
+				if (i === 0) {
+					firstNodeIndex = i;
+					break;
+				}
+
+				// Check if preceded by a children property
+				if (i > 0) {
+					const prevSegment = this.segments[i - 1];
+					if (
+						Pathist.#isStringSegment(prevSegment) &&
+						this.nodeChildrenProperties.has(prevSegment)
+					) {
+						firstNodeIndex = i;
+						break;
+					}
+				}
+			}
+		}
+
+		// If found, continue scanning for last node index
+		if (firstNodeIndex !== -1) {
+			lastNodeIndex = firstNodeIndex;
+			let i = firstNodeIndex + 1;
+
+			while (i < this.segments.length) {
+				const segment = this.segments[i];
+
+				if (Pathist.#isStringSegment(segment)) {
+					// Check if it's a children property followed by numeric
+					const nextSegment = this.segments[i + 1];
+					if (
+						i + 1 < this.segments.length &&
+						Pathist.#isNumericSegment(nextSegment) &&
+						this.nodeChildrenProperties.has(segment)
+					) {
+						// This is a children property followed by an index - continue the tree
+						lastNodeIndex = i + 1;
+						i += 2; // Skip both the property and the index
+					} else {
+						// Not a children property, or not followed by numeric - tree ends
+						break;
+					}
+				} else {
+					// Unexpected numeric without a property before it
+					break;
+				}
+			}
+		}
+
+		// Cache both values
+		this.firstNodeIdxCache = firstNodeIndex;
+		this.lastNodeIdxCache = lastNodeIndex;
+	}
+
+	/**
 	 * Helper: Finds the position of the first numeric index that's part of a tree structure.
 	 *
 	 * A numeric index is part of a tree if it's either:
@@ -1610,27 +1707,10 @@ export class Pathist {
 	 * @private
 	 */
 	#findFirstNumericIndex(): number {
-		for (let i = 0; i < this.segments.length; i++) {
-			const segment = this.segments[i];
-			if (Pathist.#isNumericSegment(segment)) {
-				// Root-level index - it's a node
-				if (i === 0) {
-					return i;
-				}
-
-				// Check if preceded by a children property
-				if (i > 0) {
-					const prevSegment = this.segments[i - 1];
-					if (
-						Pathist.#isStringSegment(prevSegment) &&
-						this.nodeChildrenProperties.has(prevSegment)
-					) {
-						return i;
-					}
-				}
-			}
-		}
-		return -1;
+		this.#computeNodeIndices();
+		// Safe to assert: #computeNodeIndices always sets this value
+		// biome-ignore lint/style/noNonNullAssertion: guaranteed to be set by #computeNodeIndices
+		return this.firstNodeIdxCache!;
 	}
 
 	/**
@@ -1639,43 +1719,14 @@ export class Pathist {
 	 * Starting from the first numeric index, continues as long as the path follows
 	 * the pattern of node children properties followed by numeric indices.
 	 *
-	 * @param firstIdx - The position of the first numeric index
-	 * @returns The zero-based position of the last node index, or -1 if firstIdx is -1
+	 * @returns The zero-based position of the last node index, or -1 if no tree structure exists
 	 * @private
 	 */
-	#findLastNodeIndex(firstIdx: number): number {
-		if (firstIdx === -1) {
-			return -1;
-		}
-
-		let lastIdx = firstIdx;
-		let i = firstIdx + 1;
-
-		while (i < this.segments.length) {
-			const segment = this.segments[i];
-
-			if (Pathist.#isStringSegment(segment)) {
-				// Check if it's a children property followed by numeric
-				const nextSegment = this.segments[i + 1];
-				if (
-					i + 1 < this.segments.length &&
-					Pathist.#isNumericSegment(nextSegment) &&
-					this.nodeChildrenProperties.has(segment)
-				) {
-					// This is a children property followed by an index - continue the tree
-					lastIdx = i + 1;
-					i += 2; // Skip both the property and the index
-				} else {
-					// Not a children property, or not followed by numeric - tree ends
-					break;
-				}
-			} else {
-				// Unexpected numeric without a property before it
-				break;
-			}
-		}
-
-		return lastIdx;
+	#findLastNodeIndex(): number {
+		this.#computeNodeIndices();
+		// Safe to assert: #computeNodeIndices always sets this value
+		// biome-ignore lint/style/noNonNullAssertion: guaranteed to be set by #computeNodeIndices
+		return this.lastNodeIdxCache!;
 	}
 
 	/**
@@ -1752,7 +1803,7 @@ export class Pathist {
 			return Pathist.from('', this.cloneConfig());
 		}
 
-		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		const lastIdx = this.#findLastNodeIndex();
 		return this.slice(0, lastIdx + 1);
 	}
 
@@ -1788,7 +1839,7 @@ export class Pathist {
 			return this.slice();
 		}
 
-		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		const lastIdx = this.#findLastNodeIndex();
 		return this.slice(lastIdx + 1);
 	}
 
@@ -1898,7 +1949,7 @@ export class Pathist {
 			return [];
 		}
 
-		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		const lastIdx = this.#findLastNodeIndex();
 		const values: number[] = [];
 
 		// Collect all numeric values from firstIdx to lastIdx
@@ -1972,7 +2023,7 @@ export class Pathist {
 			yield Pathist.from('', this.cloneConfig());
 		}
 
-		const lastIdx = this.#findLastNodeIndex(firstIdx);
+		const lastIdx = this.#findLastNodeIndex();
 
 		// Yield path at each node index
 		for (let i = firstIdx; i <= lastIdx; i++) {
