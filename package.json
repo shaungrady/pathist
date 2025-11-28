@@ -28,7 +28,11 @@
 		"release": "pnpm run build && changeset publish --provenance"
 	},
 	"keywords": [],
-	"author": "",
+	"author": {
+		"name": "Shaun Grady",
+		"email": "grady@shaungrady.com",
+		"url": "https://shaungrady.com"
+	},
 	"license": "MIT",
 	"packageManager": "pnpm@10.23.0",
 	"devDependencies": {
