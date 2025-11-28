@@ -24,7 +24,7 @@
 		"ci": "biome ci . && tsc --noEmit && ava",
 		"changeset": "changeset",
 		"version-packages": "changeset version",
-		"release": "pnpm run build && changeset publish"
+		"release": "pnpm run build && changeset publish --provenance"
 	},
 	"keywords": [],
 	"author": "",

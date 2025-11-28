@@ -4,24 +4,20 @@ This project uses [Changesets](https://github.com/changesets/changesets) for aut
 
 ## One-Time Setup
 
-### 1. Configure NPM Token
+### 1. Configure NPM OIDC Publishing
 
-Before releases can be published, you need to add an NPM token to GitHub:
+This project uses **OpenID Connect (OIDC)** for secure, token-free publishing to npm. No npm tokens are needed!
 
-1. **Generate an npm token:**
-   ```bash
-   npm login
-   ```
-   Then create a token at https://www.npmjs.com/settings/[username]/tokens
-   - Token type: **Automation** (for CI/CD)
-   - Expiration: Set according to your security preferences
+**Prerequisites:**
+1. **Set up OIDC connection in npm:**
+   - Go to https://www.npmjs.com/settings/[username]/tokens
+   - Navigate to "Publishing Access" → "Granular Access Tokens"
+   - Click "Configure OIDC" or manage your OIDC connections
+   - Add a new OIDC connection for this repository:
+     - Provider: GitHub Actions
+     - Repository: `[username]/pathist`
 
-2. **Add the token to GitHub:**
-   - Go to: Repository Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: Paste your npm token
-   - Click "Add secret"
+That's it! GitHub Actions will automatically authenticate with npm using OIDC when publishing.
 
 ### 2. Verify GitHub Actions Permissions
 
@@ -156,10 +152,11 @@ node -e "console.log(require('pathist'))"
 
 ## Troubleshooting
 
-### Release workflow fails with "401 Unauthorized"
-- Check that `NPM_TOKEN` secret is set correctly in GitHub
-- Verify the token hasn't expired
-- Ensure the token has "Automation" permissions
+### Release workflow fails with "401 Unauthorized" or "403 Forbidden"
+- Verify OIDC is configured correctly in npm for this repository
+- Check that the workflow has `id-token: write` permission (already configured)
+- Ensure the GitHub Actions identity matches your npm OIDC configuration
+- Verify you have publishing rights to the `pathist` package on npm
 
 ### No Release PR is created
 - Verify changesets exist: `ls .changeset/*.md` (should show files other than README.md)
