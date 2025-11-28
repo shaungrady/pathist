@@ -27,7 +27,22 @@
 		"version-packages": "changeset version",
 		"release": "pnpm run build && changeset publish --provenance"
 	},
-	"keywords": [],
+	"keywords": [
+		"pathist",
+		"object-path",
+		"jsonpath",
+		"json-pointer",
+		"json",
+		"path",
+		"path-manipulation",
+		"path-parsing",
+		"property-paths",
+		"wildcard-paths",
+		"tree-traversal",
+		"typescript",
+		"javascript",
+		"utility"
+	],
 	"author": {
 		"name": "Shaun Grady",
 		"email": "grady@shaungrady.com",
