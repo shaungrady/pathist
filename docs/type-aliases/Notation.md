@@ -1,4 +1,4 @@
-[**Pathist v0.1.1**](../README.md)
+[**Pathist v1.0.0**](../README.md)
 
 ***
 

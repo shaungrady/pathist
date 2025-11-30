@@ -1,5 +1,13 @@
 # pathist
 
+## 1.0.0
+
+### Major Changes
+
+- d891205: - Fix ./docs
+  - Improve clarity of README
+  - Rename `parent` method to `parentPath`
+
 ## 0.1.1
 
 ### Patch Changes
