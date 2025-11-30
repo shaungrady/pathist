@@ -1,8 +1,8 @@
-[**Pathist v0.1.0**](../README.md)
+[**Pathist v0.1.1**](../README.md)
 
 ***
 
-[Pathist](../globals.md) / Pathist
+[Pathist](../README.md) / Pathist
 
 # Class: Pathist
 
@@ -37,7 +37,7 @@ and offers powerful comparison and manipulation methods.
 | [pathTo()](#pathto) | Returns the path up to and including the first occurrence of the specified path segment sequence |
 | [pathToLast()](#pathtolast) | Returns the path up to and including the last occurrence of the specified path segment sequence |
 | [slice()](#slice) | Returns a new path containing a subset of this path's segments |
-| [parent()](#parent) | Returns the parent path by removing segments from the end |
+| [parentPath()](#parentpath) | Returns the parent path by removing segments from the end |
 | [concat()](#concat) | Returns a new path that combines this path with one or more other paths |
 | [merge()](#merge) | Intelligently merges another path with this path by detecting overlapping segments |
 | [firstNodePath()](#firstnodepath) | Returns the path to the first node |
@@ -1214,9 +1214,9 @@ console.log(path.slice(2).toString()); // 'baz.qux'
 
 ***
 
-### parent()
+### parentPath()
 
-> **parent**(`depth`): `Pathist`
+> **parentPath**(`depth`): `Pathist`
 
 Defined in: [pathist.ts:1462](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1462)
 
@@ -1253,23 +1253,23 @@ Basic usage
 
 ```typescript
 const path = Pathist.from('foo.bar.baz');
-console.log(path.parent().toString()); // 'foo.bar'
-console.log(path.parent(2).toString()); // 'foo'
-console.log(path.parent(3).toString()); // '' (empty path)
+console.log(path.parentPath().toString()); // 'foo.bar'
+console.log(path.parentPath(2).toString()); // 'foo'
+console.log(path.parentPath(3).toString()); // '' (empty path)
 ```
 
 Exceeding depth returns empty path
 
 ```typescript
 const path = Pathist.from('foo.bar');
-console.log(path.parent(5).toString()); // '' (empty path, not error)
+console.log(path.parentPath(5).toString()); // '' (empty path, not error)
 ```
 
 With zero depth
 
 ```typescript
 const path = Pathist.from('foo.bar.baz');
-const clone = path.parent(0); // Returns clone of full path
+const clone = path.parentPath(0); // Returns clone of full path
 console.log(clone.toString()); // 'foo.bar.baz'
 ```
 
@@ -1544,7 +1544,7 @@ If depth is negative
 
 #### See
 
-* [parent](#parent) - Remove segments (not node-aware)
+* [parentPath](#parentpath) - Remove segments (not node-aware)
 * [lastNodePath](#lastnodepath) - Get path to last node
 * [firstNodePath](#firstnodepath) - Get path to first node
 * [nodePaths](#nodepaths) - Iterate over all node paths
