@@ -1,8 +1,8 @@
-[**Pathist v0.1.0**](../README.md)
+[**Pathist v0.1.1**](../README.md)
 
 ***
 
-[Pathist](../globals.md) / PathSegment
+[Pathist](../README.md) / PathSegment
 
 # Type Alias: PathSegment
 

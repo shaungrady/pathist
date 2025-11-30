@@ -88,9 +88,9 @@ path.slice(2).string; // 'baz.qux'
 
 // Parent paths
 const errorPath = Pathist.from('users[0].profile.settings.theme');
-errorPath.parent().string; // 'users[0].profile.settings'
-errorPath.parent(2).string; // 'users[0].profile'
-errorPath.parent(10).string; // '' (returns empty path)
+errorPath.parentPath().string; // 'users[0].profile.settings'
+errorPath.parentPath(2).string; // 'users[0].profile'
+errorPath.parentPath(10).string; // '' (returns empty path)
 
 // Concatenation
 const base = Pathist.from('api.users');
@@ -178,19 +178,21 @@ path.pathToLast('bar').string; // 'foo.bar.baz.bar'
 ### Configuration
 
 ```typescript
-// Global defaults
+// These are the global defaults
 Pathist.defaultNotation = Pathist.Notation.Bracket;
-Pathist.defaultIndices = Pathist.Indices.Ignore;
-Pathist.defaultNodeChildrenProperties = new Set(['children', 'items']);
+Pathist.defaultIndices = Pathist.Indices.Preserve;
+Pathist.defaultNodeChildrenProperties = new Set(['children']);
+// Can be any negative or non-finite number, or a non-numeric string
+Pathist.indexWildcards = new Set([-1, '*']);
 
 // Instance-specific configuration
-const path = Pathist.from('foo.bar', {
+const path = Pathist.from('foo.bar[9]', {
   notation: Pathist.Notation.Dot,
-  indices: Pathist.Indices.Preserve,
-  nodeChildrenProperties: ['nodes']
+  indices: Pathist.Indices.Ignore,
+  nodeChildrenProperties: ['nodes', 'items', 'kiddos']
 });
 
-path.string; // 'foo.bar' (uses Dot notation)
+path.string; // 'foo.bar.9' (uses Dot notation)
 ```
 
 ## Special Characters and Edge Cases
@@ -267,11 +269,11 @@ const basePath = Pathist.from('users[0].profile');
 const settingsPath = basePath.concat('settings', 'theme');
 
 // Use with lodash
-const theme = get(data, settingsPath.toString()); // 'dark'
-set(data, settingsPath.toString(), 'auto');
+const theme = get(data, settingsPath.string); // 'dark'
+set(data, settingsPath.string, 'auto');
 
 // Convert between notations for different libraries
-const lodashPath = settingsPath.toString(); // 'users[0].profile.settings.theme'
+const lodashPath = settingsPath.string; // 'users[0].profile.settings.theme'
 const dotPath = settingsPath.toString(Pathist.Notation.Dot); // 'users.0.profile.settings.theme'
 ```
 
@@ -294,14 +296,14 @@ const data = {
 
 // Build path with Pathist and convert to JSONPath
 const path = Pathist.from('store.books[0].title');
-const jsonPath = path.toJSONPath(); // '$.store.books[0].title'
+const jsonPath = path.jsonPath; // '$.store.books[0].title'
 
 const result = JSONPath({ path: jsonPath, json: data });
 result; // ['Book 1']
 
 // Use wildcards for multiple matches
 const wildcardPath = Pathist.from('store.books[*].price');
-const allPrices = JSONPath({ path: wildcardPath.toJSONPath(), json: data });
+const allPrices = JSONPath({ path: wildcardPath.jsonPath, json: data });
 allPrices; // [10, 15]
 ```
 
@@ -373,7 +375,7 @@ function buildUserPath<T extends UserPaths>(
   ...extensions: string[]
 ): string {
   const path = Pathist.from(base);
-  return path.concat(...extensions).toString();
+  return path.concat(...extensions).string;
 }
 
 // Type-safe path construction
@@ -416,7 +418,7 @@ if (result instanceof type.errors) {
     path.jsonPath; // '$.profile.age'
 
     // Navigate to parent path for nested errors
-    const parentPath = path.parent();
+    const parentPath = path.parentPath();
     console.log(`Error in ${parentPath.string}: ${error.message}`);
 
     // Compare error paths
@@ -443,9 +445,9 @@ const jsonPath = '$.users[0].profile.name';
 const normalized = Pathist.from(lodashPath);
 
 // Convert to whatever format you need
-const forLodash = normalized.toString(); // 'users[0].profile.name'
+const forLodash = normalized.string; // 'users[0].profile.name'
 const forMongo = normalized.toString(Pathist.Notation.Dot); // 'users.0.profile.name'
-const forJSONPath = normalized.toJSONPath(); // '$.users[0].profile.name'
+const forJSONPath = normalized.jsonPath; // '$.users[0].profile.name'
 
 // Compare paths regardless of original format
 const path1 = Pathist.from('users[0].name');

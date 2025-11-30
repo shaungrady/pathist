@@ -1,5 +1,6 @@
 {
 	"$schema": "https://typedoc.org/schema.json",
+	"readme": "none",
 	"entryPoints": ["src/pathist.ts"],
 	"out": "docs",
 	"plugin": ["typedoc-plugin-markdown", "typedoc-plugin-remark"],

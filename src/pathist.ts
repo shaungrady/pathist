@@ -1439,27 +1439,27 @@ export class Pathist {
 	 * Basic usage
 	 * ```typescript
 	 * const path = Pathist.from('foo.bar.baz');
-	 * console.log(path.parent().toString()); // 'foo.bar'
-	 * console.log(path.parent(2).toString()); // 'foo'
-	 * console.log(path.parent(3).toString()); // '' (empty path)
+	 * console.log(path.parentPath().toString()); // 'foo.bar'
+	 * console.log(path.parentPath(2).toString()); // 'foo'
+	 * console.log(path.parentPath(3).toString()); // '' (empty path)
 	 * ```
 	 *
 	 * @example
 	 * Exceeding depth returns empty path
 	 * ```typescript
 	 * const path = Pathist.from('foo.bar');
-	 * console.log(path.parent(5).toString()); // '' (empty path, not error)
+	 * console.log(path.parentPath(5).toString()); // '' (empty path, not error)
 	 * ```
 	 *
 	 * @example
 	 * With zero depth
 	 * ```typescript
 	 * const path = Pathist.from('foo.bar.baz');
-	 * const clone = path.parent(0); // Returns clone of full path
+	 * const clone = path.parentPath(0); // Returns clone of full path
 	 * console.log(clone.toString()); // 'foo.bar.baz'
 	 * ```
 	 */
-	parent(depth: number = 1): Pathist {
+	parentPath(depth: number = 1): Pathist {
 		if (depth < 0) {
 			throw new RangeError('Depth must be non-negative');
 		}
@@ -1854,7 +1854,7 @@ export class Pathist {
 	 * @returns A new Pathist instance representing the parent node path
 	 * @throws {RangeError} If depth is negative
 	 *
-	 * @see {@link parent} - Remove segments (not node-aware)
+	 * @see {@link parentPath} - Remove segments (not node-aware)
 	 * @see {@link lastNodePath} - Get path to last node
 	 * @see {@link firstNodePath} - Get path to first node
 	 * @see {@link nodePaths} - Iterate over all node paths
