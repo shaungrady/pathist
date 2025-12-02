@@ -36,6 +36,9 @@ and offers powerful comparison and manipulation methods.
 | [lastPositionOf()](#lastpositionof) | Finds the last position where the specified path segment sequence occurs within this path |
 | [pathTo()](#pathto) | Returns the path up to and including the first occurrence of the specified path segment sequence |
 | [pathToLast()](#pathtolast) | Returns the path up to and including the last occurrence of the specified path segment sequence |
+| [match()](#match) | Returns the first matched subsequence anywhere in this path |
+| [matchStart()](#matchstart) | Returns the matched prefix if this path starts with the pattern |
+| [matchEnd()](#matchend) | Returns the matched suffix if this path ends with the pattern |
 | [slice()](#slice) | Returns a new path containing a subset of this path's segments |
 | [parentPath()](#parentpath) | Returns the parent path by removing segments from the end |
 | [concat()](#concat) | Returns a new path that combines this path with one or more other paths |
@@ -1174,11 +1177,202 @@ p.pathToLast('notfound').toString();   // ''
 
 ***
 
+### match()
+
+> **match**(`pattern`, `options?`): `Pathist` | `null`
+
+Defined in: [pathist.ts:1436](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1436)
+
+Returns the first matched subsequence anywhere in this path.
+
+Finds the first occurrence of the pattern within this path and returns a new Pathist
+containing just the matched segments with their concrete values (not wildcards from the pattern).
+Returns null if no match is found.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `pattern` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to search for (can be a Pathist instance, string, or array) |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options (e.g., indices mode) |
+
+#### Returns
+
+`Pathist` | `null`
+
+A new Pathist instance containing the matched subsequence, or null if no match
+
+#### See
+
+* [matchStart](#matchstart) for matching only at the beginning
+* [matchEnd](#matchend) for matching only at the end
+* [includes](#includes) for checking if a match exists without extraction
+* [positionOf](#positionof) for getting just the position
+
+#### Examples
+
+Basic matching
+
+```typescript
+const path = Pathist.from('foo.bar.baz.qux');
+const match = path.match('bar.baz');
+console.log(match?.toString()); // 'bar.baz'
+```
+
+Wildcard matching with concrete values
+
+```typescript
+const path = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
+const match = path.match('[-1].bar');
+console.log(match?.toString()); // '[0].bar' - concrete value!
+```
+
+No match returns null
+
+```typescript
+const path = Pathist.from('foo.bar.baz');
+const match = path.match('qux');
+console.log(match); // null
+```
+
+***
+
+### matchStart()
+
+> **matchStart**(`pattern`, `options?`): `Pathist` | `null`
+
+Defined in: [pathist.ts:1496](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1496)
+
+Returns the matched prefix if this path starts with the pattern.
+
+If this path starts with the given pattern, returns a new Pathist containing the matched
+prefix with concrete values from this path (not wildcards from the pattern).
+Returns null if the path doesn't start with the pattern.
+
+This method avoids redundant parsing - the pattern is only parsed once, making it more
+efficient than calling `startsWith()` followed by `slice()`.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `pattern` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to match at the start |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options (e.g., indices mode) |
+
+#### Returns
+
+`Pathist` | `null`
+
+A new Pathist instance containing the matched prefix, or null if no match
+
+#### See
+
+* [startsWith](#startswith) for checking if path starts with pattern without extraction
+* [matchEnd](#matchend) for matching at the end
+* [match](#match) for matching anywhere
+
+#### Examples
+
+Basic prefix matching
+
+```typescript
+const path = Pathist.from('foo.bar.baz.qux');
+const match = path.matchStart('foo.bar');
+console.log(match?.toString()); // 'foo.bar'
+console.log(match?.length); // 2
+```
+
+Wildcard matching preserves concrete values
+
+```typescript
+const errorPath = Pathist.from(['foo', 2, 'bar', 'baz']);
+const match = errorPath.matchStart('foo[-1].bar');
+if (match) {
+  console.log(match.toString()); // 'foo[2].bar' - concrete index!
+  const remaining = errorPath.slice(match.length); // ['baz']
+}
+```
+
+No match returns null
+
+```typescript
+const path = Pathist.from('foo.bar.baz');
+const match = path.matchStart('qux');
+console.log(match); // null
+```
+
+***
+
+### matchEnd()
+
+> **matchEnd**(`pattern`, `options?`): `Pathist` | `null`
+
+Defined in: [pathist.ts:1550](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1550)
+
+Returns the matched suffix if this path ends with the pattern.
+
+If this path ends with the given pattern, returns a new Pathist containing the matched
+suffix with concrete values from this path (not wildcards from the pattern).
+Returns null if the path doesn't end with the pattern.
+
+This method avoids redundant parsing - the pattern is only parsed once, making it more
+efficient than calling `endsWith()` followed by `slice()`.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `pattern` | [`PathistInput`](../type-aliases/PathistInput.md) | `Pathist` | The path segment sequence to match at the end |
+| `options?` | [`ComparisonOptions`](../interfaces/ComparisonOptions.md) | Optional comparison options (e.g., indices mode) |
+
+#### Returns
+
+`Pathist` | `null`
+
+A new Pathist instance containing the matched suffix, or null if no match
+
+#### See
+
+* [endsWith](#endswith) for checking if path ends with pattern without extraction
+* [matchStart](#matchstart) for matching at the start
+* [match](#match) for matching anywhere
+
+#### Examples
+
+Basic suffix matching
+
+```typescript
+const path = Pathist.from('foo.bar.baz.qux');
+const match = path.matchEnd('baz.qux');
+console.log(match?.toString()); // 'baz.qux'
+console.log(match?.length); // 2
+```
+
+Wildcard matching preserves concrete values
+
+```typescript
+const errorPath = Pathist.from(['foo', 0, 'bar', 2, 'baz']);
+const match = errorPath.matchEnd('[-1].baz');
+if (match) {
+  console.log(match.toString()); // '[2].baz' - concrete index!
+}
+```
+
+No match returns null
+
+```typescript
+const path = Pathist.from('foo.bar.baz');
+const match = path.matchEnd('qux');
+console.log(match); // null
+```
+
+***
+
 ### slice()
 
 > **slice**(`start?`, `end?`): `Pathist`
 
-Defined in: [pathist.ts:1421](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1421)
+Defined in: [pathist.ts:1584](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1584)
 
 Returns a new path containing a subset of this path's segments.
 
@@ -1218,7 +1412,7 @@ console.log(path.slice(2).toString()); // 'baz.qux'
 
 > **parentPath**(`depth`): `Pathist`
 
-Defined in: [pathist.ts:1464](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1464)
+Defined in: [pathist.ts:1627](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1627)
 
 Returns the parent path by removing segments from the end.
 
@@ -1279,7 +1473,7 @@ console.log(clone.toString()); // 'foo.bar.baz'
 
 > **concat**(...`paths`): `Pathist`
 
-Defined in: [pathist.ts:1507](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1507)
+Defined in: [pathist.ts:1670](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1670)
 
 Returns a new path that combines this path with one or more other paths.
 
@@ -1328,7 +1522,7 @@ console.log(result.toString()); // 'foo.bar.baz.qux.quux'
 
 > **merge**(`path`): `Pathist`
 
-Defined in: [pathist.ts:1561](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1561)
+Defined in: [pathist.ts:1724](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1724)
 
 Intelligently merges another path with this path by detecting overlapping segments.
 
@@ -1391,7 +1585,7 @@ console.log(left.merge(right).toString()); // 'foo.bar.qux.quux'
 
 > **firstNodePath**(): `Pathist`
 
-Defined in: [pathist.ts:1766](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1766)
+Defined in: [pathist.ts:1929](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1929)
 
 Returns the path to the first node.
 
@@ -1438,7 +1632,7 @@ console.log(path.firstNodePath().toString()); // '' (root)
 
 > **lastNodePath**(): `Pathist`
 
-Defined in: [pathist.ts:1801](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1801)
+Defined in: [pathist.ts:1964](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1964)
 
 Returns the full path to the last node in the contiguous tree structure.
 
@@ -1478,7 +1672,7 @@ console.log(path.lastNodePath().toString()); // '' (root)
 
 > **afterNodePath**(): `Pathist`
 
-Defined in: [pathist.ts:1837](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1837)
+Defined in: [pathist.ts:2000](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L2000)
 
 Returns the path segments after the last node in the tree.
 
@@ -1518,7 +1712,7 @@ console.log(path.afterNodePath().toString()); // 'foo.bar'
 
 > **parentNode**(`depth`): `Pathist`
 
-Defined in: [pathist.ts:1896](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1896)
+Defined in: [pathist.ts:2059](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L2059)
 
 Returns the parent node in the tree structure by removing nodes from the end.
 
@@ -1589,7 +1783,7 @@ console.log(path.parentNode().toString()); // '' (root, no nodes in path)
 
 > **nodeIndices**(): `number`\[]
 
-Defined in: [pathist.ts:1948](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L1948)
+Defined in: [pathist.ts:2111](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L2111)
 
 Returns the numeric index values from the contiguous tree structure.
 
@@ -1624,7 +1818,7 @@ console.log(path2.nodeIndices()); // []
 
 > **nodePaths**(): `Generator`<`Pathist`, `void`, `undefined`>
 
-Defined in: [pathist.ts:2014](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L2014)
+Defined in: [pathist.ts:2177](https://github.com/shaungrady/pathist/blob/main/src/pathist.ts#L2177)
 
 Generates paths to each successive node in the tree structure.
 
