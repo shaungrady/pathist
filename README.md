@@ -10,6 +10,7 @@ Pathist is a TypeScript library for parsing, manipulating, and comparing object 
 - **Path parsing**: Convert strings and arrays to structured path objects
 - **Path comparison**: Check equality, prefixes, suffixes, and containment
 - **Path manipulation**: Slice, concat, and intelligently merge paths
+- **Pattern matching**: Match paths with wildcards and extract concrete values
 - **Tree traversal**: Navigate hierarchical structures with node-aware methods
 - **JSONPath conversion**: Export paths to RFC 9535 JSONPath format
 - **JSON Pointer support**: Parse and convert to/from RFC 6901 JSON Pointer format
@@ -126,6 +127,30 @@ path1.equals(path2); // true
 path1.positionOf(path2); // 0
 ```
 
+### Pattern Matching with Wildcards
+
+The `match`, `matchStart`, and `matchEnd` methods extract matched path segments with concrete values:
+
+```typescript
+const path = Pathist.from(['items', 5, 'metadata', 'tags', 2]);
+
+// Match with wildcards - returns concrete values
+const match = path.matchStart('items[*].metadata');
+match?.array; // ['items', 5, 'metadata'] - wildcard replaced with 5
+
+// Extract remaining path after match
+const remaining = path.slice(match!.length);
+remaining.array; // ['tags', 2]
+
+// Wildcards work with all match methods
+path.match('[*].metadata')?.array; // [5, 'metadata']
+path.matchEnd('tags[*]')?.array; // ['tags', 2]
+
+// Match concrete paths against wildcard patterns
+const concrete = Pathist.from(['users', 0, 'profile', 'name']);
+concrete.equals('users[*].profile.name'); // true
+```
+
 ### Tree/Node Navigation
 
 For working with hierarchical tree structures:
@@ -172,6 +197,11 @@ path.lastPositionOf('bar'); // 3 (last occurrence)
 // Extract up to a match
 path.pathTo('bar').string; // 'foo.bar'
 path.pathToLast('bar').string; // 'foo.bar.baz.bar'
+
+// Extract matched portion (returns null if no match)
+path.match('bar.baz')?.array; // ['bar', 'baz'] (first matched subsequence)
+path.matchStart('foo.bar')?.array; // ['foo', 'bar'] (matched prefix)
+path.matchEnd('bar.qux')?.array; // ['bar', 'qux'] (matched suffix)
 ```
 
 ### Configuration
@@ -384,7 +414,7 @@ const themePath = buildUserPath('profile.settings', 'theme');
 
 ### With [ArkType][arktype] Validation Errors
 
-ArkType provides both string and array formats for error paths - Pathist handles both:
+ArkType provides error paths as arrays - use Pathist to match them against wildcard patterns for custom error handling:
 
 ```typescript
 import { type } from 'arktype';
@@ -397,33 +427,49 @@ const User = type({
     'settings?': {
       theme: "'dark' | 'light'"
     }
-  }
+  },
+  'tags?': 'string[]'
 });
+
+// Define error transforms with wildcard patterns
+const errorConfig = {
+  'profile.name': { message: 'Please provide your name' },
+  'profile.age': { message: 'Age must be a number' },
+  'profile.settings.theme': { message: 'Theme must be dark or light' },
+  'tags[-1]': { message: 'Each tag must be a string' }, // Matches any array index
+};
 
 const result = User({
   profile: {
     name: 'Alice',
     age: 'invalid', // Should be number
     settings: { theme: 'blue' } // Should be 'dark' | 'light'
-  }
+  },
+  tags: ['valid', 123] // Second tag is invalid
 });
 
 if (result instanceof type.errors) {
   for (const error of result) {
-    // ArkType provides path as array: ['profile', 'age']
-    const path = Pathist.from(error.path);
+    // ArkType provides path as array: ['profile', 'age'] or ['tags', 1]
+    const errorPath = Pathist.from(error.path);
 
-    path.string; // 'profile.age'
-    path.jsonPath; // '$.profile.age'
+    // Match against wildcard patterns
+    for (const [pattern, config] of Object.entries(errorConfig)) {
+      if (errorPath.equals(pattern)) {
+        console.log(`${errorPath.string}: ${config.message}`);
+        break;
+      }
+    }
 
-    // Navigate to parent path for nested errors
-    const parentPath = path.parentPath();
+    // Or match descendant paths for broader error handling
+    const match = errorPath.matchStart('profile.settings');
+    if (match) {
+      console.log(`Settings error at: ${match.string}`);
+    }
+
+    // Navigate to parent for context
+    const parentPath = errorPath.parentPath();
     console.log(`Error in ${parentPath.string}: ${error.message}`);
-
-    // Compare error paths
-    const settingsErrors = error.path.some(segment =>
-      Pathist.from(error.path).includes('settings')
-    );
   }
 }
 ```

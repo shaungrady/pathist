@@ -1393,6 +1393,169 @@ export class Pathist {
 		return this.slice(0, position + otherSegments.length);
 	}
 
+	/**
+	 * Returns the first matched subsequence anywhere in this path.
+	 *
+	 * Finds the first occurrence of the pattern within this path and returns a new Pathist
+	 * containing just the matched segments with their concrete values (not wildcards from the pattern).
+	 * Returns null if no match is found.
+	 *
+	 * @param pattern - The path segment sequence to search for (can be a Pathist instance, string, or array)
+	 * @param options - Optional comparison options (e.g., indices mode)
+	 * @returns A new Pathist instance containing the matched subsequence, or null if no match
+	 *
+	 * @see {@link matchStart} for matching only at the beginning
+	 * @see {@link matchEnd} for matching only at the end
+	 * @see {@link includes} for checking if a match exists without extraction
+	 * @see {@link positionOf} for getting just the position
+	 *
+	 * @example
+	 * Basic matching
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz.qux');
+	 * const match = path.match('bar.baz');
+	 * console.log(match?.toString()); // 'bar.baz'
+	 * ```
+	 *
+	 * @example
+	 * Wildcard matching with concrete values
+	 * ```typescript
+	 * const path = Pathist.from(['foo', 0, 'bar', 1, 'baz']);
+	 * const match = path.match('[-1].bar');
+	 * console.log(match?.toString()); // '[0].bar' - concrete value!
+	 * ```
+	 *
+	 * @example
+	 * No match returns null
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * const match = path.match('qux');
+	 * console.log(match); // null
+	 * ```
+	 */
+	match(pattern: Pathist | PathistInput, options?: ComparisonOptions): Pathist | null {
+		const patternSegments = Pathist.#toSegments(pattern);
+		if (patternSegments === null) {
+			return null;
+		}
+
+		const position = this.positionOf(pattern, options);
+		if (position === -1) {
+			return null;
+		}
+
+		return this.slice(position, position + patternSegments.length);
+	}
+
+	/**
+	 * Returns the matched prefix if this path starts with the pattern.
+	 *
+	 * If this path starts with the given pattern, returns a new Pathist containing the matched
+	 * prefix with concrete values from this path (not wildcards from the pattern).
+	 * Returns null if the path doesn't start with the pattern.
+	 *
+	 * This method avoids redundant parsing - the pattern is only parsed once, making it more
+	 * efficient than calling `startsWith()` followed by `slice()`.
+	 *
+	 * @param pattern - The path segment sequence to match at the start
+	 * @param options - Optional comparison options (e.g., indices mode)
+	 * @returns A new Pathist instance containing the matched prefix, or null if no match
+	 *
+	 * @see {@link startsWith} for checking if path starts with pattern without extraction
+	 * @see {@link matchEnd} for matching at the end
+	 * @see {@link match} for matching anywhere
+	 *
+	 * @example
+	 * Basic prefix matching
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz.qux');
+	 * const match = path.matchStart('foo.bar');
+	 * console.log(match?.toString()); // 'foo.bar'
+	 * console.log(match?.length); // 2
+	 * ```
+	 *
+	 * @example
+	 * Wildcard matching preserves concrete values
+	 * ```typescript
+	 * const errorPath = Pathist.from(['foo', 2, 'bar', 'baz']);
+	 * const match = errorPath.matchStart('foo[-1].bar');
+	 * if (match) {
+	 *   console.log(match.toString()); // 'foo[2].bar' - concrete index!
+	 *   const remaining = errorPath.slice(match.length); // ['baz']
+	 * }
+	 * ```
+	 *
+	 * @example
+	 * No match returns null
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * const match = path.matchStart('qux');
+	 * console.log(match); // null
+	 * ```
+	 */
+	matchStart(pattern: Pathist | PathistInput, options?: ComparisonOptions): Pathist | null {
+		const patternSegments = Pathist.#toSegments(pattern);
+		if (patternSegments === null || !this.startsWith(pattern, options)) {
+			return null;
+		}
+
+		return this.slice(0, patternSegments.length);
+	}
+
+	/**
+	 * Returns the matched suffix if this path ends with the pattern.
+	 *
+	 * If this path ends with the given pattern, returns a new Pathist containing the matched
+	 * suffix with concrete values from this path (not wildcards from the pattern).
+	 * Returns null if the path doesn't end with the pattern.
+	 *
+	 * This method avoids redundant parsing - the pattern is only parsed once, making it more
+	 * efficient than calling `endsWith()` followed by `slice()`.
+	 *
+	 * @param pattern - The path segment sequence to match at the end
+	 * @param options - Optional comparison options (e.g., indices mode)
+	 * @returns A new Pathist instance containing the matched suffix, or null if no match
+	 *
+	 * @see {@link endsWith} for checking if path ends with pattern without extraction
+	 * @see {@link matchStart} for matching at the start
+	 * @see {@link match} for matching anywhere
+	 *
+	 * @example
+	 * Basic suffix matching
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz.qux');
+	 * const match = path.matchEnd('baz.qux');
+	 * console.log(match?.toString()); // 'baz.qux'
+	 * console.log(match?.length); // 2
+	 * ```
+	 *
+	 * @example
+	 * Wildcard matching preserves concrete values
+	 * ```typescript
+	 * const errorPath = Pathist.from(['foo', 0, 'bar', 2, 'baz']);
+	 * const match = errorPath.matchEnd('[-1].baz');
+	 * if (match) {
+	 *   console.log(match.toString()); // '[2].baz' - concrete index!
+	 * }
+	 * ```
+	 *
+	 * @example
+	 * No match returns null
+	 * ```typescript
+	 * const path = Pathist.from('foo.bar.baz');
+	 * const match = path.matchEnd('qux');
+	 * console.log(match); // null
+	 * ```
+	 */
+	matchEnd(pattern: Pathist | PathistInput, options?: ComparisonOptions): Pathist | null {
+		const patternSegments = Pathist.#toSegments(pattern);
+		if (patternSegments === null || !this.endsWith(pattern, options)) {
+			return null;
+		}
+
+		return this.slice(-patternSegments.length);
+	}
+
 	// ============================================================================
 	// Manipulation Methods
 	// ============================================================================
