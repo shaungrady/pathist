@@ -593,11 +593,13 @@ export class Pathist {
 	#nodeChildrenProperties?: ReadonlySet<string>;
 
 	private readonly segments: ReadonlyArray<PathSegment>;
-	private readonly stringCache: Map<Notation, string> = new Map();
-	private jsonPointerCache?: string;
-	private jsonPathCache?: string;
-	private firstNodeIdxCache?: number;
-	private lastNodeIdxCache?: number;
+	#cache = {
+		string: new Map<Notation, string>(),
+		jsonPointer: undefined as string | undefined,
+		jsonPath: undefined as string | undefined,
+		firstNodeIdx: undefined as number | undefined,
+		lastNodeIdx: undefined as number | undefined,
+	};
 
 	/**
 	 * The number of segments in this path.
@@ -769,7 +771,7 @@ export class Pathist {
 		Pathist.#validateNotation(resolved);
 
 		// Check cache first
-		const cached = this.stringCache.get(resolved);
+		const cached = this.#cache.string.get(resolved);
 		if (cached !== undefined) {
 			return cached;
 		}
@@ -792,7 +794,7 @@ export class Pathist {
 		}
 
 		// Cache and return
-		this.stringCache.set(resolved, result);
+		this.#cache.string.set(resolved, result);
 		return result;
 	}
 
@@ -840,13 +842,13 @@ export class Pathist {
 	 */
 	toJSONPath(): string {
 		// Check cache first
-		if (this.jsonPathCache !== undefined) {
-			return this.jsonPathCache;
+		if (this.#cache.jsonPath !== undefined) {
+			return this.#cache.jsonPath;
 		}
 
 		// Empty path returns root
 		if (this.segments.length === 0) {
-			this.jsonPathCache = '$';
+			this.#cache.jsonPath = '$';
 			return '$';
 		}
 
@@ -875,7 +877,7 @@ export class Pathist {
 		}
 
 		// Cache and return
-		this.jsonPathCache = result;
+		this.#cache.jsonPath = result;
 		return result;
 	}
 
@@ -932,13 +934,13 @@ export class Pathist {
 	 */
 	toJSONPointer(): string {
 		// Check cache first
-		if (this.jsonPointerCache !== undefined) {
-			return this.jsonPointerCache;
+		if (this.#cache.jsonPointer !== undefined) {
+			return this.#cache.jsonPointer;
 		}
 
 		// Empty path returns empty string (root reference)
 		if (this.segments.length === 0) {
-			this.jsonPointerCache = '';
+			this.#cache.jsonPointer = '';
 			return '';
 		}
 
@@ -955,7 +957,7 @@ export class Pathist {
 		}
 
 		// Cache and return
-		this.jsonPointerCache = result;
+		this.#cache.jsonPointer = result;
 		return result;
 	}
 
@@ -1630,7 +1632,7 @@ export class Pathist {
 	 */
 	#computeNodeIndices(): void {
 		// Already computed
-		if (this.firstNodeIdxCache !== undefined) {
+		if (this.#cache.firstNodeIdx !== undefined) {
 			return;
 		}
 
@@ -1692,8 +1694,8 @@ export class Pathist {
 		}
 
 		// Cache both values
-		this.firstNodeIdxCache = firstNodeIndex;
-		this.lastNodeIdxCache = lastNodeIndex;
+		this.#cache.firstNodeIdx = firstNodeIndex;
+		this.#cache.lastNodeIdx = lastNodeIndex;
 	}
 
 	/**
@@ -1710,7 +1712,7 @@ export class Pathist {
 		this.#computeNodeIndices();
 		// Safe to assert: #computeNodeIndices always sets this value
 		// biome-ignore lint/style/noNonNullAssertion: guaranteed to be set by #computeNodeIndices
-		return this.firstNodeIdxCache!;
+		return this.#cache.firstNodeIdx!;
 	}
 
 	/**
@@ -1726,7 +1728,7 @@ export class Pathist {
 		this.#computeNodeIndices();
 		// Safe to assert: #computeNodeIndices always sets this value
 		// biome-ignore lint/style/noNonNullAssertion: guaranteed to be set by #computeNodeIndices
-		return this.lastNodeIdxCache!;
+		return this.#cache.lastNodeIdx!;
 	}
 
 	/**
