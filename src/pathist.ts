@@ -2221,9 +2221,9 @@ export class Pathist {
 		}
 
 		const segments: PathSegment[] = [];
-		let current = '';
 		let segmentStart = 0;
 		let i = 0;
+		let hasEscapes = false; // Track if current segment has escape sequences
 
 		while (i < input.length) {
 			const char = input[i];
@@ -2233,19 +2233,22 @@ export class Pathist {
 				const nextChar = input[i + 1];
 				if (nextChar === '\\' || nextChar === '.' || nextChar === '[' || nextChar === ']') {
 					// Valid escape sequences: \\, \., \[, \]
-					current += nextChar;
+					hasEscapes = true;
 					i += 2; // Skip both backslash and escaped character
 				} else {
 					// Invalid escape sequence - treat backslash literally
-					current += char;
+					hasEscapes = true;
 					i++;
 				}
 			} else if (char === '[') {
 				// Save any accumulated dot-notation segment
-				if (current) {
+				if (i > segmentStart) {
+					const current = hasEscapes
+						? Pathist.#unescapeSegment(input.slice(segmentStart, i))
+						: input.slice(segmentStart, i);
 					Pathist.#validatePropertySegment(current, segmentStart);
 					segments.push(current);
-					current = '';
+					hasEscapes = false;
 				}
 
 				// Find closing bracket (accounting for quoted strings)
@@ -2265,26 +2268,57 @@ export class Pathist {
 				}
 				segmentStart = i;
 			} else if (char === '.') {
-				if (current) {
+				if (i > segmentStart) {
+					const current = hasEscapes
+						? Pathist.#unescapeSegment(input.slice(segmentStart, i))
+						: input.slice(segmentStart, i);
 					Pathist.#validatePropertySegment(current, segmentStart);
 					segments.push(current);
-					current = '';
+					hasEscapes = false;
 				}
 				i++;
 				segmentStart = i;
 			} else {
-				current += char;
 				i++;
 			}
 		}
 
 		// Add any remaining segment
-		if (current) {
+		if (i > segmentStart) {
+			const current = hasEscapes
+				? Pathist.#unescapeSegment(input.slice(segmentStart, i))
+				: input.slice(segmentStart, i);
 			Pathist.#validatePropertySegment(current, segmentStart);
 			segments.push(current);
 		}
 
 		return segments;
+	}
+
+	/**
+	 * Unescape a segment that contains escape sequences.
+	 * Only called when we know escapes exist.
+	 * @private
+	 */
+	static #unescapeSegment(segment: string): string {
+		let result = '';
+		let i = 0;
+		while (i < segment.length) {
+			if (segment[i] === '\\' && i + 1 < segment.length) {
+				const nextChar = segment[i + 1];
+				if (nextChar === '\\' || nextChar === '.' || nextChar === '[' || nextChar === ']') {
+					result += nextChar;
+					i += 2;
+				} else {
+					result += segment[i];
+					i++;
+				}
+			} else {
+				result += segment[i];
+				i++;
+			}
+		}
+		return result;
 	}
 
 	static #validateArray(input: PathSegment[]): void {
