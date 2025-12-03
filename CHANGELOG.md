@@ -1,5 +1,11 @@
 # pathist
 
+## 1.1.1
+
+### Patch Changes
+
+- dda8b5f: Optimize path string parsing with substring slicing instead of character-by-character concatenation. This improves performance by up to 3x for paths with long property names, with an average 14% improvement across all parsing operations and no regressions in bracket notation performance.
+
 ## 1.1.0
 
 ### Minor Changes

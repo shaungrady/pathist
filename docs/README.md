@@ -1,8 +1,8 @@
-**Pathist v1.1.0**
+**Pathist v1.1.1**
 
 ***
 
-# Pathist v1.1.0
+# Pathist v1.1.1
 
 ## Classes
 
