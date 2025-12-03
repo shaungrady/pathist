@@ -105,23 +105,89 @@ Instance methods in the `Pathist` class must follow a **logical order** for cons
 - Logical grouping improves developer experience
 - Consistency makes the codebase easier to navigate
 
+### Commit Message Style
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/) format with these type prefixes:
+
+**Common types:**
+- `feat:` - New features (minor version bump)
+- `fix:` - Bug fixes (patch version bump)
+- `perf:` - Performance improvements (patch version bump)
+- `refactor:` - Code refactoring with no behavior change
+- `test:` - Adding or updating tests
+- `docs:` - Documentation changes
+- `chore:` - Maintenance tasks (dependencies, build, release)
+- `style:` - Code style changes (formatting, whitespace)
+
+**Examples:**
+```
+feat: add match(), matchStart(), and matchEnd() methods
+fix: handle edge case in bracket notation parsing
+perf: optimize path string parsing with substring slicing
+refactor: consolidate instance caches under #cache property
+test: add parametric tests for wildcard matching
+docs: update API examples in README
+chore: add changeset for path parsing optimization
+```
+
+**Guidelines:**
+- Use lowercase for type and description
+- Keep the subject line under 72 characters
+- Use imperative mood ("add" not "added" or "adds")
+- Don't end subject line with a period
+- Multi-line messages should have a blank line after the subject
+
 ## Release Management
 
 This project uses [Changesets](https://github.com/changesets/changesets) for automated releases. See `RELEASE.md` for complete documentation.
 
-### Quick Reference
+### When to Create Changesets
 
-**When making changes that affect users:**
+**ALWAYS create a changeset when your changes affect:**
+- Public API (new methods, changed signatures, removed features)
+- Behavior (bug fixes, performance improvements)
+- Types (TypeScript definitions users depend on)
+- Dependencies (if they affect user experience)
 
-1. Create a changeset after making your changes:
-   ```bash
-   pnpm changeset
-   ```
-   - Select bump type: `patch` (fixes) | `minor` (features) | `major` (breaking)
-   - Write a user-facing summary
-   - Commit the generated `.changeset/*.md` file with your code
+**DO NOT create changesets for:**
+- Internal refactoring with no user impact
+- Test changes only
+- Documentation updates
+- Development tooling changes (unless they affect contributors)
+- CI/CD configuration
 
-2. **Important:** Always commit changeset files alongside code changes. Don't merge PRs without changesets if they contain user-facing changes.
+### How to Create Changesets
+
+After making your changes, create a changeset:
+
+```bash
+pnpm changeset
+```
+
+**Select the appropriate bump type:**
+- **`patch`** - Bug fixes, performance improvements, internal changes
+  - Examples: fixing parsing edge cases, optimizing algorithms, updating dependencies
+- **`minor`** - New features, new methods, backward-compatible additions
+  - Examples: adding new methods, new configuration options
+- **`major`** - Breaking changes, removed features, changed behavior
+  - Examples: removing deprecated methods, changing method signatures, changing defaults
+
+**Write a user-facing summary:**
+- Focus on WHAT changed and WHY it matters to users
+- Be concise but descriptive (1-3 sentences)
+- Avoid implementation details unless relevant to users
+- Good: "Optimize path string parsing with substring slicing. Improves performance by up to 3x for paths with long property names."
+- Bad: "Changed from character concatenation to substring slicing in #parseString method"
+
+**Commit the changeset file:**
+```bash
+git add .changeset/*.md
+git commit -m "chore: add changeset for <feature description>"
+```
+
+**Important:** Always commit changeset files alongside code changes. Don't merge PRs without changesets if they contain user-facing changes.
+
+### Releasing
 
 **To cut a release:**
 
