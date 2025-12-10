@@ -1,4 +1,4 @@
-[**Pathist v1.1.1**](../README.md)
+[**Pathist v1.2.0**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **Indices** = *typeof* [`Indices`](../classes/Pathist.md#indices)\[keyof *typeof* [`Indices`](../classes/Pathist.md#indices)]
 
-Defined in: [pathist.ts:2427](https://github.com/shaungrady/pathist/blob/249b8879987adb38e0be956b55bd0416f0ffbd26/src/pathist.ts#L2427)
+Defined in: [pathist.ts:2427](https://github.com/shaungrady/pathist/blob/275d65652a92354fe99500362b30da77163d0faa/src/pathist.ts#L2427)
 
 The mode for handling numeric indices during path comparisons.
 
