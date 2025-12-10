@@ -724,6 +724,29 @@ export class Pathist {
 	readonly length: number;
 
 	/**
+	 * Indicates whether this path contains any wildcard index tokens.
+	 *
+	 * A path has index wildcards if any of its segments match the configured
+	 * wildcard values (by default `*` and `-1`).
+	 *
+	 * @example
+	 * ```typescript
+	 * const path1 = Pathist.from('foo[*].bar');
+	 * console.log(path1.hasIndexWildcards); // true
+	 *
+	 * const path2 = Pathist.from('foo[-1].bar');
+	 * console.log(path2.hasIndexWildcards); // true
+	 *
+	 * const path3 = Pathist.from('foo[0].bar');
+	 * console.log(path3.hasIndexWildcards); // false
+	 *
+	 * const path4 = Pathist.from('foo.bar.baz');
+	 * console.log(path4.hasIndexWildcards); // false
+	 * ```
+	 */
+	readonly hasIndexWildcards: boolean;
+
+	/**
 	 * Gets the notation style for this instance.
 	 *
 	 * Returns the instance-specific notation if set, otherwise returns the global default.
@@ -808,6 +831,9 @@ export class Pathist {
 			this.segments = [...input];
 		}
 		this.length = this.segments.length;
+
+		// Check if any segment is a wildcard
+		this.hasIndexWildcards = this.segments.some((segment) => Pathist.#isWildcard(segment));
 	}
 
 	// ============================================================================

@@ -125,6 +125,11 @@ const path1 = Pathist.from('users[*].name');
 const path2 = Pathist.from('users[0].name');
 path1.equals(path2); // true
 path1.positionOf(path2); // 0
+
+// Check if a path contains wildcards
+path1.hasIndexWildcards; // true (contains wildcard *)
+path2.hasIndexWildcards; // false (no wildcards)
+Pathist.from('foo.bar.baz').hasIndexWildcards; // false
 ```
 
 ### Pattern Matching with Wildcards
