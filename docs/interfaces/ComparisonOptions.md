@@ -1,4 +1,4 @@
-[**Pathist v1.1.1**](../README.md)
+[**Pathist v1.2.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ComparisonOptions
 
-Defined in: [pathist.ts:2432](https://github.com/shaungrady/pathist/blob/249b8879987adb38e0be956b55bd0416f0ffbd26/src/pathist.ts#L2432)
+Defined in: [pathist.ts:2432](https://github.com/shaungrady/pathist/blob/275d65652a92354fe99500362b30da77163d0faa/src/pathist.ts#L2432)
 
 Options for comparing paths.
 
@@ -14,4 +14,4 @@ Options for comparing paths.
 
 | Property | Type | Default value | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="indices"></a> `indices?` | [`Indices`](../type-aliases/Indices.md) | The path instance's `indices` setting | How to handle numeric indices during comparison. - `Pathist.Indices.Preserve`: Indices must match exactly - `Pathist.Indices.Ignore`: Any numeric index matches any other numeric index | [pathist.ts:2439](https://github.com/shaungrady/pathist/blob/249b8879987adb38e0be956b55bd0416f0ffbd26/src/pathist.ts#L2439) |
+| <a id="indices"></a> `indices?` | [`Indices`](../type-aliases/Indices.md) | The path instance's `indices` setting | How to handle numeric indices during comparison. - `Pathist.Indices.Preserve`: Indices must match exactly - `Pathist.Indices.Ignore`: Any numeric index matches any other numeric index | [pathist.ts:2439](https://github.com/shaungrady/pathist/blob/275d65652a92354fe99500362b30da77163d0faa/src/pathist.ts#L2439) |

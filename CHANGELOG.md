@@ -1,5 +1,15 @@
 # pathist
 
+## 1.2.0
+
+### Minor Changes
+
+- 275d656: Add `hasIndexWildcards` boolean property to Pathist instances. This property indicates whether the path contains any wildcard index tokens (like `*` or `-1` by default), making it easy to check for wildcards without manually inspecting segments.
+
+### Patch Changes
+
+- ab68e0c: Optimize path string parsing by moving character code constants to module level. This provides ~20% faster constant access compared to class static properties, contributing to an overall ~24% improvement in parsing performance.
+
 ## 1.1.1
 
 ### Patch Changes
