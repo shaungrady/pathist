@@ -185,6 +185,118 @@ test.serial('indexWildcards validates values in collections', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
 });
 
+// hasIndexWildcards Property
+test.serial('hasIndexWildcards detects paths with wildcard tokens', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	const cases = [
+		{ input: 'foo[*].bar', expected: true, desc: 'string wildcard *' },
+		{ input: 'foo[-1].bar', expected: true, desc: 'numeric wildcard -1' },
+		{ input: ['foo', '*', 'bar'], expected: true, desc: 'array with string wildcard' },
+		{ input: ['foo', -1, 'bar'], expected: true, desc: 'array with numeric wildcard' },
+		{ input: 'foo[0].bar', expected: false, desc: 'no wildcards (numeric index)' },
+		{ input: 'foo.bar.baz', expected: false, desc: 'no wildcards (properties only)' },
+		{ input: '', expected: false, desc: 'empty path' },
+		{ input: [], expected: false, desc: 'empty array' },
+		{ input: 'foo[*][-1].bar', expected: true, desc: 'multiple wildcards' },
+		{
+			input: ['foo', 0, 'bar', 1],
+			expected: false,
+			desc: 'multiple numeric indices, no wildcards',
+		},
+	];
+
+	for (const { input, expected, desc } of cases) {
+		const p = Pathist.from(input);
+		t.is(p.hasIndexWildcards, expected, `hasIndexWildcards for: ${desc}`);
+	}
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+test.serial('hasIndexWildcards respects custom wildcard configuration', (t) => {
+	// Set custom wildcards
+	Pathist.indexWildcards = ['**', -2];
+
+	const cases = [
+		{ input: 'foo[**].bar', expected: true, desc: 'custom string wildcard **' },
+		{ input: 'foo[-2].bar', expected: true, desc: 'custom numeric wildcard -2' },
+		{ input: 'foo[*].bar', expected: false, desc: 'default wildcard * (not configured)' },
+		{ input: 'foo[-1].bar', expected: false, desc: 'default wildcard -1 (not configured)' },
+		{ input: 'foo[0].bar', expected: false, desc: 'numeric index (not wildcard)' },
+	];
+
+	for (const { input, expected, desc } of cases) {
+		const p = Pathist.from(input);
+		t.is(p.hasIndexWildcards, expected, `hasIndexWildcards with custom config: ${desc}`);
+	}
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+test.serial('hasIndexWildcards is false when wildcards are disabled', (t) => {
+	// Disable wildcards
+	Pathist.indexWildcards = [];
+
+	const cases = [
+		{ input: 'foo[*].bar', expected: false, desc: 'string * (wildcards disabled)' },
+		{ input: 'foo[-1].bar', expected: false, desc: 'numeric -1 (wildcards disabled)' },
+		{ input: 'foo[0].bar', expected: false, desc: 'numeric index' },
+	];
+
+	for (const { input, expected, desc } of cases) {
+		const p = Pathist.from(input);
+		t.is(p.hasIndexWildcards, expected, `hasIndexWildcards when disabled: ${desc}`);
+	}
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+test.serial('hasIndexWildcards detects non-finite number wildcards', (t) => {
+	Pathist.indexWildcards = [NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+
+	const cases = [
+		{ input: ['foo', NaN, 'bar'], expected: true, desc: 'NaN wildcard' },
+		{ input: ['foo', Number.POSITIVE_INFINITY, 'bar'], expected: true, desc: 'Infinity wildcard' },
+		{
+			input: ['foo', Number.NEGATIVE_INFINITY, 'bar'],
+			expected: true,
+			desc: '-Infinity wildcard',
+		},
+		{ input: ['foo', 0, 'bar'], expected: false, desc: 'regular number' },
+	];
+
+	for (const { input, expected, desc } of cases) {
+		const p = Pathist.from(input);
+		t.is(p.hasIndexWildcards, expected, `hasIndexWildcards for: ${desc}`);
+	}
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
+test.serial('wildcards are always index tokens, never property names', (t) => {
+	Pathist.indexWildcards = [-1, '*'];
+
+	// When constructed from array, wildcard segments are treated as indices
+	const p1 = Pathist.from(['foo', '*', 'bar']);
+	t.true(p1.hasIndexWildcards);
+	t.is(p1.toString(), 'foo[*].bar'); // Renders in bracket notation (index), not dot notation
+
+	const p2 = Pathist.from(['foo', -1, 'bar']);
+	t.true(p2.hasIndexWildcards);
+	t.is(p2.toString(), 'foo[-1].bar'); // Also renders as index
+
+	// Wildcards cannot appear in dot notation property positions (parsing rejects them)
+	t.throws(() => Pathist.from('foo.*.bar'), { message: /cannot appear in property position/ });
+
+	// Reset to default
+	Pathist.indexWildcards = [-1, '*'];
+});
+
 // Wildcard Rendering in toString
 test.serial('toString renders numeric wildcards without quotes in mixed notation', (t) => {
 	Pathist.indexWildcards = [-1, '*'];
