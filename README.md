@@ -12,15 +12,38 @@ Pathist is a TypeScript library for parsing, manipulating, and comparing object 
 - **Path manipulation**: Slice, concat, and intelligently merge paths
 - **Pattern matching**: Match paths with wildcards and extract concrete values
 - **Tree traversal**: Navigate hierarchical structures with node-aware methods
-- **JSONPath conversion**: Export paths to RFC 9535 JSONPath format
-- **JSON Pointer support**: Parse and convert to/from RFC 6901 JSON Pointer format
-- **Wildcard support**: Use wildcards for flexible matching
+- **Standard format support**: Export to JSONPath (RFC 9535) and JSON Pointer (RFC 6901)
 - **TypeScript-first**: Full type safety with comprehensive type definitions
 - **Composable design**: Works seamlessly with [lodash][lodash], [jsonpath-plus][jsonpath-plus], [type-fest][type-fest], [ArkType][arktype], and other path-based libraries
 
 ## Why Pathist?
 
 While libraries like [lodash][lodash] and [jsonpath-plus][jsonpath-plus] excel at accessing data, they don't provide rich path manipulation capabilities. Pathist fills this gap with a practical API for building, comparing, and transforming paths before passing them to your existing tools—whether that's lodash's `get/set`, JSONPath queries, or validation libraries like [ArkType][arktype].
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Common Use Cases](#common-use-cases)
+  - [Path Comparison](#path-comparison)
+  - [Path Manipulation](#path-manipulation)
+  - [Wildcards and Index Matching](#wildcards-and-index-matching)
+  - [Pattern Matching with Wildcards](#pattern-matching-with-wildcards)
+  - [Tree/Node Navigation](#treenode-navigation)
+  - [Search and Position](#search-and-position)
+  - [Configuration](#configuration)
+- [Special Characters and Edge Cases](#special-characters-and-edge-cases)
+- [Integration with Other Libraries](#integration-with-other-libraries)
+  - [Navigating Objects Without Dependencies](#navigating-objects-without-dependencies)
+  - [With lodash get/set](#with-lodash-getset)
+  - [With jsonpath-plus](#with-jsonpath-plus)
+  - [JSON Pointer (RFC 6901) Support](#json-pointer-rfc-6901-support)
+  - [With type-fest Paths Type](#with-type-fest-paths-type)
+  - [With ArkType Validation Errors](#with-arktype-validation-errors)
+  - [Path Normalization for Libraries](#path-normalization-for-libraries)
+- [TypeScript Support](#typescript-support)
+- [Iteration](#iteration)
+- [API Documentation](#api-documentation)
 
 ## Installation
 
@@ -303,12 +326,8 @@ const basePath = Pathist.from('users[0].profile');
 const settingsPath = basePath.concat('settings', 'theme');
 
 // Use with lodash
-const theme = get(data, settingsPath.string); // 'dark'
-set(data, settingsPath.string, 'auto');
-
-// Convert between notations for different libraries
-const lodashPath = settingsPath.string; // 'users[0].profile.settings.theme'
-const dotPath = settingsPath.toString(Pathist.Notation.Dot); // 'users.0.profile.settings.theme'
+const theme = get(data, settingsPath.array); // 'dark'
+set(data, settingsPath.array, 'auto')
 ```
 
 ### With [jsonpath-plus][jsonpath-plus]
@@ -372,12 +391,6 @@ const root = Pathist.fromJSONPointer('');
 root.length; // 0
 root.jsonPointer; // ''
 ```
-
-**Key differences from JSONPath:**
-- JSON Pointer uses `/` as separator (vs. `.` in JSONPath)
-- JSON Pointer uses `/0` for array indices (vs. `[0]` in JSONPath)
-- JSON Pointer starts with `/` (vs. `$` in JSONPath)
-- JSON Pointer is simpler - no query expressions, just direct path references
 
 ### With [type-fest][type-fest] Paths Type
 
