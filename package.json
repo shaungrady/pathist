@@ -55,6 +55,7 @@
 		"@changesets/cli": "^2.29.8",
 		"@types/node": "^24.10.1",
 		"ava": "^6.4.1",
+		"fast-check": "^4.4.0",
 		"lefthook": "^2.0.4",
 		"remark-toc": "^9.0.0",
 		"tshy": "^3.1.0",
