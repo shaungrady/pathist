@@ -1330,6 +1330,217 @@ export class Pathist {
 	}
 
 	// ============================================================================
+	// Path Relationships
+	// ============================================================================
+
+	/**
+	 * Extracts the relative path from a base path.
+	 *
+	 * Returns a new path representing the segments that would need to be concatenated to the base
+	 * to produce this path. Returns `null` if this path doesn't start with the base path.
+	 *
+	 * @param base - The base path to extract the relative path from
+	 * @param options - Optional comparison options
+	 * @returns The relative path, or `null` if this path doesn't start with the base
+	 *
+	 * @see {@link concat} for combining paths (the inverse operation)
+	 * @see {@link startsWith} for checking if this path starts with a base
+	 * @see {@link commonStart} for finding the common prefix between paths
+	 *
+	 * @example
+	 * Extract relative path
+	 * ```typescript
+	 * const fullPath = Pathist.from('api.users[0].profile.settings');
+	 * const basePath = Pathist.from('api.users[0]');
+	 * const relative = fullPath.relativeTo(basePath);
+	 * console.log(relative?.string); // 'profile.settings'
+	 * ```
+	 *
+	 * @example
+	 * Inverse of concat
+	 * ```typescript
+	 * const base = Pathist.from('api.users[0]');
+	 * const relative = Pathist.from('profile.settings');
+	 * const full = base.concat(relative);
+	 * console.log(full.relativeTo(base)?.equals(relative)); // true
+	 * ```
+	 *
+	 * @example
+	 * Returns null when not relative
+	 * ```typescript
+	 * const path = Pathist.from('posts.comments');
+	 * const base = Pathist.from('users.profile');
+	 * console.log(path.relativeTo(base)); // null
+	 * ```
+	 */
+	relativeTo(base: Pathist | PathistInput, options?: ComparisonOptions): Pathist | null {
+		const baseSegments = Pathist.#toSegments(base);
+		if (baseSegments === null) {
+			throw new TypeError('Invalid path input for base parameter');
+		}
+
+		// Empty base - return full path
+		if (baseSegments.length === 0) {
+			return this.slice(0);
+		}
+
+		// Base is longer than this path - can't be relative
+		if (baseSegments.length > this.segments.length) {
+			return null;
+		}
+
+		// Check if this path starts with base
+		const indices = options?.indices ?? this.indices;
+		for (let i = 0; i < baseSegments.length; i++) {
+			if (!Pathist.#segmentsMatch(this.segments[i], baseSegments[i], indices)) {
+				return null;
+			}
+		}
+
+		// Extract the relative portion
+		return this.slice(baseSegments.length);
+	}
+
+	/**
+	 * Finds the common prefix path shared between this path and another path.
+	 *
+	 * Returns a new path containing the longest sequence of segments that both paths start with.
+	 * Returns an empty path if there is no common prefix.
+	 *
+	 * @param other - The path to compare against
+	 * @param options - Optional comparison options
+	 * @returns The common prefix path (may be empty if no common prefix exists)
+	 *
+	 * @see {@link commonEnd} for finding the common suffix
+	 * @see {@link startsWith} for checking if this path starts with another
+	 * @see {@link relativeTo} for extracting the relative path after a common base
+	 *
+	 * @example
+	 * Find common prefix
+	 * ```typescript
+	 * const path1 = Pathist.from('users[0].profile.settings.theme');
+	 * const path2 = Pathist.from('users[0].profile.avatar.url');
+	 * const common = path1.commonStart(path2);
+	 * console.log(common.string); // 'users[0].profile'
+	 * ```
+	 *
+	 * @example
+	 * No common prefix
+	 * ```typescript
+	 * const path1 = Pathist.from('users.name');
+	 * const path2 = Pathist.from('posts.title');
+	 * const common = path1.commonStart(path2);
+	 * console.log(common.length); // 0 (empty path)
+	 * ```
+	 *
+	 * @example
+	 * Use with relativeTo to decompose paths
+	 * ```typescript
+	 * const path1 = Pathist.from('api.users[0].profile.settings');
+	 * const path2 = Pathist.from('api.users[0].posts.recent');
+	 * const common = path1.commonStart(path2);  // 'api.users[0]'
+	 * const rel1 = path1.relativeTo(common);     // 'profile.settings'
+	 * const rel2 = path2.relativeTo(common);     // 'posts.recent'
+	 * ```
+	 */
+	commonStart(other: Pathist | PathistInput, options?: ComparisonOptions): Pathist {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			throw new TypeError('Invalid path input for other parameter');
+		}
+
+		// Determine indices mode
+		const indices = options?.indices ?? this.indices;
+
+		// Find the length of the common prefix
+		const minLength = Math.min(this.segments.length, otherSegments.length);
+		let commonLength = 0;
+
+		for (let i = 0; i < minLength; i++) {
+			if (Pathist.#segmentsMatch(this.segments[i], otherSegments[i], indices)) {
+				commonLength++;
+			} else {
+				break;
+			}
+		}
+
+		// Return the common prefix
+		return this.slice(0, commonLength);
+	}
+
+	/**
+	 * Finds the common suffix path shared between this path and another path.
+	 *
+	 * Returns a new path containing the longest sequence of segments that both paths end with.
+	 * Returns an empty path if there is no common suffix.
+	 *
+	 * @param other - The path to compare against
+	 * @param options - Optional comparison options
+	 * @returns The common suffix path (may be empty if no common suffix exists)
+	 *
+	 * @see {@link commonStart} for finding the common prefix
+	 * @see {@link endsWith} for checking if this path ends with another
+	 *
+	 * @example
+	 * Find common suffix
+	 * ```typescript
+	 * const path1 = Pathist.from('users[0].profile.settings');
+	 * const path2 = Pathist.from('config.default.settings');
+	 * const common = path1.commonEnd(path2);
+	 * console.log(common.string); // 'settings'
+	 * ```
+	 *
+	 * @example
+	 * No common suffix
+	 * ```typescript
+	 * const path1 = Pathist.from('users.name');
+	 * const path2 = Pathist.from('posts.title');
+	 * const common = path1.commonEnd(path2);
+	 * console.log(common.length); // 0 (empty path)
+	 * ```
+	 *
+	 * @example
+	 * Extract unique prefixes
+	 * ```typescript
+	 * const path1 = Pathist.from('api.users.profile.settings');
+	 * const path2 = Pathist.from('config.profile.settings');
+	 * const suffix = path1.commonEnd(path2);  // 'profile.settings'
+	 * const prefix1 = path1.slice(0, path1.length - suffix.length); // 'api.users'
+	 * const prefix2 = path2.slice(0, path2.length - suffix.length); // 'config'
+	 * ```
+	 */
+	commonEnd(other: Pathist | PathistInput, options?: ComparisonOptions): Pathist {
+		const otherSegments = Pathist.#toSegments(other);
+		if (otherSegments === null) {
+			throw new TypeError('Invalid path input for other parameter');
+		}
+
+		// Determine indices mode
+		const indices = options?.indices ?? this.indices;
+
+		// Find the length of the common suffix
+		const minLength = Math.min(this.segments.length, otherSegments.length);
+		let commonLength = 0;
+
+		for (let i = 1; i <= minLength; i++) {
+			const thisIdx = this.segments.length - i;
+			const otherIdx = otherSegments.length - i;
+
+			if (Pathist.#segmentsMatch(this.segments[thisIdx], otherSegments[otherIdx], indices)) {
+				commonLength++;
+			} else {
+				break;
+			}
+		}
+
+		// Return the common suffix
+		if (commonLength === 0) {
+			return this.slice(0, 0); // Empty path
+		}
+		return this.slice(this.segments.length - commonLength);
+	}
+
+	// ============================================================================
 	// Search Methods
 	// ============================================================================
 

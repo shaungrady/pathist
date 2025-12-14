@@ -8,7 +8,7 @@
 
 > **Notation** = *typeof* [`Notation`](../classes/Pathist.md#notation)\[keyof *typeof* [`Notation`](../classes/Pathist.md#notation)]
 
-Defined in: [pathist.ts:2420](https://github.com/shaungrady/pathist/blob/51b0e3df5346a6ddcafdd2abafb1193c8ddecd87/src/pathist.ts#L2420)
+Defined in: [pathist.ts:2631](https://github.com/shaungrady/pathist/blob/06fe07a6dc194a79e11167e1080200213ebb6e8c/src/pathist.ts#L2631)
 
 The notation style for converting paths to strings.
 
