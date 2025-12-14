@@ -27,6 +27,7 @@ While libraries like [lodash][lodash] and [jsonpath-plus][jsonpath-plus] excel a
 - [Common Use Cases](#common-use-cases)
   - [Path Comparison](#path-comparison)
   - [Path Manipulation](#path-manipulation)
+  - [Path Relationships](#path-relationships)
   - [Wildcards and Index Matching](#wildcards-and-index-matching)
   - [Pattern Matching with Wildcards](#pattern-matching-with-wildcards)
   - [Tree/Node Navigation](#treenode-navigation)
@@ -124,6 +125,41 @@ extended.string; // 'api.users.profile.avatar'
 const left = Pathist.from('data.users[0].profile');
 const right = Pathist.from('profile.settings.theme');
 left.merge(right).string; // 'data.users[0].profile.settings.theme'
+```
+
+### Path Relationships
+
+```typescript
+// Extract relative paths
+const fullPath = Pathist.from('api.users[0].profile.settings.theme');
+const basePath = Pathist.from('api.users[0]');
+const relative = fullPath.relativeTo(basePath);
+relative.string; // 'profile.settings.theme'
+
+// Verify relativeTo is inverse of concat
+basePath.concat(relative).equals(fullPath); // true
+
+// Find common prefix between paths
+const path1 = Pathist.from('users[0].profile.settings.theme');
+const path2 = Pathist.from('users[0].profile.avatar.url');
+const commonPrefix = path1.commonStart(path2);
+commonPrefix.string; // 'users[0].profile'
+
+// Use commonStart to decompose paths
+const rel1 = path1.relativeTo(commonPrefix); // 'settings.theme'
+const rel2 = path2.relativeTo(commonPrefix); // 'avatar.url'
+
+// Find common suffix between paths
+const config1 = Pathist.from('api.users.profile.settings');
+const config2 = Pathist.from('defaults.profile.settings');
+const commonSuffix = config1.commonEnd(config2);
+commonSuffix.string; // 'profile.settings'
+
+// Extract unique prefixes using commonEnd
+const prefix1 = config1.slice(0, config1.length - commonSuffix.length);
+const prefix2 = config2.slice(0, config2.length - commonSuffix.length);
+prefix1.string; // 'api.users'
+prefix2.string; // 'defaults'
 ```
 
 ### Wildcards and Index Matching
