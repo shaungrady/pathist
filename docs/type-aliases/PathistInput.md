@@ -8,7 +8,7 @@
 
 > **PathistInput** = `string` | [`PathSegment`](PathSegment.md)\[]
 
-Defined in: [pathist.ts:34](https://github.com/shaungrady/pathist/blob/51b0e3df5346a6ddcafdd2abafb1193c8ddecd87/src/pathist.ts#L34)
+Defined in: [pathist.ts:34](https://github.com/shaungrady/pathist/blob/06fe07a6dc194a79e11167e1080200213ebb6e8c/src/pathist.ts#L34)
 
 Valid input types for constructing a Pathist instance.
 Can be a path string (e.g., "foo.bar"), an array of segments, or an existing Pathist instance.
