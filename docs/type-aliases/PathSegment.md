@@ -8,7 +8,7 @@
 
 > **PathSegment** = `string` | `number`
 
-Defined in: [pathist.ts:10](https://github.com/shaungrady/pathist/blob/2257b7c12204385aad1edea357df4050c73610a1/src/pathist.ts#L10)
+Defined in: [pathist.ts:10](https://github.com/shaungrady/pathist/blob/3c299095419f3f0fb38b10fb8b014e5f4440b412/src/pathist.ts#L10)
 
 A single segment in a path, either a string property name or a numeric index.
 
