@@ -3,26 +3,68 @@ name: Update TypeDoc Documentation
 on:
   pull_request:
     branches: ['*']
+  push:
+    branches:
+      - main
 
-# Least privilege: this workflow commits regenerated docs back to the PR branch,
-# so it needs write access to repository contents and nothing else.
-permissions:
-  contents: write
-
-# Serialize doc-regeneration per branch so concurrent runs don't race on pushes.
+# Serialize per ref; newer runs supersede older ones.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  update-docs:
+  # On pull requests we run author-controlled code (install + build:docs), so
+  # this job is strictly read-only: no write token, no push. It only verifies
+  # that docs generate cleanly and reports any drift as a non-blocking warning
+  # (the push-to-main job below regenerates and commits docs after merge).
+  verify-docs:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.head_ref }}
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate TypeDoc documentation
+        run: pnpm run build:docs
+
+      - name: Report documentation drift
+        run: |
+          if [ -n "$(git status --porcelain docs/)" ]; then
+            echo "::warning::Generated docs differ from committed docs; they will be updated automatically on merge to main."
+            git --no-pager diff --stat docs/
+          else
+            echo "Documentation is up to date."
+          fi
+
+  # On push to main the code is trusted, so this job regenerates docs and
+  # commits them. This is the only place the workflow uses a write token.
+  publish-docs:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -42,23 +84,12 @@ jobs:
 
       - name: Commit documentation changes
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
+          if [ -n "$(git status --porcelain docs/)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-
-            # Check if last commit was from bot
-            LAST_AUTHOR=$(git log -1 --pretty=format:'%an')
-            if [ "$LAST_AUTHOR" = "github-actions[bot]" ]; then
-              echo "Amending previous documentation commit"
-              git add docs/
-              git commit --amend --no-edit
-              git push --force-with-lease
-            else
-              echo "Creating new documentation commit"
-              git add docs/
-              git commit -m "docs: update TypeDoc documentation [skip ci]"
-              git push
-            fi
+            git add docs/
+            git commit -m "docs: update TypeDoc documentation [skip ci]"
+            git push
           else
             echo "No documentation changes detected"
           fi
