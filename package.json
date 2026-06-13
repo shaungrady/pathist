@@ -25,7 +25,7 @@
 		"ci": "biome ci . && tsc --noEmit && ava",
 		"changeset": "changeset",
 		"version-packages": "changeset version && pnpm build:docs",
-		"release": "pnpm run build && changeset publish --provenance"
+		"release": "pnpm run build && changeset publish"
 	},
 	"keywords": [
 		"pathist",

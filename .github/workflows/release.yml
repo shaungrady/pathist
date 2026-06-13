@@ -45,3 +45,5 @@ jobs:
           commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # npm reads this to emit provenance (needs id-token: write, set above).
+          NPM_CONFIG_PROVENANCE: true
