@@ -98,7 +98,6 @@ for (const { desc, path, pattern } of matchNotFoundCases) {
 
 test('match: invalid pattern returns null', (t) => {
 	const p = Pathist.from('foo.bar.baz');
-	// biome-ignore lint/suspicious/noExplicitAny: Testing invalid input
 	const match = p.match(null as any);
 	t.is(match, null);
 });
@@ -205,7 +204,6 @@ for (const { desc, path, pattern } of matchStartNotFoundCases) {
 
 test('matchStart: invalid pattern returns null', (t) => {
 	const p = Pathist.from('foo.bar.baz');
-	// biome-ignore lint/suspicious/noExplicitAny: Testing invalid input
 	const match = p.matchStart(null as any);
 	t.is(match, null);
 });
@@ -325,7 +323,6 @@ for (const { desc, path, pattern } of matchEndNotFoundCases) {
 
 test('matchEnd: invalid pattern returns null', (t) => {
 	const p = Pathist.from('foo.bar.baz');
-	// biome-ignore lint/suspicious/noExplicitAny: Testing invalid input
 	const match = p.matchEnd(null as any);
 	t.is(match, null);
 });
